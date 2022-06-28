@@ -1,0 +1,35 @@
+<!----------------------------------------------------------------->
+<!--------------------------- Base HTML --------------------------->
+<!----------------------------------------------------------------->
+
+<!doctype html>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>
+        {{ title }}
+    </title>
+</head>
+
+<div class="main main-shadow">
+
+    <body>
+        <!-- left column -->
+        <div class="sidenav">
+            {% include "navigation.html" %}
+        </div>
+
+        <!-- right column -->
+        <div class="column-right">
+
+            <!-- top header -->
+            {% include "header.html" %}
+
+            {% block index %}{% endblock %}
+
+        </div>
+    </body>
+</div>
+
+</html>
