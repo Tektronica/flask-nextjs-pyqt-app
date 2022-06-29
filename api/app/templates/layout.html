@@ -12,24 +12,23 @@
     </title>
 </head>
 
-<div class="main main-shadow">
+<body class="main-shadow">
+    <!-- left column -->
+    <div id="left" class="column">
+        {% include "navigation.html" %}
+    </div>
 
-    <body>
-        <!-- left column -->
-        <div class="sidenav">
-            {% include "navigation.html" %}
-        </div>
+    <!-- right column -->
+    <div id="right" class="column">
 
-        <!-- right column -->
-        <div class="column-right">
+        <!-- top header -->
+        {% include "header.html" %}
 
-            <!-- top header -->
-            {% include "header.html" %}
-
+        <div class="bottom">
             {% block index %}{% endblock %}
-
         </div>
-    </body>
-</div>
+    </div>
+</body>
+
 
 </html>
