@@ -30,8 +30,4 @@ def data():
     """
 
     instr = Instruments()
-
-    instruments = instr.getInstruments()  # "1": { "col1": "atr1", "col2": "atr2", ... }, "2": { ...etc...
-    # columns = instruments.columns # for a dynamically created table
-    table_d = instruments.to_json(orient='index')
-    return {'data': instruments.to_dict(orient='records')}
+    return {'data': instr.getList()}
