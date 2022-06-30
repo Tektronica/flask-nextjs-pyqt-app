@@ -1,0 +1,36 @@
+---
+- name: Bragi
+  instr: f5560A
+  mode: SOCKET
+  address: '129.196.138.113'
+  port: '3490'
+  gpib: '6'
+
+- name: Víðarr
+  instr: f5730A
+  mode: SOCKET
+  address: 00.000.00.000
+  port: '3490'
+  gpib: '7'
+
+- name: Sigurd
+  instr: f8588A
+  mode: SOCKET
+  address: 10.205.92.63
+  port: '3490'
+  gpib: '8'
+
+- name: Vidar
+  instr: f884xA
+  mode: GPIB
+  address: 10.205.92.183
+  port: '3490'
+  gpib: '9'
+
+- name: Grímhildr
+  instr: f884xA
+  mode: GPIB
+  address: 10.205.92.184
+  port: '3490'
+  gpib: '4'
+  

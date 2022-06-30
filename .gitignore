@@ -6,6 +6,7 @@ venv
 .vscode
 __pycache__
 fonts
+react-frontend
 
 # local env files
 .env.local

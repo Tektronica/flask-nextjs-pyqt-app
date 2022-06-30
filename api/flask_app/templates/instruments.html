@@ -1,0 +1,84 @@
+<!----------------------------------------------------------------->
+<!-------------------------- instruments -------------------------->
+<!----------------------------------------------------------------->
+{% extends 'layout.html' %}
+
+{% block page %}
+<div class="rounded-box box-shadow">
+    <h3>Create New Instrument</h3>
+    <div class="form-inline" action="/api/add-instrument">
+        <div>
+            <label for="fname">Name</label>
+            <input type="text" id="fname" name="fname" value="John">
+        </div>
+        <div>
+            <label for="lname">ID</label>
+            <input type="text" id="lname" name="lname" value="Doe">
+        </div>
+        <div>
+            <label for="lname">Mode</label>
+            <input type="text" id="lname" name="lname" value="Doe">
+        </div>
+        <div>
+            <label for="lname">Address</label>
+            <input type="text" id="lname" name="lname" value="Doe">
+        </div>
+        <div>
+            <label for="lname">Port</label>
+            <input type="text" id="lname" name="lname" value="Doe">
+        </div>
+        <div>
+            <label for="lname">GPIB</label>
+            <input type="text" id="lname" name="lname" value="Doe">
+        </div>
+        <div>
+            <input type="submit">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            </input>
+        </div>
+    </div>
+</div>
+
+<div class="rounded-box box-shadow">
+    <h3>Available Instruments</h3>
+    <div>
+        <table id="data" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>ID</th>
+                    <th>Mode</th>
+                    <th>Address</th>
+                    <th>Port</th>
+                    <th>GPIB</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        $('#data').DataTable({
+            ajax: '/api/data',
+            columns: [
+                { data: 'name' },
+                { data: 'instr', searchable: false },
+                { data: 'mode', orderable: false, searchable: false },
+                { data: 'address', orderable: false, searchable: false },
+                { data: 'port', orderable: false, searchable: false },
+                { data: 'gpib', orderable: false, searchable: false },
+            ],
+        });
+    });
+</script>
+{% endblock %}
