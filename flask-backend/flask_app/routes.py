@@ -11,11 +11,11 @@ def index():
 def status():
     return render_template('status.html', message='Hello World')
 
-@app.route('/instruments')
-def instruments():
-    return render_template('instruments.html')
+# @app.route('/instruments')
+# def instruments():
+#     return render_template('instruments.html')
 
-@app.route('/api/instruments')
+@app.route('/instruments')
 def data():
     """
     endpoint returns JSON payload

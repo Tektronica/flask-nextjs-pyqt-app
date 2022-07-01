@@ -1,43 +1,60 @@
-// import Head from 'next/head'
+// <-- MAIN LAYOUT -->
+// https://play.tailwindcss.com/uOnWQzR9tl
+
 import Navbar from "./navigation/Navbar"
 import TopHeader from "./navigation/TopHeader"
 import Image from 'next/image'
+
 export default function Layout({ children }) {
 
     // background image handled by tailwind
-    const bgImageURL = "/public/rpi.svg"
-
+    const bgImageLEFT = "/cliffs_bg.svg"
+    const bgImageRIGHT = "/cliffs_bg_right.svg"
     return (
         <>
             {/* background image */}
-            {/* <div className="fixed bottom-0 left-0 overflow-hidden z-0">
-            <Image
-                alt="rpi"
-                src={bgImageURL}
-                width={260}
-                height={260}
-                objectFit="cover"
-                quality={100}
-            />
-        </div> */}
-            <div className="h-screen bg-neutral-200 flex flex-row justify-center">
-                <div className="flex bg-white max-w-[1024px] z-50 shadow-lg">
-                    <div className="flex flex-row bg-slate-200 ">
+            <div className='fixed w-full bottom-0 flex justify-between'>
+                <div className='left-0 z-0'>
+                    <Image
+                        alt="cliffs-left"
+                        src={bgImageLEFT}
+                        width={3000}
+                        height={400}
+                        layout=""
+                        objectFit="cover"
+                    />
+                </div>
+                {/* <div className='right-0 z-0'>
+                    <Image
+                        alt="cliffs-right"
+                        src={bgImageRIGHT}
+                        width={282}
+                        height={222}
+                        layout=""
+                        objectFit="cover"
+                    />
+                </div> */}
+            </div>
+            <div className="h-screen bg-neutral-200 flex flex-row justify-center ">
+                <div className="flex flex-col h-screen bg-white max-w-[1100px] z-50 drop-shadow-lg">
+                    <div className="flex flex-1 overflow-hidden bg-slate-200">
 
                         {/* <!-- left column --> */}
-                        <div className="min-w-[200px]">
+                        <div className="flex min-w-[200px]">
                             <Navbar />
                         </div>
 
                         {/* <!-- right column --> */}
-                        <div className="">
+                        <div className="flex flex-1 flex-col">
 
                             {/* <!-- top header --> */}
-                            <div className="sticky h-[65px] top-0 z-50 mb-4 shadow-md">
+                            <div className="flex h-[65px] top-0 z-50 drop-shadow-md">
                                 <TopHeader />
                             </div>
-                            <div className="">
-                                {children}
+                            <div className="flex flex-1 overflow-y-auto">
+                                <div className="">
+                                    {children}
+                                </div>
                             </div>
                         </div>
                     </div>

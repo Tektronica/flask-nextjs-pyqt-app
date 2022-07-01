@@ -16,19 +16,21 @@ const Navbar = () => {
     // const nav = {'Status':{'href': '/', 'svg':}, 'Status':{'href': '/'}, 'Status':{'href': '/'}, 'Status':{'href': '/'}, 'Status':{'href': '/'}, 'Status':{'href': '/'}}
 
     return (
-        <div className='bg-zinc-800 h-screen'>
-            <div className="h-[65px] text-white bg-red-600 text-4xl uppercase text-center shadow-xl">
-                <Link href='/'>
-                    <a className="flex items-center h-[65px]">
-                        <span>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
-                            </svg>
-                        </span>
-                        Calpi
-                    </a>
-                </Link>
+        <div className='flex flex-col flex-1 bg-gradient-to-b from-zinc-800 via-zinc-800 to-zinc-900'>
+            <div className='h-[65px] bg-cyan-600 shadow-md shadow-cyan-800 flex justify-center'>
+                <div className='text-white text-4xl'>
+                    <Link href='/'>
+                        <a className="flex items-center h-[65px]">
+                            <span>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+                                </svg>
+                            </span>
+                            CalPi
+                        </a>
+                    </Link>
+                </div>
             </div>
 
             <div className="flex-grow p-4">
