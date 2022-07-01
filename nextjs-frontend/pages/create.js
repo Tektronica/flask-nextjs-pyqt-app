@@ -1,7 +1,7 @@
 import Layout from '../components/layout'
 import React, { useState, useEffect } from 'react';
 
-export default function Home() {
+export default function Create() {
 
     return (
         <>
@@ -39,4 +39,4 @@ export default function Home() {
 }
 
 
-Home.layout = Layout
+Create.layout = Layout

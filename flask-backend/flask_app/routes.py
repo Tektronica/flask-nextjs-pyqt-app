@@ -1,6 +1,6 @@
 from flask_app import app
 from flask_app.testEngine.instruments import Instruments
-from flask import render_template
+from flask import render_template, jsonify
 
 @app.route('/')
 @app.route('/index')
@@ -15,7 +15,7 @@ def status():
 def instruments():
     return render_template('instruments.html')
 
-@app.route('/api/data')
+@app.route('/api/instruments')
 def data():
     """
     endpoint returns JSON payload
@@ -31,3 +31,10 @@ def data():
 
     instr = Instruments()
     return {'data': instr.getList()}
+
+from datetime import datetime
+@app.route('/time')
+def get_current_time():
+    timestamp = datetime.now().strftime("%H:%M:%S")
+
+    return {'time': timestamp}
