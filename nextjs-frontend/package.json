@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "star-api": "cd ..\\flask-backend && venv\\Scripts\\flask run --no-debugger",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
