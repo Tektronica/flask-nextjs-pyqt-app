@@ -1,12 +1,12 @@
 import Layout from '../components/layout'
 import React, { useState, useEffect } from 'react';
+import ShadowBox from '../components/containers/ShadowBox';
 
 export default function History() {
 
     return (
         <>
-
-            <div className="m-4 p-4 rounded-lg shadow-md bg-white">
+            <ShadowBox>
                 <h1 className="text-3xl font-bold underline">
                     Hello world!
                 </h1>
@@ -33,7 +33,7 @@ export default function History() {
                     want. If you need to stop reading before you reach the end, Word remembers where you left off - even on another
                     device.
                 </p>
-            </div>
+            </ShadowBox>
         </>
     )
 }

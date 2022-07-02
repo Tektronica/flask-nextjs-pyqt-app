@@ -6,7 +6,6 @@ export default function Home() {
 
     return (
         <>
-
             <ShadowBox>
                 <h1 className="text-3xl font-bold underline">
                     Hello world!

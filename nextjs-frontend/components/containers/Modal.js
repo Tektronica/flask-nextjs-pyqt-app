@@ -4,8 +4,6 @@
 import Link from 'next/link'
 
 const Modal = ({ message }) => {
-    console.log(message.header)
-    console.log(message.body)
 
     return (
         <>
