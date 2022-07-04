@@ -1,12 +1,10 @@
 import Layout from '../components/layout'
-import React, { useState, useEffect } from 'react';
 import ShadowBox from '../components/containers/ShadowBox';
 
 export default function Tools() {
 
     return (
         <>
-
             <ShadowBox>
                 <h1 className="text-3xl font-bold underline">
                     Hello world!
@@ -40,4 +38,10 @@ export default function Tools() {
 }
 
 
-Tools.layout = Layout
+Tools.getLayout = function getLayout(page) {
+    return (
+      <Layout>
+        {page}
+      </Layout>
+    )
+  }

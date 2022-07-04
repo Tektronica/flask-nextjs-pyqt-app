@@ -1,6 +1,6 @@
 // import { useRouter } from 'next/router'
 import Link from 'next/link'
-import Heroicons from '../../assets/heroicons'
+import {Heroicons} from '../../assets/heroicons'
 
 const Navbar = () => {
     // const router = useRouter()

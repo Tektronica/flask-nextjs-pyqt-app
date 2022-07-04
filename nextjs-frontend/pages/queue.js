@@ -1,5 +1,4 @@
 import Layout from '../components/layout'
-import React, { useState, useEffect } from 'react';
 import ShadowBox from '../components/containers/ShadowBox';
 
 export default function Queue() {
@@ -41,4 +40,10 @@ export default function Queue() {
 }
 
 
-Queue.layout = Layout
+Queue.getLayout = function getLayout(page) {
+    return (
+      <Layout>
+        {page}
+      </Layout>
+    )
+  }

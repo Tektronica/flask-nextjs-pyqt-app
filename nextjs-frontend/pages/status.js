@@ -1,7 +1,6 @@
 import Layout from '../components/layout'
-import React, { useState, useEffect } from 'react';
-import ShadowBox
-    from '../components/containers/ShadowBox';
+import ShadowBox from '../components/containers/ShadowBox';
+
 export default function Status() {
 
     return (
@@ -96,4 +95,10 @@ export default function Status() {
 }
 
 
-Status.layout = Layout
+Status.getLayout = function getLayout(page) {
+    return (
+      <Layout>
+        {page}
+      </Layout>
+    )
+  }

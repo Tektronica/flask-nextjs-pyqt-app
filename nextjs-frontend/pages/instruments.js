@@ -130,4 +130,10 @@ export default function Instruments() {
 }
 
 
-Instruments.layout = Layout
+Instruments.getLayout = function getLayout(page) {
+    return (
+      <Layout>
+        {page}
+      </Layout>
+    )
+  }

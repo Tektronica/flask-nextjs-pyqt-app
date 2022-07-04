@@ -7,17 +7,9 @@ import 'tailwindcss/tailwind.css'
 import React from 'react'
 import App from 'next/app'
 
-class MyApp extends App {
-  render() {
-    const { Component, pageProps } = this.props
-    const Layout = Component.layout || (children => <>{children}</>)
+export default function MyApp({ Component, pageProps }) {
+  // Use the layout defined at the page level, if available
+  const getLayout = Component.getLayout || ((page) => page)
 
-    return (
-      <Layout>
-        <Component {...pageProps}></Component>
-      </Layout>
-    )
-  }
+  return getLayout(<Component {...pageProps} />)
 }
-
-export default MyApp
