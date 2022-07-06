@@ -66,24 +66,29 @@ def connect():
         cmd = data['cmd']
         name = data['name']
 
-        if cmd == 'connect':
-            print('connecting, ', name)
-            timeout = data['timeout']
-            print(timeout)
+        try:
+            if cmd == 'connect':
+                print('connecting, ', name)
+                timeout = data['timeout']
+                print(timeout)
 
-            # https://stackoverflow.com/a/52547870
-            config = instr.getInstrByName(name).to_dict('r')[0]
-            print(config)
-            dutObject = DUT(config)
-            dutObject.connect()
+                # https://stackoverflow.com/a/52547870
+                config = instr.getInstrByName(name).to_dict('r')[0]
+                print(config)
+                dutObject = DUT(config)
+                dutObject.connect()
+            elif cmd == 'disconnect' and dutObject:
+                print('disconnecting, ', name)
+                config = instr.getInstrByName(name)
+                print(config)
+                dutObject.disconnect()
+            return {'data': True}
+        
+        except:
+            print("No instrument found?") 
+            return {'data': False}
 
-        elif cmd == 'disconnect' and dutObject:
-            print('disconnecting, ', name)
-            config = instr.getInstrByName(name)
-            print(config)
-            dutObject.disconnect()
-
-        return {'data': instr.getList()}
+        
 
 
 @app.route('/command', methods=['GET', 'POST'])

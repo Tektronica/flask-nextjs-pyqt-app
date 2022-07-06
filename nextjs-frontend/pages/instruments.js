@@ -172,12 +172,16 @@ export default function Instruments() {
                         </div>
                         {/* connect */}
                         <div className="flex items-end">
-                            <button id='connect-btn' onClick={handleClick.bind(this, 'connect')} className="ml-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
+                            <button id='connect-btn' onClick={handleClick.bind(this, 'connect')} className="ml-2 mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
                                 Connect
                             </button>
-
-                            {/* TODO: add a status of connection here */}
-
+                            <div id='connectStatus'>
+                                <div className='text-gray-500'>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     {/* command menu items */}
@@ -276,19 +280,45 @@ async function handleClick(id, e) {
         const resource = document.getElementById('resource').value
         const timeout = document.getElementById('timeout').value
 
-        // fetch
-        const connect_instr = { cmd: 'connect', name: resource, timeout: timeout }
-        let url = 'api/connect';
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(connect_instr)
-        })
+        // fetch if resource value is not null
+        if (resource) {
+            const connect_instr = { cmd: 'connect', name: resource, timeout: timeout }
+            let url = 'api/connect';
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(connect_instr)
+            })
 
-        console.log(res)
+            // get connection status
+            let r = await res.json();
+            let status = r.data
+
+            let statusIcon = ''
+
+            if (status === true) {
+                statusIcon = `<div class='text-green-500'>\
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">\
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />\
+                                </svg >\
+                            </div >\
+                            `
+
+            } else {
+                statusIcon = `<div class='text-red-500'>\
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">\
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />\
+                                </svg>\
+                            </div>\
+                            `
+            }
+
+            document.getElementById('connectStatus').innerHTML = statusIcon
+        }
+
     } else if (id == 'disconnect') {
         console.log('disconnect')
         const resource = document.getElementById('resource').value
@@ -331,15 +361,15 @@ async function handleClick(id, e) {
             body: JSON.stringify(instr_cmd)
         })
 
-        let r = await res.json()
-        let newline = r.data + '\n'
+        let r = await res.json();
+        let newline = r.data + '\n';
         document.getElementById('response-box').value += newline;
 
     } else if (id == 'read') {
         // send a READ
         console.log('read')
         const cmd = 'READ: '
-        const line = '>>' + cmd + '\n'
+        const line = '>>' + cmd + '\n';
         document.getElementById('response-box').value += line;
 
         // GET method
@@ -351,8 +381,8 @@ async function handleClick(id, e) {
             },
         })
 
-        let r = await res.json()
-        let newline = r.data + '\n'
+        let r = await res.json();
+        let newline = r.data + '\n';
         document.getElementById('response-box').value += newline;
 
     } else if (id == 'query') {
@@ -378,8 +408,8 @@ async function handleClick(id, e) {
             body: JSON.stringify(instr_cmd)
         })
 
-        let r = await res.json()
-        let newline = r.data + '\n'
+        let r = await res.json();
+        let newline = r.data + '\n';
         document.getElementById('response-box').value += newline;
 
     } else if (id == 'clear') {
