@@ -1,18 +1,18 @@
 Bragi:
   instr: f5560A
-  mode: SOCKET
+  mode: LAN
   address: '129.196.138.113'
   port: '3490'
   gpib: '6'
 Víðarr:
   instr: f5730A
-  mode: SOCKET
+  mode: LAN
   address: 00.000.00.000
   port: '3490'
   gpib: '7'
 Sigurd:
   instr: f8588A
-  mode: SOCKET
+  mode: LAN
   address: 10.205.92.63
   port: '3490'
   gpib: '8'

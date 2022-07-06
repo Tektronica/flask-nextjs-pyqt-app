@@ -4,25 +4,26 @@ import platform
 import pandas as pd
 
 ########################################################################################################################
-FILE='instrument_config.yaml'
+FILE = 'instrument_config.yaml'
 
-class Instruments():
+
+class Instruments:
     def __init__(self, filename=FILE) -> None:
         self.filename = filename
         self.instrList = [{}]
         self.instrPandas = None
 
         self.empty = {
-                '0': {'name': "", 'instr': "", 'mode': "", 'address': "", 'port': "", 'gpib': ""},
-                '1': {'name': "", 'instr': "", 'mode': "", 'address': "", 'port': "", 'gpib': ""}
-            }
+            '0': {'name': "", 'instr': "", 'mode': "", 'address': "", 'port': "", 'gpib': ""},
+            '1': {'name': "", 'instr': "", 'mode': "", 'address': "", 'port': "", 'gpib': ""}
+        }
 
         # check file exists
         self.validated = self._isPathValid()
 
         # read config
         self._getInstruments()
-        
+
     def _isPathValid(self):
         if not os.path.exists(self.filename):
             if platform.release() in ('Linux', 'Darwin'):
@@ -36,10 +37,12 @@ class Instruments():
 
         return True
 
-    def _unpackStream(self, stream):
+    def _unpackStream(self):
         # on success, return data frame
         try:
-            self.instrList = yaml.safe_load(stream)
+            with open(self.filename, 'r', encoding='utf-8') as stream:
+                self.instrList = yaml.safe_load(stream)
+
             self.instrDF = pd.DataFrame(self.instrList)
             return self.instrDF
 
@@ -50,8 +53,7 @@ class Instruments():
         # returns pandas DataFrame
         if self.validated:
             if os.path.exists(self.filename):
-                with open(FILE, 'r') as stream:
-                    return self._unpackStream(stream)
+                return self._unpackStream()
             else:
                 pass
 
@@ -66,7 +68,18 @@ class Instruments():
 
     def update(self):
         # only really should be used when the file has been manually edited
-        self._getInstruments
+        self._getInstruments()
+
+    def getInstrByName(self, name):
+        # search for specific instrument config by name
+        # https://stackoverflow.com/a/17071908
+        print(self.instrDF)
+        print(name)
+        config = self.instrDF.loc[self.instrDF['name'] == name]
+
+        # TODO: handle empty returns
+
+        return config
 
     def getDataFrame(self):
         # return instruments as a pandas DataFrame
@@ -75,12 +88,12 @@ class Instruments():
     def getList(self):
         # returns instruments as a list of dictionaries
         return self.instrList
-    
+
     def getJSON(self):
         # returns instruments as a list of dictionaries
         return self.instrDF.to_json()
 
-    def add(self, instr):
+    def _add(self, instr):
         # adds new entry to the list of dictionaries. usually called after a save.
         return self.instrList.append(instr)
 
@@ -89,11 +102,11 @@ class Instruments():
         if self.validated:
             with open(FILE, 'w') as f:
                 yaml.dump(instr, f, sort_keys=False)
-                self.add(instr)
+                self._add(instr)
             return True
         else:
             return False
-    
+
     def clear_and_push(self, instr):
         # clears the config file and pushes all new data
         if self.validated:
