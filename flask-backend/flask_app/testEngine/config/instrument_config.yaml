@@ -6,7 +6,7 @@
   gpib: '6'
 - name: "V\xED\xF0arr"
   instr: f5730A
-  mode: GPIB
+  mode: SERIAL
   address: 12.100.90.050
   port: '3490'
   gpib: '10'
@@ -28,3 +28,9 @@
   address: 10.205.92.185
   port: '5'
   gpib: '2'
+- name: Dimitri
+  instr: f884xA
+  mode: GPIB
+  address: 10.205.92.189
+  port: '3490'
+  gpib: '10'

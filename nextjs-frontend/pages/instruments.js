@@ -12,21 +12,7 @@ export default function Instruments() {
 
     // return information from instrument config
     useEffect(() => {
-        async function getInstrument() {
-            let url = 'api/instruments';
-
-            const resJSON = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-            })
-
-            const res = await resJSON.json();
-            setTableData(res.data);
-        }
-
-        getInstrument();
+        getInstrument(setTableData);
     }, []);
 
     return (
@@ -83,7 +69,7 @@ export default function Instruments() {
                         <span>
                             <button
                                 id='add'
-                                onClick={handleClick.bind(this, 'add')}
+                                onClick={onClickCreate.bind(this, setTableData)}
                                 className="text-gray-600 hover:text-green-500 cursor-pointer"
                             >
                                 <svg
@@ -124,7 +110,12 @@ export default function Instruments() {
                                     return (
                                         <tr key={idx} className='bg-white border-b hover:bg-gray-200 dark:bg-gray-800 dark:border-gray-700' >
                                             <td className='px-6 py-4 font-bold text-gray-900 dark:text-white whitespace-nowrap'>
+                                                <button
+                                                type='button'
+                                                id='btn-name'
+                                                onClick={setResourceName.bind(this, item[1].name)}>
                                                 {item[1].name}
+                                                </button>
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
                                                 {item[1].instr}
@@ -155,7 +146,7 @@ export default function Instruments() {
                             }
                         </tbody>
                     </table>
-                    <ModalNewInstrument isOpen={isOpen} setIsOpen={setIsOpen} config={contentModal} />
+                    <ModalNewInstrument isOpen={isOpen} setIsOpen={setIsOpen} config={contentModal} onModalClose={onModalSubmit.bind(this, setTableData)} />
                 </div>
             </ShadowBox>
             <ShadowBox>
@@ -194,7 +185,10 @@ export default function Instruments() {
                         </div>
                         {/* connect */}
                         <div className="flex items-end">
-                            <button id='connect-btn' onClick={handleClick.bind(this, 'connect')} className="ml-2 mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
+                            <button
+                                id='connect-btn'
+                                onClick={handleClick.bind(this, 'connect')}
+                                className="ml-2 mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
                                 Connect
                             </button>
                             <div id='connectStatus'>
@@ -223,13 +217,22 @@ export default function Instruments() {
                         </div>
                         {/* command button row */}
                         <div className='flex flex-row pb-2'>
-                            <button id='write-btn' onClick={handleClick.bind(this, 'write')} className="mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
+                            <button
+                                id='write-btn'
+                                onClick={handleClick.bind(this, 'write')}
+                                className="mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
                                 Write
                             </button>
-                            <button id='read-btn' onClick={handleClick.bind(this, 'read')} className="mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
+                            <button
+                                id='read-btn'
+                                onClick={handleClick.bind(this, 'read')}
+                                className="mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
                                 Read
                             </button>
-                            <button id='query-btn' onClick={handleClick.bind(this, 'query')} className="mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
+                            <button
+                                id='query-btn'
+                                onClick={handleClick.bind(this, 'query')}
+                                className="mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
                                 Query
                             </button>
                         </div>
@@ -243,7 +246,11 @@ export default function Instruments() {
                         </div>
                         <div className='flex flex-row justify-between'>
                             <div>
-                                <button type='button' id='clear' onClick={handleClick.bind(this, 'clear')} className="mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
+                                <button
+                                    type='button'
+                                    id='clear'
+                                    onClick={handleClick.bind(this, 'clear')}
+                                    className="mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
                                     Clear History
                                 </button>
                             </div>
@@ -273,45 +280,73 @@ export default function Instruments() {
     )
 }
 
+
+function setResourceName(name, e) {
+    document.getElementById('resource').value = name
+}
+
+async function getInstrument(setTableData) {
+    let url = 'api/instruments';
+
+    const resJSON = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    })
+
+    const res = await resJSON.json();
+    setTableData(res.data);
+}
+
+async function onModalSubmit(setTableData) {
+    getInstrument(setTableData)
+}
+
+async function onClickCreate(setTableData , e) {
+
+    // collect user input
+    const name = document.getElementById('name').value
+    const instr = document.getElementById('instr').value
+    const mode = document.getElementById('mode').value
+    const address = document.getElementById('address').value
+    const port = document.getElementById('port').value
+    const gpib = document.getElementById('gpib').value
+
+    // build dictionary
+    const new_instr = { name: name, instr: instr, mode: mode, address: address, port: port, gpib: gpib }
+
+    // POST method
+    // https://stackoverflow.com/a/55647945
+    let url = 'api/instruments/add';
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(new_instr)
+    })
+
+    const status = await res.json()
+
+    // close modal on success
+    if (status.data === true) {
+        document.getElementById('name').value = ''
+        document.getElementById('instr').value = ''
+        document.getElementById('mode').value = ''
+        document.getElementById('address').value = ''
+        document.getElementById('port').value = ''
+        document.getElementById('gpib').value = ''
+
+        // update data table
+        getInstrument(setTableData);
+    }
+}
+
 async function handleClick(id, e) {
 
-    if (id == 'add') {
-        // collect user input
-        const name = document.getElementById('name').value
-        const instr = document.getElementById('instr').value
-        const mode = document.getElementById('mode').value
-        const address = document.getElementById('address').value
-        const port = document.getElementById('port').value
-        const gpib = document.getElementById('gpib').value
-
-        // build dictionary
-        const new_instr = { name: name, instr: instr, mode: mode, address: address, port: port, gpib: gpib }
-
-        // POST method
-        // https://stackoverflow.com/a/55647945
-        let url = 'api/instruments/add';
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(new_instr)
-        })
-
-        const status = await res.json()
-
-        // close modal on success
-        if (status.data === true) {
-            document.getElementById('name').value = ''
-            document.getElementById('instr').value = ''
-            document.getElementById('mode').value = ''
-            document.getElementById('address').value = ''
-            document.getElementById('port').value = ''
-            document.getElementById('gpib').value = ''
-        }
-
-    } else if (id == 'connect') {
+    if (id == 'connect') {
         console.log('connect')
         const resource = document.getElementById('resource').value
         const timeout = document.getElementById('timeout').value

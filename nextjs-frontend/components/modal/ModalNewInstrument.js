@@ -10,13 +10,14 @@
 
 import { Dialog } from '@headlessui/react'
 
-const ModalNewInstrument = ({ isOpen, setIsOpen, config }) => {
+const ModalNewInstrument = ({ isOpen, setIsOpen, config, onModalClose }) => {
 
     return (
         <Dialog
             open={isOpen}
             onClose={() => setIsOpen(false)}
             className="relative z-50">
+
             <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
             <div className="fixed inset-0 flex items-center justify-center p-4">
@@ -24,9 +25,11 @@ const ModalNewInstrument = ({ isOpen, setIsOpen, config }) => {
 
                     {/* <!-- Modal header --> */}
                     <div className="flex justify-between items-start p-4 rounded-t border-b dark:border-gray-600">
+                        
                         <Dialog.Title className='text-xl font-semibold text-gray-900 dark:text-white'>
                             {config.name}
                         </Dialog.Title>
+
                         <button
                             onClick={() => setIsOpen(false)}
                             type="button"
@@ -34,13 +37,14 @@ const ModalNewInstrument = ({ isOpen, setIsOpen, config }) => {
                         >
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
                         </button>
+
                     </div>
                     <Dialog.Description className='p-4'>
                         Change configuration of an instrument:
                     </Dialog.Description>
 
                     <form
-                        onSubmit={handleOnSubmit.bind(this, setIsOpen)}
+                        onSubmit={handleOnSubmit.bind(this, setIsOpen, onModalClose)}
                         className="p-4 w-full max-w-lg"
                     >
                         <div className="flex flex-wrap -mx-3 mb-6">
@@ -144,7 +148,7 @@ const ModalNewInstrument = ({ isOpen, setIsOpen, config }) => {
                             </button>
                             <button
                                 type="button"
-                                onClick={handleDelete.bind(this, config.name, setIsOpen)}
+                                onClick={handleDelete.bind(this, config.name, setIsOpen, onModalClose)}
                                 className="border border-red-400 text-red-500 hover:text-white hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-red-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
                             >
                                 Delete
@@ -160,7 +164,7 @@ const ModalNewInstrument = ({ isOpen, setIsOpen, config }) => {
     )
 }
 
-async function handleOnSubmit(setIsOpen, e) {
+async function handleOnSubmit(setIsOpen, onModalClose, e) {
     e.preventDefault()
 
     // https://stackoverflow.com/a/55939750
@@ -191,11 +195,12 @@ async function handleOnSubmit(setIsOpen, e) {
     // close modal on success
     if (status.data === true) {
         setIsOpen(false)
+        onModalClose()
     }
 
 }
 
-async function handleDelete(name, setIsOpen, e) {
+async function handleDelete(name, setIsOpen, onModalClose, e) {
     e.preventDefault()
 
     // https://stackoverflow.com/a/55939750
@@ -221,6 +226,7 @@ async function handleDelete(name, setIsOpen, e) {
     // close modal on success
     if (status.data === true) {
         setIsOpen(false)
+        onModalClose()
     }
 
 }
