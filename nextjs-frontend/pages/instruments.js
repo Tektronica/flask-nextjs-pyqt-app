@@ -1,11 +1,14 @@
 import Layout from '../components/layout'
 import React, { useState, useEffect } from 'react';
 import ShadowBox from '../components/containers/ShadowBox';
+import ModalNewInstrument from '../components/modal/ModalNewInstrument'
 // https://stackoverflow.com/a/53572588
 // https://github.com/facebook/react/issues/14326
 
 export default function Instruments() {
     const [tableData, setTableData] = useState(0);
+    let [isOpen, setIsOpen] = useState(false)
+    const [contentModal, setContentModal] = useState("");
 
     // return information from instrument config
     useEffect(() => {
@@ -52,10 +55,10 @@ export default function Instruments() {
                         </label>
                         <select id="mode" className="h-[28px] border-2 w-full bg-cyan-50 hover:bg-green-50 focus:bg-green-50">
                             <option value=""></option>
-                            <option value="socket">LAN</option>
-                            <option value="gpib">GPIB</option>
-                            <option value="socket">Serial</option>
-                            <option value="gpib">RS232</option>
+                            <option value="LAN">LAN</option>
+                            <option value="GPIB">GPIB</option>
+                            <option value="SERIAL">Serial</option>
+                            <option value="RS232">RS232</option>
                         </select>
                     </div>
                     <div>
@@ -78,7 +81,11 @@ export default function Instruments() {
                     </div>
                     <div className="flex items-end">
                         <span>
-                            <button id='add' onClick={handleClick.bind(this, 'add')} className="text-gray-600 hover:text-green-500 cursor-pointer">
+                            <button
+                                id='add'
+                                onClick={handleClick.bind(this, 'add')}
+                                className="text-gray-600 hover:text-green-500 cursor-pointer"
+                            >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     className="h-6 w-6" fill="none" viewBox="0 0 24 24"
@@ -89,8 +96,6 @@ export default function Instruments() {
                             </button>
                         </span>
                     </div>
-
-
                 </div>
             </ShadowBox>
             <ShadowBox>
@@ -98,7 +103,10 @@ export default function Instruments() {
                     Available Instruments
                 </h1>
                 <div className="">
-                    <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400">
+                    <table
+                        id='instrument-config-table'
+                        className="w-full text-sm text-left text-gray-800 dark:text-gray-400"
+                    >
                         <thead>
                             <tr>
                                 <th className='px-6 py-3'>Name</th>
@@ -112,9 +120,9 @@ export default function Instruments() {
                         </thead>
                         <tbody>
                             {
-                                Object.entries(tableData).map(function (item, i) {
+                                Object.entries(tableData).map(function (item, idx) {
                                     return (
-                                        <tr key={i} className='bg-white border-b hover:bg-gray-200 dark:bg-gray-800 dark:border-gray-700' >
+                                        <tr key={idx} className='bg-white border-b hover:bg-gray-200 dark:bg-gray-800 dark:border-gray-700' >
                                             <td className='px-6 py-4 font-bold text-gray-900 dark:text-white whitespace-nowrap'>
                                                 {item[1].name}
                                             </td>
@@ -134,7 +142,10 @@ export default function Instruments() {
                                                 {item[1].gpib}
                                             </td>
                                             <td className='px-6 py-3'>
-                                                <button onClick={handleClick.bind(this, 'edit')} className='bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white  px-2 border border-cyan-500 hover:border-transparent rounded uppercase'>
+                                                <button
+                                                    onClick={() => { setIsOpen(true); setContentModal(getRow(idx)) }}
+                                                    className='bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white  px-2 border border-cyan-500 hover:border-transparent rounded uppercase'
+                                                >
                                                     Edit
                                                 </button>
                                             </td>
@@ -144,6 +155,7 @@ export default function Instruments() {
                             }
                         </tbody>
                     </table>
+                    <ModalNewInstrument isOpen={isOpen} setIsOpen={setIsOpen} config={contentModal} />
                 </div>
             </ShadowBox>
             <ShadowBox>
@@ -159,7 +171,12 @@ export default function Instruments() {
                             <label>
                                 Resource
                             </label>
-                            <input type="text" id="resource" placeholder='<NAME> or <IP ADDRESS>' className="font-mono border-2 w-full bg-cyan-50 hover:bg-green-50 focus:bg-green-50" />
+                            <input
+                                type="text"
+                                id="resource"
+                                placeholder='<NAME> or <IP ADDRESS>'
+                                className="font-mono text-cyan-700 border-2 w-full bg-cyan-50 hover:bg-green-50 focus:bg-green-50"
+                            />
                         </div>
                         {/* timeout */}
                         <div>
@@ -168,7 +185,12 @@ export default function Instruments() {
                                     Timeout
                                 </label>
                             </div>
-                            <input type="number" id="timeout" defaultValue="2000" className="font-mono w-[100px] border-2 w-full bg-cyan-50 hover:bg-green-50 focus:bg-green-50" />
+                            <input
+                                type="number"
+                                id="timeout"
+                                defaultValue="2000"
+                                className="font-mono text-cyan-700 w-[100px] border-2 w-full bg-cyan-50 hover:bg-green-50 focus:bg-green-50"
+                            />
                         </div>
                         {/* connect */}
                         <div className="flex items-end">
@@ -177,8 +199,8 @@ export default function Instruments() {
                             </button>
                             <div id='connectStatus'>
                                 <div className='text-gray-500'>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
                             </div>
@@ -189,7 +211,10 @@ export default function Instruments() {
                         {/* command select */}
                         <label>Select Command</label>
                         <div className='pb-2 font-mono'>
-                            <select id="cmd-select" className="h-[28px] border-2 w-full bg-cyan-50 hover:bg-green-50">
+                            <select
+                                id="cmd-select"
+                                className="h-[28px] border-2 w-full bg-cyan-50 hover:bg-green-50 text-cyan-700"
+                            >
                                 <option value="*IDN?\n">*IDN?\n</option>
                                 <option value="*OPC\n">*OPC\n</option>
                                 <option value="*RST\n">*RST\n</option>
@@ -210,7 +235,10 @@ export default function Instruments() {
                         </div>
 
                         <div className='pb-2'>
-                            <textarea id='response-box' className='min-h-[100px] font-mono text-xs border-2 w-full bg-cyan-50 hover:bg-green-50 '>
+                            <textarea
+                                id='response-box'
+                                className='min-h-[100px] font-mono text-xs border-2 w-full bg-cyan-50 text-cyan-900'
+                            >
                             </textarea>
                         </div>
                         <div className='flex flex-row justify-between'>
@@ -226,7 +254,11 @@ export default function Instruments() {
                                             Read Count:
                                         </label>
                                     </div>
-                                    <input type="number" id="count" defaultValue="1024" className="font-mono w-[100px] border-2 w-full bg-cyan-50 hover:bg-green-50 focus:bg-green-50" />
+                                    <input
+                                        type="number"
+                                        id="count"
+                                        defaultValue="1024"
+                                        className="font-mono text-cyan-700 w-[100px] border-2 w-full bg-cyan-50 hover:bg-green-50 focus:bg-green-50" />
 
                                 </div>
                             </div>
@@ -253,11 +285,11 @@ async function handleClick(id, e) {
         const gpib = document.getElementById('gpib').value
 
         // build dictionary
-        const new_instr = { id: -1, name: name, instr: instr, mode: mode, address: address, port: port, gpib: gpib }
+        const new_instr = { name: name, instr: instr, mode: mode, address: address, port: port, gpib: gpib }
 
         // POST method
         // https://stackoverflow.com/a/55647945
-        let url = 'api/instruments';
+        let url = 'api/instruments/add';
         const res = await fetch(url, {
             method: 'POST',
             headers: {
@@ -267,13 +299,17 @@ async function handleClick(id, e) {
             body: JSON.stringify(new_instr)
         })
 
-        console.log(res)
+        const status = await res.json()
 
-    } else if (id == 'edit') {
-        id = 0
-        console.log('edit')
-        console.log('item id: ', id)
-        // fetch here
+        // close modal on success
+        if (status.data === true) {
+            document.getElementById('name').value = ''
+            document.getElementById('instr').value = ''
+            document.getElementById('mode').value = ''
+            document.getElementById('address').value = ''
+            document.getElementById('port').value = ''
+            document.getElementById('gpib').value = ''
+        }
 
     } else if (id == 'connect') {
         console.log('connect')
@@ -301,16 +337,16 @@ async function handleClick(id, e) {
 
             if (status === true) {
                 statusIcon = `<div class='text-green-500'>\
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">\
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />\
-                                </svg >\
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>\
                             </div >\
                             `
 
             } else {
                 statusIcon = `<div class='text-red-500'>\
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">\
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />\
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">\
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />\
                                 </svg>\
                             </div>\
                             `
@@ -362,7 +398,7 @@ async function handleClick(id, e) {
         })
 
         let r = await res.json();
-        let newline = r.data + '\n';
+        let newline = r.data + '\n\n';
         document.getElementById('response-box').value += newline;
 
     } else if (id == 'read') {
@@ -382,7 +418,7 @@ async function handleClick(id, e) {
         })
 
         let r = await res.json();
-        let newline = r.data + '\n';
+        let newline = r.data + '\n\n';
         document.getElementById('response-box').value += newline;
 
     } else if (id == 'query') {
@@ -409,7 +445,7 @@ async function handleClick(id, e) {
         })
 
         let r = await res.json();
-        let newline = r.data + '\n';
+        let newline = r.data + '\n\n';
         document.getElementById('response-box').value += newline;
 
     } else if (id == 'clear') {
@@ -418,6 +454,24 @@ async function handleClick(id, e) {
         document.getElementById('response-box').value = "";
     }
 };
+
+// returns the selected row as dictionary
+function getRow(rowid) {
+    var table = document.getElementById("instrument-config-table");
+    var row = table.rows[rowid + 1]
+
+    //read row
+    const config = {
+        'name': row.cells[0].textContent,
+        'instr': row.cells[1].textContent,
+        'mode': row.cells[2].textContent,
+        'address': row.cells[3].textContent,
+        'port': row.cells[4].textContent,
+        'gpib': row.cells[5].textContent,
+    }
+
+    return config
+}
 
 
 Instruments.getLayout = function getLayout(page) {

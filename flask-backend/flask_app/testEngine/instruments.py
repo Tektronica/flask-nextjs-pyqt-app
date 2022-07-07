@@ -1,16 +1,17 @@
 import yaml
 import os
+import pathlib
 import platform
 import pandas as pd
 
 ########################################################################################################################
-FILE = 'instrument_config.yaml'
-
+FILE = 'config\\instrument_config.yaml'
+PARENT_DIRECTORY = pathlib.Path(__file__).parent.resolve()
 
 class Instruments:
     def __init__(self, filename=FILE) -> None:
-        self.filename = filename
-        self.instrList = [{}]
+        self.filepath = os.path.join(PARENT_DIRECTORY, filename)
+        print(self.filepath)
         self.instrPandas = None
 
         self.empty = {
@@ -25,12 +26,12 @@ class Instruments:
         self._getInstruments()
 
     def _isPathValid(self):
-        if not os.path.exists(self.filename):
+        if not os.path.exists(self.filepath):
             if platform.release() in ('Linux', 'Darwin'):
-                os.mknod(self.filename)
+                os.mknod(self.filepath)
             else:
                 # create empty config if one does not exist
-                with open(os.path.join('', self.filename), 'w') as fp:
+                with open(self.filepath, 'w') as fp:
                     pass
 
             return self._clearConfig()
@@ -40,10 +41,11 @@ class Instruments:
     def _unpackStream(self):
         # on success, return data frame
         try:
-            with open(self.filename, 'r', encoding='utf-8') as stream:
-                self.instrList = yaml.safe_load(stream)
+            with open(self.filepath, 'r', encoding='utf-8') as stream:
+                print(stream)
+                instr= yaml.safe_load(stream)
 
-            self.instrDF = pd.DataFrame(self.instrList)
+            self.instrDF = pd.DataFrame(instr)
             return self.instrDF
 
         except yaml.YAMLError as exc:
@@ -52,7 +54,7 @@ class Instruments:
     def _getInstruments(self):
         # returns pandas DataFrame
         if self.validated:
-            if os.path.exists(self.filename):
+            if os.path.exists(self.filepath):
                 return self._unpackStream()
             else:
                 pass
@@ -87,15 +89,51 @@ class Instruments:
 
     def getList(self):
         # returns instruments as a list of dictionaries
-        return self.instrList
+        # https://stackoverflow.com/a/29816143
+        return self.instrDF.to_dict('records')
 
     def getJSON(self):
         # returns instruments as a list of dictionaries
         return self.instrDF.to_json()
 
-    def _add(self, instr):
+    def setRowByName(self, config):
         # adds new entry to the list of dictionaries. usually called after a save.
-        return self.instrList.append(instr)
+        self.instrDF.loc[self.instrDF['name'] == config['name']] = list(config.values())
+        self.save()
+
+    def appendRow(self, config):
+        # adds new entry to the list of dictionaries. usually called after a save.
+        df_length = len(self.instrDF)
+        self.instrDF.loc[df_length] = list(config.values())
+        self.save()
+    
+    def deleteRowByName(self, name):
+        # adds new entry to the list of dictionaries. usually called after a save.
+        # https://stackoverflow.com/a/43136765
+        idx = self.instrDF.loc[self.instrDF['name'] == name].index
+        self.instrDF.drop(index=idx, inplace=True)
+        self.save()
+    
+    def save(self):
+        if self.validated:
+            try:
+                with open(self.filepath, 'w', encoding='utf-8') as outfile:
+                    yaml.dump(
+                                data=self.getList(),
+                                stream=outfile,
+                                encoding='utf-8',
+                                sort_keys=False,
+                                width=72, 
+                                indent=2
+                            )
+                print('save complete')
+                
+            except:
+                print('save failed')
+                
+        else:
+            print('file no longer valid')
+            
 
     def push_New_Instrument(self, instr):
         # add new instrument entry to config file

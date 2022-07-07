@@ -35,7 +35,7 @@ export default function Layout({ children }) {
                     />
                 </div> */}
             </div>
-            <div className="h-screen bg-neutral-200 flex flex-row justify-center ">
+            <div className="overflow-hidden h-screen bg-neutral-200 flex flex-row justify-center ">
                 <div className="flex flex-col h-screen bg-white max-w-[1100px] z-50 drop-shadow-lg">
                     <div className="flex flex-1 overflow-hidden bg-slate-200">
 

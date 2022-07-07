@@ -2,7 +2,16 @@ from flask_app import app
 from flask_app.testEngine.instruments import Instruments
 from flask_app.testEngine.dut import DUT
 from flask import render_template, request, make_response
+from subprocess import call
 
+try:
+  import RPi.GPIO as gpio
+  test_environment = False
+except (ImportError, RuntimeError):
+  test_environment = True
+
+# python annotation
+# https://stackoverflow.com/a/15073109
 
 @app.route('/')
 @app.route('/index')
@@ -55,8 +64,42 @@ def instrument():
         pass
 
 
-global dutObject
 
+
+@app.route('/instruments/add', methods=['POST'])
+def add_instrument():
+    config_row = request.json
+
+    try:
+        instr.appendRow(config_row)
+        return {'data': True}
+    except:
+        return {'data': False}
+
+
+@app.route('/instruments/edit', methods=['POST'])
+def edit_instrument():
+    config_row = request.json
+    try:
+        instr.setRowByName(config_row)
+        return {'data': True}
+    except:
+        return {'data': False}
+
+
+@app.route('/instruments/delete', methods=['POST'])
+def delete_instrument():
+    data = request.json
+    try:
+        instr.deleteRowByName(data['name'])
+        return {'data': True}
+    except:
+        return {'data': False}
+
+    
+
+
+global dutObject
 
 @app.route('/connect', methods=['POST'])
 def connect():
@@ -128,5 +171,21 @@ from datetime import datetime
 @app.route('/time')
 def get_current_time():
     timestamp = datetime.now().strftime("%H:%M:%S")
+
+    return {'time': timestamp}
+
+@app.route('/rpi', methods=['POST'])
+def rpi():
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    data = request.json
+    cmd = data['data']
+    if request.method == 'POST':
+        # TODO: we don't want these to execute outside of raspbian
+        if cmd == 'reboot':
+            print('reboot')
+            # call("sudo reboot -f", shell=True)
+        elif cmd == 'shutdown':
+            print('shutdown')
+            # call("sudo shutdown -r now", shell=True)
 
     return {'time': timestamp}
