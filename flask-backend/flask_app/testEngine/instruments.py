@@ -8,16 +8,53 @@ import pandas as pd
 FILE = 'config\\instrument_config.yaml'
 PARENT_DIRECTORY = pathlib.Path(__file__).parent.resolve()
 
-class Instruments:
+
+class Roster:
     def __init__(self, filename=FILE) -> None:
         self.filepath = os.path.join(PARENT_DIRECTORY, filename)
-        print(self.filepath)
         self.instrPandas = None
 
-        self.empty = {
-            '0': {'name': "", 'instr': "", 'mode': "", 'address': "", 'port': "", 'gpib': ""},
-            '1': {'name': "", 'instr': "", 'mode': "", 'address': "", 'port': "", 'gpib': ""}
-        }
+        """
+        Config looks something like this:
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        - name: Bragi
+        instr: f5560A
+        mode: LAN
+        address: 129.196.138.113
+        port: '3490'
+        gpib: '6'
+        - name: "Víðarr"
+        instr: f5730A
+        mode: SERIAL
+        address: 12.100.90.050
+        port: '3490'
+        gpib: '10'
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        """
+
+        """
+        Read in as a list of dictionaries:
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        [
+            {
+            name: Bragi
+            instr: f5560A
+            mode: LAN
+            address: 129.196.138.113
+            port: '3490'
+            gpib: '6'
+            },
+            {
+            name: "Víðarr"
+            instr: f5730A
+            mode: SERIAL
+            address: 12.100.90.050
+            port: '3490'
+            gpib: '10'
+            }
+        ]
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        """
 
         # check file exists
         self.validated = self._isPathValid()
@@ -42,8 +79,7 @@ class Instruments:
         # on success, return data frame
         try:
             with open(self.filepath, 'r', encoding='utf-8') as stream:
-                print(stream)
-                instr= yaml.safe_load(stream)
+                instr = yaml.safe_load(stream)
 
             self.instrDF = pd.DataFrame(instr)
             return self.instrDF
@@ -58,15 +94,6 @@ class Instruments:
                 return self._unpackStream()
             else:
                 pass
-
-    def _clearConfig(self):
-        # clears the config file and replaces with an empty
-        if self.validated:
-            with open(self.empty, 'w') as f:
-                yaml.dump(instr, f, sort_keys=False)
-            return True
-        else:
-            return False
 
     def update(self):
         # only really should be used when the file has been manually edited
@@ -106,34 +133,33 @@ class Instruments:
         df_length = len(self.instrDF)
         self.instrDF.loc[df_length] = list(config.values())
         self.save()
-    
+
     def deleteRowByName(self, name):
         # adds new entry to the list of dictionaries. usually called after a save.
         # https://stackoverflow.com/a/43136765
         idx = self.instrDF.loc[self.instrDF['name'] == name].index
         self.instrDF.drop(index=idx, inplace=True)
         self.save()
-    
+
     def save(self):
         if self.validated:
             try:
                 with open(self.filepath, 'w', encoding='utf-8') as outfile:
                     yaml.dump(
-                                data=self.getList(),
-                                stream=outfile,
-                                encoding='utf-8',
-                                sort_keys=False,
-                                width=72, 
-                                indent=2
-                            )
+                        data=self.getList(),
+                        stream=outfile,
+                        encoding='utf-8',
+                        sort_keys=False,
+                        width=72,
+                        indent=2
+                    )
                 print('save complete')
-                
-            except:
+
+            except Exception:
                 print('save failed')
-                
+
         else:
             print('file no longer valid')
-            
 
     def push_New_Instrument(self, instr):
         # add new instrument entry to config file
@@ -156,8 +182,8 @@ class Instruments:
 
 
 if __name__ == "__main__":
-    instr = Instruments()
+    roster = Roster()
 
-    print('list:\n', instr.getList(), '\n')
-    print('DataFrame:\n', instr.getDataFrame(), '\n')
-    print('JSON:\n', instr.getJSON(), '\n')
+    print('list:\n', roster.getList(), '\n')
+    print('DataFrame:\n', roster.getDataFrame(), '\n')
+    print('JSON:\n', roster.getJSON(), '\n')

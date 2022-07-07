@@ -1,4 +1,5 @@
 // <!-- requires Tailwind CSS v2.0+ -->
+// <!-- requires @headlessui/react -->
 // https://headlessui.com/react/dialog
 
 import Link from 'next/link'

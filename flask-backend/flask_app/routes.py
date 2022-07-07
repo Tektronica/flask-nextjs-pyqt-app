@@ -1,14 +1,16 @@
 from flask_app import app
-from flask_app.testEngine.instruments import Instruments
-from flask_app.testEngine.dut import DUT
-from flask import render_template, request, make_response
+from flask import render_template, request
+from flask_app.testEngine.composer import Composer
 from subprocess import call
+from datetime import datetime
 
 try:
-  import RPi.GPIO as gpio
-  test_environment = False
+    import RPi.GPIO as gpio
+
+    test_environment = False
 except (ImportError, RuntimeError):
-  test_environment = True
+    test_environment = True
+
 
 # python annotation
 # https://stackoverflow.com/a/15073109
@@ -19,7 +21,7 @@ def index():
     return render_template('index.html', message='Hello World')
 
 
-instr = Instruments()
+composer = Composer()
 
 
 @app.route('/instruments', methods=['GET', 'POST', 'DELETE'])
@@ -36,7 +38,9 @@ def instrument():
             ]
         }
         """
-        return {'data': instr.getList()}
+        roster = composer.roster  # list of dictionaries
+        instruments = roster.getList()
+        return {'data': instruments}
 
     elif request.method == 'POST':
         """
@@ -51,121 +55,96 @@ def instrument():
         if id > -1:
             print('modifying existing instrument at location: ', id)
 
-        return {'data': instr.getList()}
+        roster = composer.roster  # list of dictionaries
+        return {'data': roster}
 
     elif request.method == 'DELETE':
         """
         delete entry in instrument by <id>
         """
-        return {'data': instr.getList()}
+        roster = composer.roster  # list of dictionaries
+        return {'data': roster}
 
     else:
         # POST Error 405 Method Not Allowed
         pass
 
 
-
-
 @app.route('/instruments/add', methods=['POST'])
 def add_instrument():
-    config_row = request.json
-
-    try:
-        instr.appendRow(config_row)
-        return {'data': True}
-    except:
-        return {'data': False}
+    config = request.json
+    isDone = composer.addInstrument(config)  # returns True on success
+    return {'data': isDone}
 
 
 @app.route('/instruments/edit', methods=['POST'])
 def edit_instrument():
-    config_row = request.json
-    try:
-        instr.setRowByName(config_row)
-        return {'data': True}
-    except:
-        return {'data': False}
+    config = request.json
+    isDone = composer.editInstrument(config)  # returns True on success
+    return {'data': isDone}
 
 
 @app.route('/instruments/delete', methods=['POST'])
 def delete_instrument():
-    data = request.json
-    try:
-        instr.deleteRowByName(data['name'])
-        return {'data': True}
-    except:
-        return {'data': False}
+    config = request.json
+    isDone = composer.deleteInstrument(config)  # returns True on success
+    return {'data': isDone}
 
-    
-
-
-global dutObject
 
 @app.route('/connect', methods=['POST'])
 def connect():
-    global dutObject
     if request.method == 'POST':
         data = request.json
         cmd = data['cmd']
         name = data['name']
-
+        isDone = False
         try:
             if cmd == 'connect':
-                print('connecting, ', name)
                 timeout = data['timeout']
-                print(timeout)
+                print('\nconnecting, ', name, 'with a timeout of: ', timeout, '\n')
+                isDone = composer.connectToInstrument(name)
 
-                # https://stackoverflow.com/a/52547870
-                config = instr.getInstrByName(name).to_dict('r')[0]
-                print(config)
-                dutObject = DUT(config)
-                dutObject.connect()
-            elif cmd == 'disconnect' and dutObject:
+            elif cmd == 'disconnect':
                 print('disconnecting, ', name)
-                config = instr.getInstrByName(name)
-                print(config)
-                dutObject.disconnect()
-            return {'data': True}
-        
-        except:
-            print("No instrument found?") 
-            return {'data': False}
+                isDone = composer.disconnectFromInstrument(name)
 
-        
+            return {'data': isDone}
+
+        except Exception:
+            print("No instrument found?")
+            return {'data': False}
 
 
 @app.route('/command', methods=['GET', 'POST'])
 def command():
-    global dutObject
-    if request.method == 'GET':
-        # send a read command to dut
-        print('receieved read from client')
-        print(dutObject.read(), '\n\n')
-        res = {'data': dutObject.read()}
-        return res
-
-    elif request.method == 'POST':
+    if request.method == 'POST':
         # send a write or query command
         data = request.json
+        name = data['name']
         cmd = data['cmd']
         arg = data['arg']
 
         print('requested command to instrument from client')
 
         if cmd == 'write':
-            print('write cmd: ', arg)
-            res = {'data': dutObject.write(arg)}
+            print('write cmd: ', arg, ' to ', name)
+            msg = composer.getSeat(name).write(arg)
+            res = {'data': msg}
+            return res
+
+        elif cmd == 'read':
+            print('read cmd to: ', name)
+            msg = composer.getSeat(name).read()
+            res = {'data': msg}
             return res
 
         elif cmd == 'query':
-            print('query cmd: ', arg)
-            res = {'data': dutObject.query(arg)}
+            print('query cmd: ', arg, ' to ', name)
+            msg = composer.getSeat(name).query(arg)
+            res = {'data': msg}
             return res
 
     # else POST Error 405 Method Not Allowed
-
-
-from datetime import datetime
 
 
 @app.route('/time')
@@ -173,6 +152,7 @@ def get_current_time():
     timestamp = datetime.now().strftime("%H:%M:%S")
 
     return {'time': timestamp}
+
 
 @app.route('/rpi', methods=['POST'])
 def rpi():

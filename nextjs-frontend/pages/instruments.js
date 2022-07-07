@@ -111,10 +111,10 @@ export default function Instruments() {
                                         <tr key={idx} className='bg-white border-b hover:bg-gray-200 dark:bg-gray-800 dark:border-gray-700' >
                                             <td className='px-6 py-4 font-bold text-gray-900 dark:text-white whitespace-nowrap'>
                                                 <button
-                                                type='button'
-                                                id='btn-name'
-                                                onClick={setResourceName.bind(this, item[1].name)}>
-                                                {item[1].name}
+                                                    type='button'
+                                                    id='btn-name'
+                                                    onClick={setResourceName.bind(this, item[1].name)}>
+                                                    {item[1].name}
                                                 </button>
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
@@ -166,6 +166,7 @@ export default function Instruments() {
                                 type="text"
                                 id="resource"
                                 placeholder='<NAME> or <IP ADDRESS>'
+                                onChange={setConnectStatus.bind(this, undefined)}
                                 className="font-mono text-cyan-700 border-2 w-full bg-cyan-50 hover:bg-green-50 focus:bg-green-50"
                             />
                         </div>
@@ -193,8 +194,8 @@ export default function Instruments() {
                             </button>
                             <div id='connectStatus'>
                                 <div className='text-gray-500'>
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
                             </div>
@@ -270,9 +271,7 @@ export default function Instruments() {
                                 </div>
                             </div>
                         </div>
-
                     </div>
-
                 </div>
             </ShadowBox>
 
@@ -303,7 +302,7 @@ async function onModalSubmit(setTableData) {
     getInstrument(setTableData)
 }
 
-async function onClickCreate(setTableData , e) {
+async function onClickCreate(setTableData, e) {
 
     // collect user input
     const name = document.getElementById('name').value
@@ -344,6 +343,37 @@ async function onClickCreate(setTableData , e) {
     }
 }
 
+function setConnectStatus(status) {
+    let statusIcon = ''
+
+    if (status === undefined) {
+        statusIcon = `<div class='text-gray-500'>\
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">\
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />\
+                        </svg>\
+                    </div >\
+                    `
+
+    } else if (status === true) {
+        statusIcon = `<div class='text-green-500'>\
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>\
+                    </div >\
+                    `
+
+    } else if (status === false) {
+        statusIcon = `<div class='text-red-500'>\
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">\
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />\
+                        </svg>\
+                    </div>\
+                    `
+    }
+
+    document.getElementById('connectStatus').innerHTML = statusIcon
+}
+
 async function handleClick(id, e) {
 
     if (id == 'connect') {
@@ -368,26 +398,7 @@ async function handleClick(id, e) {
             let r = await res.json();
             let status = r.data
 
-            let statusIcon = ''
-
-            if (status === true) {
-                statusIcon = `<div class='text-green-500'>\
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>\
-                            </div >\
-                            `
-
-            } else {
-                statusIcon = `<div class='text-red-500'>\
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">\
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />\
-                                </svg>\
-                            </div>\
-                            `
-            }
-
-            document.getElementById('connectStatus').innerHTML = statusIcon
+            setConnectStatus(status)
         }
 
     } else if (id == 'disconnect') {
@@ -408,17 +419,36 @@ async function handleClick(id, e) {
 
         console.log(res)
 
-    } else if (id == 'write') {
-        // send a WRITE
-        console.log('write')
-        const arg = document.getElementById('cmd-select').value
-        const cmd = 'WRITE: '
-        const line = '>>' + cmd + arg + '\n'
+    } else if (['write', 'read', 'query'].includes(id)) {
+
+        const resource = document.getElementById('resource').value;
+        let arg = document.getElementById('cmd-select').value;
+        let line = '\n';
+        let cmd = '';
+
+        if (id == 'write') {
+            // send a WRITE
+            console.log('write')
+            cmd = 'WRITE: '
+            line = '>>' + cmd + arg + '\n'
+        } else if (id == 'read') {
+            // send a READ
+            console.log('read')
+            arg = ''
+            cmd = 'READ: '
+            line = '>>' + cmd + '\n';
+        } else if (id == 'query') {
+            // send a READ + WRITE
+            console.log('query')
+            cmd = 'QUERY: '
+            line = '>>' + cmd + arg + '\n'
+        }
+
+        // print the sent command to textarea
         document.getElementById('response-box').value += line;
 
-
         // build dictionary
-        const instr_cmd = { cmd: id, arg: arg }
+        const instr_cmd = { name: resource, cmd: id, arg: arg }
 
         // POST method
         // https://stackoverflow.com/a/55647945
@@ -434,53 +464,8 @@ async function handleClick(id, e) {
 
         let r = await res.json();
         let newline = r.data + '\n\n';
-        document.getElementById('response-box').value += newline;
 
-    } else if (id == 'read') {
-        // send a READ
-        console.log('read')
-        const cmd = 'READ: '
-        const line = '>>' + cmd + '\n';
-        document.getElementById('response-box').value += line;
-
-        // GET method
-        let url = 'api/command';
-        const res = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        })
-
-        let r = await res.json();
-        let newline = r.data + '\n\n';
-        document.getElementById('response-box').value += newline;
-
-    } else if (id == 'query') {
-        // send a READ + WRITE
-        console.log('query')
-        const arg = document.getElementById('cmd-select').value
-        const cmd = 'QUERY: '
-        const line = '>>' + cmd + arg + '\n'
-        document.getElementById('response-box').value += line;
-
-        // build dictionary
-        const instr_cmd = { cmd: id, arg: arg }
-
-        // POST method
-        // https://stackoverflow.com/a/55647945
-        let url = 'api/command';
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(instr_cmd)
-        })
-
-        let r = await res.json();
-        let newline = r.data + '\n\n';
+        // print the response to textarea
         document.getElementById('response-box').value += newline;
 
     } else if (id == 'clear') {

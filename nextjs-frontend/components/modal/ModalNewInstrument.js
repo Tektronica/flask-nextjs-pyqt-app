@@ -1,4 +1,6 @@
 // <!-- requires Tailwind CSS v2.0+ -->
+// <!-- requires @headlessui/react -->
+
 // dynamic content as state for modal creation
 // https://stackoverflow.com/a/67369453
 
@@ -44,24 +46,24 @@ const ModalNewInstrument = ({ isOpen, setIsOpen, config, onModalClose }) => {
                     </Dialog.Description>
 
                     <form
-                        onSubmit={handleOnSubmit.bind(this, setIsOpen, onModalClose)}
+                        onSubmit={handleOnSubmit.bind(this, config.name, setIsOpen, onModalClose)}
                         className="p-4 w-full max-w-lg"
                     >
                         <div className="flex flex-wrap -mx-3 mb-6">
-                            <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                        <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
                                 <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-zip">
-                                    Name
+                                    Instrument
                                 </label>
                                 <input
-                                    name="itemName"
+                                    name="itemInstr"
                                     className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                                     id="grid-zip"
                                     type="text"
                                     placeholder="<name>"
-                                    defaultValue={config.name}
+                                    defaultValue={config.instr}
                                 />
                             </div>
-                            <div className="w-full md:w-1/4 px-3 mb-6 md:mb-0">
+                            <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
                                 <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-state">
                                     Connection
                                 </label>
@@ -81,19 +83,6 @@ const ModalNewInstrument = ({ isOpen, setIsOpen, config, onModalClose }) => {
                                         <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="w-full md:w-1/4 px-3 mb-6 md:mb-0">
-                                <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-zip">
-                                    Instrument
-                                </label>
-                                <input
-                                    name="itemInstr"
-                                    className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                                    id="grid-zip"
-                                    type="text"
-                                    placeholder="<name>"
-                                    defaultValue={config.instr}
-                                />
                             </div>
                         </div>
 
@@ -164,13 +153,13 @@ const ModalNewInstrument = ({ isOpen, setIsOpen, config, onModalClose }) => {
     )
 }
 
-async function handleOnSubmit(setIsOpen, onModalClose, e) {
+async function handleOnSubmit(name, setIsOpen, onModalClose, e) {
     e.preventDefault()
 
     // https://stackoverflow.com/a/55939750
 
     const config = {
-        name: e.target.itemName.value,
+        name: name,
         instr: e.target.itemInstr.value,
         mode: e.target.itemMode.value,
         address: e.target.itemAddress.value,
