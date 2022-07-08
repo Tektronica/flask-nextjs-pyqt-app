@@ -71,7 +71,7 @@ class Roster:
                 with open(self.filepath, 'w') as fp:
                     pass
 
-            return self._clearConfig()
+            return True
 
         return True
 

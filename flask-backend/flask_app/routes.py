@@ -3,6 +3,7 @@ from flask import render_template, request
 from flask_app.testEngine.composer import Composer
 from subprocess import call
 from datetime import datetime
+from flask_app.pystats import getStats
 
 try:
     import RPi.GPIO as gpio
@@ -23,6 +24,9 @@ def index():
 
 composer = Composer()
 
+@app.route('/stats', methods=['GET'])
+def stats():
+    return getStats()
 
 @app.route('/instruments', methods=['GET', 'POST', 'DELETE'])
 def instrument():
