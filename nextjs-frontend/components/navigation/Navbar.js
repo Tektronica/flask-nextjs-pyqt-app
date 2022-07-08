@@ -1,6 +1,6 @@
 // import { useRouter } from 'next/router'
 import Link from 'next/link'
-import {Heroicons} from '../../assets/heroicons'
+import { Heroicons } from '../../assets/heroicons'
 
 const Navbar = () => {
     // const router = useRouter()
@@ -116,6 +116,17 @@ const Navbar = () => {
                             Tools
                         </a>
                     </Link>
+                    <div className='border-t border-cyan-800 my-2 pl-4'>
+                        <div className="pb-2 text-gray-400 hover:text-white">
+                            ◦ Spec Wizard
+                        </div>
+                        <div className="pb-2 text-gray-400 hover:text-white">
+                            ◦ Thermal Imager
+                        </div>
+                        <div className="pb-2 text-gray-400 hover:text-white">
+                            ◦ Webcam
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

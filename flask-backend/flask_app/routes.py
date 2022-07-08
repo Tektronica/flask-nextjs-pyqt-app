@@ -26,7 +26,8 @@ composer = Composer()
 
 @app.route('/stats', methods=['GET'])
 def stats():
-    return getStats()
+    stats = getStats()
+    return {'data': stats}
 
 @app.route('/instruments', methods=['GET', 'POST', 'DELETE'])
 def instrument():

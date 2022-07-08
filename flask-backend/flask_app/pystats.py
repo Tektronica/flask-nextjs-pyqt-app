@@ -9,14 +9,21 @@ def getStats():
     # Convert Bytes to MB (Bytes -> KB -> MB)
     available = round(memory.available/1024.0/1024.0,1)
     total = round(memory.total/1024.0/1024.0,1)
-    mem_info = str(available) + 'MB free / ' + str(total) + 'MB total ( ' + str(memory.percent) + '% )'
+    mem_percent = str(memory.percent) + '%'
+    mem_info = str(available) + 'MB free / ' + str(total) + 'MB total'
 
     # Calculate disk information
     disk = psutil.disk_usage('/')
     # Convert Bytes to GB (Bytes -> KB -> MB -> GB)
     free = round(disk.free/1024.0/1024.0/1024.0,1)
     total = round(disk.total/1024.0/1024.0/1024.0,1)
-    disk_info = str(free) + 'GB free / ' + str(total) + 'GB total ( ' + str(disk.percent) + '% )'
+    disk_percent = str(disk.percent) + '%'
+    disk_info = str(free) + 'GB free / ' + str(total) + 'GB total'
 
-    return {'cpu': cpu, 'mem': mem_info, 'disk': disk_info}
+    return  [
+            {'name': 'cpu','shortDescription': cpu, 'longDescription': cpu}, 
+            {'name': 'memory','shortDescription': mem_percent, 'longDescription': mem_info}, 
+            {'name': 'disk','shortDescription': disk_percent, 'longDescription': disk_info}, 
+        ]
+
     

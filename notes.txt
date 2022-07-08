@@ -1,0 +1,221 @@
+
+Installing NodeJS on the Raspberry Pi
+======================================================================================================
+https://pimylifeup.com/raspberry-pi-nodejs/
+
+update the packages running on our operating system.
+-----------------------------------------------------------------------------
+sudo apt update
+sudo apt upgrade
+
+
+add the repository for the current LTS release of NodeJS to your Raspberry Pi
+-----------------------------------------------------------------------------
+curl -fsSL https://deb.nodesource.com/setup_17.x | sudo -E bash -
+
+
+Install Package
+-----------------------------------------------------------------------------
+sudo apt install nodejs
+
+
+Check node version
+-----------------------------------------------------------------------------
+node -v
+
+
+Enter the parent directory of the react project and install the dependencies
+-----------------------------------------------------------------------------
+npm i
+
+
+Run flask by first entering the parent directory containing the app.py file
+-----------------------------------------------------------------------------
+venv/bin/flask run --debugger --host=192.168.10.126
+
+
+https://blog.miguelgrinberg.com/post/video-streaming-with-flask
+
+
+pip install psutil
+https://amalgjose.com/2020/04/27/simple-python-program-to-get-the-system-status-of-a-raspberry-pi/
+
+
+
+GIT clone and pull
+======================================================================================================
+https://raspberrypi.stackexchange.com/a/59726
+
+git config --global user.name "John Doe"
+git config --global user.email johndoe@example.com 
+
+git clone URL_of_the_repository
+
+cd ~/home/pi/repository
+git pull 
+
+
+
+Modal onClose execute function in parent
+======================================================================================================
+// <!-- requires Tailwind CSS v2.0+ -->
+// <!-- requires @headlessui/react -->
+
+
+The modal dialog is a component residing in the rendered react component 
+
+	// in pages/parent.js
+	<ModalNewInstrument
+		isOpen={isOpen}
+		setIsOpen={setIsOpen}}
+	/>
+
+
+The component waits for isOpen state change:
+
+	// in component/modal.js
+	const ModalNewInstrument = ({ isOpen, setIsOpen }) => {
+
+		return (
+			<Dialog
+				open={isOpen}
+				onClose={() => setIsOpen(false)}
+				className=''
+			>
+
+				{/* <!-- inner --> */}
+
+			</Dialog>
+		)
+	}
+
+
+parent controls the state, which opens the modal
+
+	// in pages/parent.js
+	let [isOpen, setIsOpen] = useState(false)
+
+
+an onClick event fired from the parent sets state using a button click:
+
+	// in pages/parent.js
+	<button
+		onClick={() => { setIsOpen(true)} }
+		type='button'
+		className=''
+	>
+	
+		{/* <!-- inner --> */}
+		
+	</button>
+
+
+For dynamic modal content generation, additional state must be initialized in the parent
+
+	// in pages/parent.js
+    const [contentModal, setContentModal] = useState("");
+	
+
+setContentModal will update the modal component 'content' argument residing in the parent:
+
+	// in pages/parent.js
+	<ModalNewInstrument
+		isOpen={isOpen}
+		setIsOpen={setIsOpen}
+		content={contentModal} }
+	/>
+
+
+Now, in addition to the component waiting for isOpen state change, the component expects content
+	
+	// in component/modal.js
+	const ModalNewInstrument = ({ isOpen, setIsOpen, content }) => {
+
+		return (
+			<Dialog
+				open={isOpen}
+				onClose={() => setIsOpen(false)}
+				className=''
+			>
+			
+				<div>
+					{content.attribute}
+				</div>
+
+				{/* <!-- inner --> */}
+
+			</Dialog>
+		)
+	}
+
+
+This is handled by the same button click in the parent, but now executing an additional process
+
+	// in pages/parent.js
+	<button
+		onClick={() => { setIsOpen(true); setContentModal(getRow(idx)) }}
+		className=''
+	>
+	
+		{/* <!-- inner --> */}
+		
+	</button>
+
+
+The default behavior for closing the modal is simply hiding the overlay over the parent.
+However, when submitting a modal form, a callback will also need to refresh a table in the parent.
+From the parent, this is simple. Pass the additional argument, onModalSubmit, to the modal component. 
+The passed parameters to onModalSubmit are bound to the method on initialization without firing.
+This means our setTableData state for refreshing a table in the parent doesn't fire early.
+
+https://stackoverflow.com/a/52469404
+
+	// in pages/parent.js
+	<ModalNewInstrument
+		isOpen={isOpen}
+		setIsOpen={setIsOpen}
+		config={contentModal}
+		onModalSubmit={onModalSubmit.bind(this, setTableData)}
+	/>
+
+
+From the perspective of the modal child component, the handleOnSubmit function is bound and awaits onSubmit.
+The onSubmit is fired on form button click.
+Instead of immediately closing the modal, the child async function handleOnSubmit processes the form.
+
+	// in component/modal.js
+	<form
+		onSubmit={handleOnSubmit.bind(this, config.name, setIsOpen, onModalSubmit)}
+		className=''
+	>
+	
+		{/* <!-- form content --> */}
+		
+		<button
+			type="submit"
+			className=''
+		>
+			Save
+		</button>
+		
+	</form>
+	
+	
+On completion of the form processing
+	>> the modal closes
+	>> calls onModalSubmit, which is a reference to the onModalSubmit function passed by the parent
+	
+	// in component/modal.js
+	async function handleOnSubmit(name, setIsOpen, onModalSubmit, e) {
+		e.preventDefault()
+
+		{/* <!-- fetch POST method --> */}
+
+		// close modal on success
+		if (isDone === true) {
+			setIsOpen(false)
+			onModalSubmit()
+		}
+
+	}
+

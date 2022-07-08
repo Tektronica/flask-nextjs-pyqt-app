@@ -132,7 +132,7 @@ export default function Instruments() {
                                             <td className='px-6 py-4 text-gray-500'>
                                                 {item[1].gpib}
                                             </td>
-                                            <td className='px-6 py-3'>
+                                            <td className='pr-2 py-3'>
                                                 <button
                                                     onClick={() => { setIsOpen(true); setContentModal(getRow(idx)) }}
                                                     className='bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white  px-2 border border-cyan-500 hover:border-transparent rounded uppercase'
