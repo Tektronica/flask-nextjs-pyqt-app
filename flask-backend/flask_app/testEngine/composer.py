@@ -39,12 +39,30 @@ class Composer:
     def getStatus(self):
         # composer checks the state of each instrument (AND operation)
         active = False  # holds the status for whether an instrument is playing
-        for seat in self.orchestra:
+        for seat in self.orchestra.values():
             if seat.active:
                 active = True
                 break
 
         return active
+    
+    def getActive(self):
+        # returns a list of dictionaries of each active instrument
+        activeInstruments = []
+        for seat in self.orchestra.values():
+            if seat.active:
+                activeInstruments.append(seat.config)
+                
+        return activeInstruments
+    
+    def getInactive(self):
+        # returns a list of dictionaries of each active instrument
+        inactiveInstruments = []
+        for seat in self.orchestra.values():
+            if not seat.active:
+                inactiveInstruments.append(seat.config)
+
+        return inactiveInstruments
 
     def getSeat(self, name):
         try:
@@ -110,8 +128,8 @@ class Composer:
     def disconnectFromInstrument(self, name):
         try:
             seat = self.orchestra[name]
-            seat.disconnect()
-            return True
+            isDone = seat.disconnect()
+            return isDone
         except Exception:
             return False
 
@@ -148,20 +166,20 @@ class Instrument:
 
     def connect(self):
         if not self.active:
-            print('connected')
+            print(f"{self.config['name']} has connected")
             self.active = True
             return True
         else:
-            print('already connected')
+            print(f"{self.config['name']} has already connected")
             return True
 
-    def disconnected(self):
+    def disconnect(self):
         if self.active:
-            print('disconnected')
+            print(f"{self.config['name']} has disconnected")
             self.active = False
             return True
         else:
-            print('already disconnected')
+            print(f"{self.config['name']} was not connected")
             return False
 
 

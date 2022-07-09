@@ -1,15 +1,17 @@
 import Layout from '../components/layout'
 import ShadowBox from '../components/containers/ShadowBox';
 import React, { useState, useEffect } from 'react';
-import DashBox from '../components/containers/dashbox';
+import StatBox from '../components/containers/StatBox';
 
 export default function Status() {
     const [dashboard, setDashboard] = useState(0);
+    const [tableData, setTableData] = useState([]);
 
 
     // return information from instrument config
     useEffect(() => {
         getStats(setDashboard);
+        getActiveInstruments(setTableData);
     }, []);
 
     return (
@@ -22,31 +24,71 @@ export default function Status() {
                     {
                         Object.entries(dashboard).map(function (stat, idx) {
                             return (
-                                <DashBox stat={stat[1]} key={idx} />
+                                <StatBox stat={stat[1]} key={idx} />
                             )
                         })
                     }
                 </div>
+            </ShadowBox>
+            <ShadowBox>
+                <h1 className="text-xl font-bold pb-4">
+                    Active Instruments
+                </h1>
+                <div className="">
+                    <table
+                        id='instrument-active-table'
+                        className="w-full text-sm text-left text-gray-800 "
+                    >
+                        <thead>
+                            <tr>
+                                <th className='px-6 py-3'>Name</th>
+                                <th className='px-6 py-3'>ID</th>
+                                <th className='px-6 py-3'>Mode</th>
+                                <th className='px-6 py-3'>Address</th>
+                                <th className='px-6 py-3'>Port</th>
+                                <th className='px-6 py-3'>GPIB</th>
+                                <th className='px-6 py-3'></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                Object.entries(tableData).map(function (item, idx) {
+                                    return (
+                                        <tr key={idx} className='bg-white border-b hover:bg-gray-200 ' >
+                                            <td className='px-6 py-4 font-bold text-gray-900 whitespace-nowrap'>
+                                                {item[1].name}
+                                            </td>
+                                            <td className='px-6 py-4 text-gray-500'>
+                                                {item[1].instr}
+                                            </td>
+                                            <td className='px-6 py-4 text-gray-500'>
+                                                {item[1].mode}
+                                            </td>
+                                            <td className='px-6 py-4 text-gray-500'>
+                                                {item[1].address}
+                                            </td>
+                                            <td className='px-6 py-4 text-gray-500'>
+                                                {item[1].port}
+                                            </td>
+                                            <td className='px-6 py-4 text-gray-500'>
+                                                {item[1].gpib}
+                                            </td>
+                                            <td className='pr-2 py-3'>
+                                                <button
+                                                    onClick={disconnectInstrument.bind(this, item[1].name, setTableData)}
+                                                    className='px-1 text-xs bg-transparent hover:bg-red-500 text-red-700 font-bold hover:text-white border-2 border-red-500 hover:border-transparent rounded uppercase'
 
-                <p>
-                    Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed
-                    code for the video you want to add. You can also type a keyword to search online for the video that best fits your
-                    document.
-                    <br /><br />
-                    To make your document look professionally produced, Word provides header, footer, cover page, and text box designs
-                    that complement each other. For example, you can add a matching cover page, header, and sidebar. Click Insert and
-                    then choose the elements you want from the different galleries.
-                    Themes and styles also help keep your document coordinated. When you click Design and choose a new Theme, the
-                    pictures, charts, and SmartArt graphics change to match your new theme. When you apply styles, your headings change
-                    to match the new theme.
-                    <br /><br />
-                    Save time in Word with new buttons that show up where you need them. To change the way a picture fits in your
-                    document, click it and a button for layout options appears next to it. When you work on a table, click where you
-                    want to add a row or a column, and then click the plus sign.
-                    Reading is easier, too, in the new Reading view. You can collapse parts of the document and focus on the text you
-                    want. If you need to stop reading before you reach the end, Word remembers where you left off - even on another
-                    device.
-                </p>
+                                                >
+                                                    ✕
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    )
+                                })
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </ShadowBox>
         </>
     )
@@ -65,6 +107,45 @@ async function getStats(setDashboard) {
     const res = await resJSON.json();
     console.log(res, res.data)
     setDashboard(res.data);
+}
+
+async function getActiveInstruments(setTableData) {
+    let url = 'api/instruments';
+    const req = { data: 'active' }
+
+    const resJSON = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(req)
+    })
+
+    const res = await resJSON.json();
+    setTableData(res.data);
+}
+
+async function disconnectInstrument(name, setTableData) {
+    console.log('client: disconnecting, ', name)
+
+    const disconnect_instr = { cmd: 'disconnect', name: name }
+    let url = 'api/connect';
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(disconnect_instr)
+    })
+
+    // get connection status
+    let r = await res.json();
+    let status = r.data
+    console.log('server: ', status)
+
+    // refresh the data table
+    getActiveInstruments(setTableData)
 }
 
 

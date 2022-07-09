@@ -48,31 +48,16 @@ def instrument():
         return {'data': instruments}
 
     elif request.method == 'POST':
-        """
-        modify/update the information for instrument config by <id>
-        """
+        # get only active instruments
         data = request.json
-        id = data['id']
-        print(data)
-        print(data['id'])
-        if id == -1:
-            print('adding new instrument')
-        if id > -1:
-            print('modifying existing instrument at location: ', id)
+        req = data['data']
 
-        roster = composer.roster  # list of dictionaries
-        return {'data': roster}
-
-    elif request.method == 'DELETE':
-        """
-        delete entry in instrument by <id>
-        """
-        roster = composer.roster  # list of dictionaries
-        return {'data': roster}
-
-    else:
-        # POST Error 405 Method Not Allowed
-        pass
+        if req == 'active':
+            instruments = composer.getActive()  # list of dictionaries
+        elif req == 'inactive':
+            instruments = composer.getInactive()  # list of dictionaries
+        
+        return {'data': instruments}
 
 
 @app.route('/instruments/add', methods=['POST'])

@@ -167,6 +167,8 @@ async function handleOnSubmit(name, setIsOpen, onModalClose, e) {
         gpib: e.target.itemGPIB.value,
     }
 
+    console.log('client: editing, ', name)
+
     // POST method
     // https://stackoverflow.com/a/55647945
     let url = 'api/instruments/edit';
@@ -179,10 +181,12 @@ async function handleOnSubmit(name, setIsOpen, onModalClose, e) {
         body: JSON.stringify(config)
     })
 
-    const status = await res.json()
+    const body = await res.json()
+    const status = body.data
+    console.log('server: ', status)
 
     // close modal on success
-    if (status.data === true) {
+    if (status === true) {
         setIsOpen(false)
         onModalClose()
     }
@@ -198,6 +202,8 @@ async function handleDelete(name, setIsOpen, onModalClose, e) {
         name: name
     }
 
+    console.log('client: deleting', name, 'from instrument roster')
+    
     // POST method
     // https://stackoverflow.com/a/55647945
     let url = 'api/instruments/delete';
@@ -210,10 +216,12 @@ async function handleDelete(name, setIsOpen, onModalClose, e) {
         body: JSON.stringify(config)
     })
 
-    const status = await res.json()
+    const body = await res.json()
+    const status = body.data
+    console.log('server: ', status)
 
     // close modal on success
-    if (status.data === true) {
+    if (status === true) {
         setIsOpen(false)
         onModalClose()
     }

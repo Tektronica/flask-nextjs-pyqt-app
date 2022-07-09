@@ -91,7 +91,7 @@ export default function Instruments() {
                 <div className="">
                     <table
                         id='instrument-config-table'
-                        className="w-full text-sm text-left text-gray-800 dark:text-gray-400"
+                        className="w-full text-sm text-left text-gray-800"
                     >
                         <thead>
                             <tr>
@@ -108,8 +108,8 @@ export default function Instruments() {
                             {
                                 Object.entries(tableData).map(function (item, idx) {
                                     return (
-                                        <tr key={idx} className='bg-white border-b hover:bg-gray-200 dark:bg-gray-800 dark:border-gray-700' >
-                                            <td className='px-6 py-4 font-bold text-gray-900 dark:text-white whitespace-nowrap'>
+                                        <tr key={idx} className='bg-white border-b hover:bg-gray-200' >
+                                            <td className='px-6 py-4 font-bold text-gray-900 whitespace-nowrap'>
                                                 <button
                                                     type='button'
                                                     id='btn-name'
@@ -135,7 +135,7 @@ export default function Instruments() {
                                             <td className='pr-2 py-3'>
                                                 <button
                                                     onClick={() => { setIsOpen(true); setContentModal(getRow(idx)) }}
-                                                    className='bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white  px-2 border border-cyan-500 hover:border-transparent rounded uppercase'
+                                                    className='bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white px-2 border border-cyan-500 hover:border-transparent rounded uppercase'
                                                 >
                                                     Edit
                                                 </button>
@@ -312,6 +312,8 @@ async function onClickCreate(setTableData, e) {
     const port = document.getElementById('port').value
     const gpib = document.getElementById('gpib').value
 
+    console.log('client: creating, ', name);
+
     // build dictionary
     const new_instr = { name: name, instr: instr, mode: mode, address: address, port: port, gpib: gpib }
 
@@ -327,10 +329,12 @@ async function onClickCreate(setTableData, e) {
         body: JSON.stringify(new_instr)
     })
 
-    const status = await res.json()
+    const body = await res.json();
+    const status = await body.data
+    console.log('server: ', status);
 
     // close modal on success
-    if (status.data === true) {
+    if (status === true) {
         document.getElementById('name').value = ''
         document.getElementById('instr').value = ''
         document.getElementById('mode').value = ''
@@ -377,12 +381,13 @@ function setConnectStatus(status) {
 async function handleClick(id, e) {
 
     if (id == 'connect') {
-        console.log('connect')
+        
         const resource = document.getElementById('resource').value
         const timeout = document.getElementById('timeout').value
 
-        // fetch if resource value is not null
-        if (resource) {
+        // fetch if resource value is not null or empty string
+        if (resource != '') {
+            console.log('client: connecting, ', resource)
             const connect_instr = { cmd: 'connect', name: resource, timeout: timeout }
             let url = 'api/connect';
             const res = await fetch(url, {
@@ -395,10 +400,13 @@ async function handleClick(id, e) {
             })
 
             // get connection status
-            let r = await res.json();
-            let status = r.data
+            let body = await res.json();
+            let status = body.data
 
+            console.log('server: ', status);
             setConnectStatus(status)
+        } else {
+            console.log('resource is empty')
         }
 
     } else if (id == 'disconnect') {
@@ -407,6 +415,7 @@ async function handleClick(id, e) {
 
         // fetch
         const connect_instr = { cmd: 'disconnect', name: resource }
+
         let url = 'api/connect';
         const res = await fetch(url, {
             method: 'POST',
@@ -416,8 +425,10 @@ async function handleClick(id, e) {
             },
             body: JSON.stringify(connect_instr)
         })
-
-        console.log(res)
+        
+        const body = await res.json();
+        const status = await body.data;
+        console.log('server: ', status);
 
     } else if (['write', 'read', 'query'].includes(id)) {
 
@@ -462,8 +473,11 @@ async function handleClick(id, e) {
             body: JSON.stringify(instr_cmd)
         })
 
-        let r = await res.json();
-        let newline = r.data + '\n\n';
+        let body = await res.json();
+        const status = body.data
+        let newline = status + '\n\n';
+
+        console.log('server: ', status)
 
         // print the response to textarea
         document.getElementById('response-box').value += newline;
