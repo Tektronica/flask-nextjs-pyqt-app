@@ -33,6 +33,7 @@ Run flask by first entering the parent directory containing the app.py file
 -----------------------------------------------------------------------------
 venv/bin/flask run --debugger --host=192.168.10.126
 
+"proxy": "http://192.168.10.126:5000"
 
 https://blog.miguelgrinberg.com/post/video-streaming-with-flask
 
@@ -219,3 +220,32 @@ On completion of the form processing
 
 	}
 
+
+
+PyVISA
+====================================================================
+https://pyvisa.readthedocs.io/en/latest/
+https://pyvisa.readthedocs.io/projects/pyvisa-py/en/latest/index.html#
+
+If you do not install any extra library pyvisa-py will only be able to access tcpip resources.
+
+GPIB resources requires to install a gpib driver.
+
+https://linux-gpib.sourceforge.io/
+https://www.cl.cam.ac.uk/~osc22/tutorials/gpib_usb_linux.html
+
+https://www.ni.com/en-us/support/downloads/drivers/download.ni-visa.html#442675
+Supported OS:
+	CentOS		<< RedHat << Fedora
+	RedHat		<< Fedora
+	SUSE		<< RedHat << Fedora
+	Ubuntu		<< Debian
+
+Raspbian OS		<< Debian
+
+https://www.linkedin.com/pulse/revisiting-keithleys-app-note-featuring-raspberry-pi-its-joshua-brown/
+
+https://xdevs.com/guide/ni_gpib_rpi/
+https://forums.raspberrypi.com/viewtopic.php?f=44&t=137781&p=918312#p918312
+
+https://github.com/tin-/teckit

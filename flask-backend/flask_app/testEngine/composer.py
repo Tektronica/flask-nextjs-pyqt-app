@@ -1,5 +1,6 @@
 import pathlib
 from flask_app.testEngine.instruments import Roster
+from flask_app.testEngine.instruments.f5730A import f5730A
 
 ########################################################################################################################
 FILE = 'config\\instrument_config.yaml'
