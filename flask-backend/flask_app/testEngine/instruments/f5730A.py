@@ -9,18 +9,29 @@ class f5730A:
         self.active = False  # each instrument knows its own state
         self.VISA = None
 
-    def connect(self):
+    def connect(self, timeout=2000):
         if not self.active:
-            self.VISA = VisaClient.VisaClient(self.config)  # Fluke 5730A
-            print(f"{self.config['name']} has connected")
-            self.active = True
-            return True
+            self.VISA = VisaClient.VisaClient(self.config)  # Instantiate VISA object class
+            isDone = self.VISA.connect(timeout) # attempt connection to the instrument
+            
+            if isDone:
+                # connection is good
+                self.active = True
+                msg = f"{self.config['name']} has connected"
+                print(msg)
+                return {'status': True, 'data': msg}
+            else:
+                # something went wrong
+                msg = '<SOMETHING WENT WRONG>'
+                return {'status': False, 'data': msg}
         else:
-            print(f"{self.config['name']} has already connected")
-            return True
+            # already connected
+            msg = f"{self.config['name']} has already connected"
+            print(msg)
+            return {'status': True, 'data': msg}
 
     def _testConnection(self):
-        if self.f5730A.healthy:
+        if self.VISA.healthy:
             self.f5730A_IDN = self.query('*IDN?')
             return True
         else:
@@ -32,11 +43,13 @@ class f5730A:
     def disconnect(self):
         if self.active:
             time.sleep(1)
-            self.f5730A.write('LOCal')
-            self.f5730A.close()
-            print(f"{self.config['name']} has disconnected")
+            self.write('LOCal')
+
+            self.VISA.close()
             self.VISA = None
             self.active = False
+
+            print(f"{self.config['name']} has disconnected")
             return True
         else:
             print(f"{self.config['name']} was not connected")

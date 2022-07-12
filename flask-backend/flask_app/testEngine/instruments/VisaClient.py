@@ -1,17 +1,18 @@
-import pyvisa as visa
+import pyvisa
 import re
 import time
 
 
 class VisaClient:
     def __init__(self, config):
-        self.healthy = True
+        self.healthy = False
+        self.session = None
+        self.timeout = 2000
 
         try:
-            self.rm = visa.ResourceManager()
+            self.rm = pyvisa.ResourceManager('@py')
             self.config = config
             self.mode = config['mode']
-            self.timeout = 60000  # 1 (60e3) minute timeout
         except ValueError:
             from textwrap import dedent
             msg = ("\n[ValueError] - Could not locate a VISA implementation. Install either the NI binary or pyvisa-py."
@@ -22,52 +23,37 @@ class VisaClient:
             print(msg)
             self.healthy = False
 
-        if self.healthy:
-            self.connect()
 
-    def connect(self):
+    def connect(self, timeout=2000):
+        """
+        attempts to connect to remote instrument over the selected mode
+        returns True if the connection is validated. Otherwise false.
+        """
+        self.timeout = timeout
+
         for attempt in range(5):
             self.healthy = True
             try:
-                # TODO - verify this works as intended... Otherwise leave INSTR lines commented
-                # if mode is SOCKET:
+                # if mode is LAN:
                 if self.mode == 'LAN':
-                    # LAN is a non-protocol raw TCP connection
+                    # SOCKET is a non-protocol raw TCP connection
                     address = self.config['address']
                     port = self.config['port']
-                    self.INSTR = self.rm.open_resource(f'TCPIP0::{address}::{port}::SOCKET', read_termination='\n')
+                    self.session = self.rm.open_resource(f'TCPIP0::{address}::{port}::SOCKET', read_termination='\n')
+                    self.session.read_termination = '\n'
+                    self.session.write_termination = '\n'
+                    self.session.timeout = self.timeout
 
                 # if mode is GPIB:
                 elif self.mode == 'GPIB':
                     address = self.config['gpib']
-                    self.INSTR = self.rm.open_resource(f'GPIB0::{address}::0::INSTR')
-
-                # if mode is INSTR:
-                elif self.mode == 'INSTR':
-                    # INSTR is a VXI-11 protocol
-                    address = self.config['address']
-                    self.INSTR = self.rm.open_resource(f'TCPIP0::{address}::inst0::INSTR', read_termination='\n')
-
-                # if mode is SERIAL:
-                elif self.mode == 'SERIAL':
-                    address = self.config['address']
-                    self.INSTR = self.rm.open_resource(f'{address}')
-                    self.INSTR.read_termination = '\n'
-
-                # TODO - http://lampx.tugraz.at/~hadley/num/ch9/python/9.2.php
-                # if mode is SERIAL:
-                elif self.mode == 'USB':
-                    address = self.config['address']
-                    self.INSTR = self.rm.open_resource(f'{address}', read_termination='\n')
+                    self.session = self.rm.open_resource(f'GPIB0::{address}::0::INSTR')
 
                 else:
                     print('No such mode.')
 
-                # test communication to instrument by identifying instrument
-                idn = re.sub(r'[\r\n|\r\n|\n]+', '', self.INSTR.query('*IDN?').lstrip(' '))
-                print(f"[FOUND] {idn}")
-
-            except visa.VisaIOError:
+            except pyvisa.VisaIOError as e:
+                print(e)
                 # https://github.com/pyvisa/pyvisa-py/issues/146#issuecomment-453695057
                 if self.mode == 'GPIB':
                     print(f"[attempt {attempt + 1}/5] - retrying connection to {self.config['gpib']}")
@@ -76,15 +62,48 @@ class VisaClient:
 
                 self.healthy = False
 
-            except Exception:
-                raise ValueError('Could not connect. Session timed out.')
+            except Exception as e:
+                print(e)
+                print(f"Could not connect to {self.config['name']} for reasons unknown.")
+                return False
             else:
                 break
 
-        if not self.healthy:
-            self.InstrumentConnectionFailed(self.config)
+        # test the open connection
+        self._testConnection()
+
+        if self.healthy:
+            print('\n\ntimeout: ', self.timeout)
+            self.session.timeout = self.timeout
         else:
-            self.INSTR.timeout = self.timeout
+            self.InstrumentConnectionFailed(self.config)
+            
+            
+    def _testConnection(self):
+        print('\n\ntesting connection:')
+        try:
+            # test communication to instrument by identifying instrument
+            body = self.query('*IDN?')
+
+            if body['status']:
+                print(f"[FOUND] {body}")
+                self.healthy = True
+                return True
+            else:
+                print(f"Failed to query!")
+                self.healthy = False
+                return False
+
+        except pyvisa.VisaIOError as e:
+            print(e)
+            print('passed opening connection, but failed *idn?\n')
+            self.healthy = False
+                
+        except Exception as e:
+            print(e)
+            print(f"Could not connect to {self.config['name']} for reasons unknown.")
+            return False
+
 
     def InstrumentConnectionFailed(self, info):
         """Raised when attempted connection to instrument has timedout or is unreachable"""
@@ -96,47 +115,37 @@ class VisaClient:
     def info(self):
         return self.config
 
-    def IDN(self):
-        try:
-            if self.mode == 'NIGHTHAWK':
-                response = re.sub(r'[\r\n|\r\n|\n]+', '', self.INSTR.query('*IDN?').split("\r")[0].lstrip(' '))
-            else:
-                response = re.sub(r'[\r\n|\r\n|\n]+', '', self.INSTR.query('*IDN?').lstrip(' '))
-                return response
-        except visa.VisaIOError:
-            self.healthy = False
-            print('*IDN? was not returned. Failed to connect to address.')
-            raise
-
     def write(self, cmd):
         try:
-            self.INSTR.write(f'{cmd}')
-            self.IDN()
-        except visa.VisaIOError as e:
+            self.session.write(f'{cmd}')
+        except pyvisa.VisaIOError as e:
             print('Could not write to device.')
             raise ValueError(e)
 
     def read(self):
         response = None
         if self.mode == 'NIGHTHAWK':
-            response = re.sub(r'[\r\n|\r\n|\n]+', '', self.INSTR.read().split("\n")[0].lstrip())
+            response = re.sub(r'[\r\n|\r\n|\n]+', '', self.session.read().split("\n")[0].lstrip())
         else:
-            response = re.sub(r'[\r\n|\r\n|\n]+', '', self.INSTR.read())
+            response = re.sub(r'[\r\n|\r\n|\n]+', '', self.session.read())
         return response
 
     def query(self, cmd):
         try:
             if self.mode == 'NIGHTHAWK':
-                response = re.sub(r'[\r\n|\r\n|\n]+', '', self.INSTR.query(f'{cmd}').split("\n")[0].lstrip(' '))
+                response = re.sub(r'[\r\n|\r\n|\n]+', '', self.session.query(f'{cmd}').split("\n")[0].lstrip(' '))
             else:
-                response = re.sub(r'[\r\n|\r\n|\n]+', '', self.INSTR.query(f'{cmd}').lstrip(' '))
-            return response
-        except visa.VisaIOError as e:
-            raise ValueError(e)
+                response = re.sub(r'[\r\n|\r\n|\n]+', '', self.session.query(f'{cmd}').lstrip(' '))
+        
+            return {'status': True, 'response': response}
+
+        except pyvisa.VisaIOError as e:
+            print(e)
+            return {'status': False, 'response': ''}
 
     def close(self):
         try:
-            self.INSTR.close()
+            self.session.close()
         except AttributeError:
             # If caught, 'VisaClient' object will have no attribute 'INSTR'. Occurs when instrument not initialized.
             if self.config['mode'] in ('LAN', 'SERIAL'):

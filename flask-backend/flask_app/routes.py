@@ -92,17 +92,16 @@ def connect():
             if cmd == 'connect':
                 timeout = data['timeout']
                 print('\nconnecting, ', name, 'with a timeout of: ', timeout, '\n')
-                isDone = composer.connectToInstrument(name)
+                return composer.connectToInstrument(name, timeout)
 
             elif cmd == 'disconnect':
                 print('disconnecting, ', name)
-                isDone = composer.disconnectFromInstrument(name)
-
-            return {'data': isDone}
+                return composer.disconnectFromInstrument(name)
 
         except Exception:
-            print("No instrument found?")
-            return {'data': False}
+            msg = "No instrument found?"
+            print(msg)
+            return {'status': False, 'response': msg}
 
 
 @app.route('/command', methods=['GET', 'POST'])

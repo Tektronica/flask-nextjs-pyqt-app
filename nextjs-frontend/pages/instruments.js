@@ -401,10 +401,14 @@ async function handleClick(id, e) {
 
             // get connection status
             let body = await res.json();
-            let status = body.data
-
-            console.log('server: ', status);
+            let status = body.status
+            let msg = body.response
+            let newline = 'connection: ' + status + ', ' + msg + '\n'
+            console.log('server: ', newline);
             setConnectStatus(status)
+            document.getElementById('response-box').value += newline;
+
+
         } else {
             console.log('resource is empty')
         }
@@ -427,8 +431,7 @@ async function handleClick(id, e) {
         })
         
         const body = await res.json();
-        const status = await body.data;
-        console.log('server: ', status);
+        console.log('server: ', body);
 
     } else if (['write', 'read', 'query'].includes(id)) {
 
