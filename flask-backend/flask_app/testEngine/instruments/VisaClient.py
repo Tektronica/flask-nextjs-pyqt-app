@@ -9,8 +9,8 @@ class VisaClient:
 
         try:
             self.rm = visa.ResourceManager()
-            self.config = id
-            self.mode = self.config['mode']
+            self.config = config
+            self.mode = config['mode']
             self.timeout = 60000  # 1 (60e3) minute timeout
         except ValueError:
             from textwrap import dedent
