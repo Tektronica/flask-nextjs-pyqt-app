@@ -40,8 +40,6 @@ class VisaClient:
                     address = self.config['address']
                     port = self.config['port']
                     self.session = self.rm.open_resource(f'TCPIP0::{address}::{port}::SOCKET', read_termination='\n')
-                    self.session.read_termination = '\n'
-                    self.session.write_termination = '\n'
                     self.session.timeout = self.timeout
 
                 # if mode is GPIB:
@@ -69,41 +67,23 @@ class VisaClient:
             else:
                 break
 
+        time.sleep(1)
         # test the open connection
-        self._testConnection()
+        return self.query('*IDN?')  # {'status': self.healthy, 'data': msg}
 
-        if self.healthy:
-            print('\n\ntimeout: ', self.timeout)
-            self.session.timeout = self.timeout
-        else:
-            self.InstrumentConnectionFailed(self.config)
-            
-            
-    def _testConnection(self):
-        print('\n\ntesting connection:')
-        try:
-            # test communication to instrument by identifying instrument
-            body = self.query('*IDN?')
+    def _byteTest(self):
+        # If read_bytes() times out on the first read, it actually means that the instrument did not answer.
+        self.session.write('*IDN?')
+        time.sleep(1)
+        while True:
+            try:
+                print(self.session.read_bytes(1))
+            except pyvisa.VisaIOError as e:
+                print(e)
+                print('completed first test with failures\n')
+                break
 
-            if body['status']:
-                print(f"[FOUND] {body}")
-                self.healthy = True
-                return True
-            else:
-                print(f"Failed to query!")
-                self.healthy = False
-                return False
-
-        except pyvisa.VisaIOError as e:
-            print(e)
-            print('passed opening connection, but failed *idn?\n')
-            self.healthy = False
-                
-        except Exception as e:
-            print(e)
-            print(f"Could not connect to {self.config['name']} for reasons unknown.")
-            return False
-
+            print('completed first test passing\n')
 
     def InstrumentConnectionFailed(self, info):
         """Raised when attempted connection to instrument has timedout or is unreachable"""
@@ -118,17 +98,32 @@ class VisaClient:
     def write(self, cmd):
         try:
             self.session.write(f'{cmd}')
+            response = f'{cmd} was written.'
+            print(response)
+            self.healthy = True
+            
         except pyvisa.VisaIOError as e:
             print('Could not write to device.')
-            raise ValueError(e)
+            response = str(e)
+            self.healthy = False
+            
+        return {'status': self.healthy, 'data': response}
 
     def read(self):
-        response = None
-        if self.mode == 'NIGHTHAWK':
-            response = re.sub(r'[\r\n|\r\n|\n]+', '', self.session.read().split("\n")[0].lstrip())
-        else:
-            response = re.sub(r'[\r\n|\r\n|\n]+', '', self.session.read())
-        return response
+        try:
+            response = None
+            if self.mode == 'NIGHTHAWK':
+                response = re.sub(r'[\r\n|\r\n|\n]+', '', self.session.read().split("\n")[0].lstrip())
+            else:
+                response = re.sub(r'[\r\n|\r\n|\n]+', '', self.session.read())
+            print(response)
+            self.healthy = True
+
+        except pyvisa.VisaIOError as e:
+            response = str(e)
+            self.healthy = False
+        
+        return {'status': self.healthy, 'data': response}
 
     def query(self, cmd):
         try:
@@ -136,12 +131,14 @@ class VisaClient:
                 response = re.sub(r'[\r\n|\r\n|\n]+', '', self.session.query(f'{cmd}').split("\n")[0].lstrip(' '))
             else:
                 response = re.sub(r'[\r\n|\r\n|\n]+', '', self.session.query(f'{cmd}').lstrip(' '))
-        
-            return {'status': True, 'response': response}
-
+            print(response)
+            self.healthy = True
+            
         except pyvisa.VisaIOError as e:
-            print(e)
-            return {'status': False, 'response': ''}
+            response = str(e)
+            self.healthy = False
+        
+        return {'status': self.healthy, 'data': response}
 
     def close(self):
         try:

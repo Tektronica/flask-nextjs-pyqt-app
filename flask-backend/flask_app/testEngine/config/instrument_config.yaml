@@ -37,6 +37,6 @@
 - name: Dmitri
   instr: f5730A
   mode: LAN
-  address: 10.205.92.248
+  address: 10.205.93.101
   port: '3490'
   gpib: '3'

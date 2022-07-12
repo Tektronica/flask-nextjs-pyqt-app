@@ -402,7 +402,7 @@ async function handleClick(id, e) {
             // get connection status
             let body = await res.json();
             let status = body.status
-            let msg = body.response
+            let msg = body.data
             let newline = 'connection: ' + status + ', ' + msg + '\n'
             console.log('server: ', newline);
             setConnectStatus(status)
@@ -477,10 +477,11 @@ async function handleClick(id, e) {
         })
 
         let body = await res.json();
-        const status = body.data
-        let newline = status + '\n\n';
+        const status = body.status
+        const data = body.data
+        let newline = data + '\n\n';
 
-        console.log('server: ', status)
+        console.log('server: ', body)
 
         // print the response to textarea
         document.getElementById('response-box').value += newline;

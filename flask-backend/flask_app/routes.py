@@ -90,7 +90,7 @@ def connect():
         isDone = False
         try:
             if cmd == 'connect':
-                timeout = data['timeout']
+                timeout = int(data['timeout'])
                 print('\nconnecting, ', name, 'with a timeout of: ', timeout, '\n')
                 return composer.connectToInstrument(name, timeout)
 
@@ -117,21 +117,15 @@ def command():
 
         if cmd == 'write':
             print('write cmd: ', arg, ' to ', name)
-            msg = composer.getSeat(name).write(arg)
-            res = {'data': msg}
-            return res
+            return composer.getSeat(name).write(arg)
 
         elif cmd == 'read':
             print('read cmd to: ', name)
-            msg = composer.getSeat(name).read()
-            res = {'data': msg}
-            return res
+            return composer.getSeat(name).read()
 
         elif cmd == 'query':
             print('query cmd: ', arg, ' to ', name)
-            msg = composer.getSeat(name).query(arg)
-            res = {'data': msg}
-            return res
+            return composer.getSeat(name).query(arg)
 
     # else POST Error 405 Method Not Allowed
 

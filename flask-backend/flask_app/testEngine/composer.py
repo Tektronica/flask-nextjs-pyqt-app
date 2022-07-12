@@ -123,17 +123,15 @@ class Composer:
     def connectToInstrument(self, name, timeout=2000):
         try:
             seat = self.orchestra[name]
-            isDone = seat.connect(timeout)
-            return isDone
+            return seat.connect(timeout)
         except Exception as e:
             print(e)
-            return {'status': False, 'data': ''}
+            return {'status': False, 'data': 'name does not exist!'}
 
     def disconnectFromInstrument(self, name):
         try:
             seat = self.orchestra[name]
-            isDone = seat.disconnect()
-            return isDone
+            return seat.disconnect()
         except Exception:
             return {'status': False, 'data': ''}
 

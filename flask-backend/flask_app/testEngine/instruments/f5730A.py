@@ -9,17 +9,42 @@ class f5730A:
         self.active = False  # each instrument knows its own state
         self.VISA = None
 
+    def newConfig(self, new_config):
+        self.config = new_config
+
+    def write(self, arg):
+        if self.active:
+            print('received: ', arg)
+            return self.VISA.write(arg)
+        else:
+            return '<not connected>'  # not bool. naughty!
+    
+    def read(self):
+        if self.active:
+            print('reading')
+            return self.VISA.read()
+        else:
+            return '<not connected>'  # not bool. naughty!
+
+    def query(self, arg):
+        if self.active:
+            print('received: ', arg)
+            return self.VISA.query(arg)
+        else:
+            return '<not connected>' 
+
     def connect(self, timeout=2000):
         if not self.active:
             self.VISA = VisaClient.VisaClient(self.config)  # Instantiate VISA object class
-            isDone = self.VISA.connect(timeout) # attempt connection to the instrument
-            
-            if isDone:
+            body = self.VISA.connect(timeout) # attempt connection to the instrument
+            status = body['status']
+
+            if status:
                 # connection is good
                 self.active = True
                 msg = f"{self.config['name']} has connected"
                 print(msg)
-                return {'status': True, 'data': msg}
+                return body
             else:
                 # something went wrong
                 msg = '<SOMETHING WENT WRONG>'
@@ -29,16 +54,6 @@ class f5730A:
             msg = f"{self.config['name']} has already connected"
             print(msg)
             return {'status': True, 'data': msg}
-
-    def _testConnection(self):
-        if self.VISA.healthy:
-            self.f5730A_IDN = self.query('*IDN?')
-            return True
-        else:
-            print('[X] Unable to connect to the Fluke 5730A. Check software configuration, ensure instrument is'
-                  '\nconnected properly or not being used by another remote session. Consider power cycling the '
-                  '\nsuspected instrument\n')
-            return False
 
     def disconnect(self):
         if self.active:
@@ -54,22 +69,6 @@ class f5730A:
         else:
             print(f"{self.config['name']} was not connected")
             return False
-    
-    def write(self, arg):
-        if self.active:
-            print('received: ', arg)
-            self.VISA.write(arg)
-            return True
-        else:
-            return '<not connected>'  # not bool. naughty!
-    
-    def query(self, arg):
-        if self.active:
-            print('received: ', arg)
-            res = self.VISA.query(arg)
-            return res
-        else:
-            return '<not connected>' 
 
     def setup_f5730A_source(self):
         self.write('*RST')

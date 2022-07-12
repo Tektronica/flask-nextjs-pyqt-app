@@ -140,9 +140,9 @@ async function disconnectInstrument(name, setTableData) {
     })
 
     // get connection status
-    let r = await res.json();
-    let status = r.data
-    console.log('server: ', status)
+    let body = await res.json();
+    let status = body.status
+    console.log('server: ', body)
 
     // refresh the data table
     getActiveInstruments(setTableData)
