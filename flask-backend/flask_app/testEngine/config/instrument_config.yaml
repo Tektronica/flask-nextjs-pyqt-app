@@ -34,3 +34,9 @@
   address: 192.168.1.1
   port: '3490'
   gpib: '6'
+- name: Dmitri
+  instr: f5730A
+  mode: LAN
+  address: 10.205.92.248
+  port: '3490'
+  gpib: '3'

@@ -1,4 +1,4 @@
-import VisaClient
+from flask_app.testEngine.instruments import VisaClient
 import time
 
 ########################################################################################################################

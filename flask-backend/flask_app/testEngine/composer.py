@@ -1,5 +1,5 @@
 import pathlib
-from flask_app.testEngine.instruments import Roster
+from flask_app.testEngine.roster import Roster
 from flask_app.testEngine.instruments.f5730A import f5730A
 
 ########################################################################################################################
@@ -32,9 +32,11 @@ class Composer:
             step 2. adds each instrument to a list of Instrument objects
         """
         roster = self.roster.getList()  # list of instruments
-
         for instrument in roster:
-            seat = Instrument(instrument)
+            if instrument['instr'] == 'f5730A':
+                seat = f5730A(instrument)
+            else:
+                seat = Instrument(instrument)
             self.orchestra[instrument['name']] = seat
 
     def getStatus(self):
