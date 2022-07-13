@@ -40,3 +40,15 @@
   address: 10.205.93.101
   port: '3490'
   gpib: '3'
+- name: d
+  instr: f5730A
+  mode: LAN
+  address: 192.168.1.1
+  port: '3490'
+  gpib: '4'
+- name: j
+  instr: f8588A
+  mode: LAN
+  address: 192.168.1.10
+  port: '3490'
+  gpib: '2'

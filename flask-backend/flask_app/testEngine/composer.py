@@ -134,6 +134,9 @@ class Composer:
                 return seat.connect(timeout)
             else:
                 return {'status': False, 'data': '<Invalid Instrument>'}
+        except AttributeError as e:
+            print(e)
+            return {'status': False, 'data': '<Could not Connect>'}
         except Exception as e:
             print(e)
             return {'status': False, 'data': 'name does not exist!'}

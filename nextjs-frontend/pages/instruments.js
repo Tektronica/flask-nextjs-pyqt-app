@@ -394,7 +394,13 @@ async function handleClick(id, setStatusIcon, e) {
             console.log('client: connecting, ', resource)
             const connect_instr = { cmd: 'connect', name: resource, timeout: timeout }
             let url = 'api/connect';
+
+            // 60 second timeout:
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 60*1000)
+
             const res = await fetch(url, {
+                signal: controller.signal,
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -402,6 +408,7 @@ async function handleClick(id, setStatusIcon, e) {
                 },
                 body: JSON.stringify(connect_instr)
             })
+            clearTimeout(timeoutId)
 
             // get connection status
             let body = await res.json();

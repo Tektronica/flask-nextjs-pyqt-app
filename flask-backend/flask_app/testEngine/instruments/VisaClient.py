@@ -30,8 +30,9 @@ class VisaClient:
         returns dictionary containing 'status' and 'data' keys.
         """
         self.timeout = timeout
+        attempts = 2
 
-        for attempt in range(5):
+        for attempt in range(attempts):
             try:
                 # if mode is LAN:
                 if self.mode == 'LAN':
