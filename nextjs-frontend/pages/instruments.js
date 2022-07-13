@@ -210,10 +210,10 @@ export default function Instruments() {
                                 id="cmd-select"
                                 className="h-[28px] border-2 w-full bg-cyan-50 hover:bg-green-50 text-cyan-700"
                             >
-                                <option value="*IDN?\n">*IDN?\n</option>
-                                <option value="*OPC\n">*OPC\n</option>
-                                <option value="*RST\n">*RST\n</option>
-                                <option value="*ESR?\n">*ESR?\n</option>
+                                <option value="*IDN?">*IDN?</option>
+                                <option value="*OPC">*OPC</option>
+                                <option value="*RST">*RST</option>
+                                <option value="*ESR?">*ESR?</option>
                             </select>
                         </div>
                         {/* command button row */}
