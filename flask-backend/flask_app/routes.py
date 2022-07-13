@@ -87,7 +87,7 @@ def connect():
         data = request.json
         cmd = data['cmd']
         name = data['name']
-        isDone = False
+
         try:
             if cmd == 'connect':
                 timeout = int(data['timeout'])

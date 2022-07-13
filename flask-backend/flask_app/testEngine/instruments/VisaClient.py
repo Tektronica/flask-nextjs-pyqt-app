@@ -27,12 +27,11 @@ class VisaClient:
     def connect(self, timeout=2000):
         """
         attempts to connect to remote instrument over the selected mode
-        returns True if the connection is validated. Otherwise false.
+        returns dictionary containing 'status' and 'data' keys.
         """
         self.timeout = timeout
 
         for attempt in range(5):
-            self.healthy = True
             try:
                 # if mode is LAN:
                 if self.mode == 'LAN':
@@ -50,6 +49,8 @@ class VisaClient:
                 else:
                     print('No such mode.')
 
+                self.healthy = True
+
             except pyvisa.VisaIOError as e:
                 print(e)
                 # https://github.com/pyvisa/pyvisa-py/issues/146#issuecomment-453695057
@@ -63,13 +64,28 @@ class VisaClient:
             except Exception as e:
                 print(e)
                 print(f"Could not connect to {self.config['name']} for reasons unknown.")
-                return False
+                self.healthy = False
             else:
                 break
 
         time.sleep(1)
         # test the open connection
         return self.query('*IDN?')  # {'status': self.healthy, 'data': msg}
+    
+    def disconnect(self):
+        try:
+            self.session.close()
+            self.healthy = True
+            msg = f"connection closed for {self.config['name']}"
+            self.session = None
+
+        except pyvisa.VisaIOError as e:
+            msg = str(e)
+            print(f"attempted to disconnect from {self.config['name']} with failures\n")
+            print(msg)
+            self.healthy = False
+
+        return {'status': self.healthy, 'data': msg}
 
     def _byteTest(self):
         # If read_bytes() times out on the first read, it actually means that the instrument did not answer.
@@ -101,12 +117,13 @@ class VisaClient:
             response = f'{cmd} was written.'
             print(response)
             self.healthy = True
-            
+
         except pyvisa.VisaIOError as e:
             print('Could not write to device.')
             response = str(e)
             self.healthy = False
-            
+        
+        print('visaclient: ', {'status': self.healthy, 'data': response})
         return {'status': self.healthy, 'data': response}
 
     def read(self):

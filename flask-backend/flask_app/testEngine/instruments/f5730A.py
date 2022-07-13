@@ -59,16 +59,20 @@ class f5730A:
         if self.active:
             time.sleep(1)
             self.write('LOCal')
+            body = self.VISA.disconnect()
 
-            self.VISA.close()
-            self.VISA = None
-            self.active = False
-
-            print(f"{self.config['name']} has disconnected")
-            return True
+            if body['status']:
+                self.VISA = None
+                self.active = False
+                print(f"{self.config['name']} has disconnected")
+            else:
+                print(f"{self.config['name']} failed to disconnect")
+            
+            return body
         else:
-            print(f"{self.config['name']} was not connected")
-            return False
+            msg = f"{self.config['name']} was not connected"
+            print(msg)
+            return {'status': True, 'data': msg}
 
     def setup_f5730A_source(self):
         self.write('*RST')
