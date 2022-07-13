@@ -249,3 +249,17 @@ https://xdevs.com/guide/ni_gpib_rpi/
 https://forums.raspberrypi.com/viewtopic.php?f=44&t=137781&p=918312#p918312
 
 https://github.com/tin-/teckit
+
+
+
+DOM Manipulation
+====================================================================
+
+The goal is to manipulate a DOM node by updating the inner HTML.
+direct manipulation of dom node is not recommended in react...
+
+	>> innerHTML: the DOM node will update with the injected HTML. React is not made aware of the modfication.
+	>> dangerouslySetInnerHTML: React can ignore the inner HTML and allows direct DOM manipulation
+	>> react state: Using react states and callbacks achieves the same effect and preserves react structure
+
+

@@ -17,21 +17,21 @@ class f5730A:
             print('received: ', arg)
             return self.VISA.write(arg)
         else:
-            return '<not connected>'  # not bool. naughty!
+            return {'status': False, 'data':'<not connected>'}
     
     def read(self):
         if self.active:
             print('reading')
             return self.VISA.read()
         else:
-            return '<not connected>'  # not bool. naughty!
+            return {'status': False, 'data':'<not connected>'}
 
     def query(self, arg):
         if self.active:
             print('received: ', arg)
             return self.VISA.query(arg)
         else:
-            return '<not connected>' 
+            return {'status': False, 'data':'<not connected>'}
 
     def connect(self, timeout=2000):
         if not self.active:

@@ -9,6 +9,7 @@ export default function Instruments() {
     const [tableData, setTableData] = useState(0);
     let [isOpen, setIsOpen] = useState(false)
     const [contentModal, setContentModal] = useState("");
+    const [statusIcon, setStatusIcon] = useState(getIcon(undefined));
 
     // return information from instrument config
     useEffect(() => {
@@ -107,30 +108,36 @@ export default function Instruments() {
                         <tbody>
                             {
                                 Object.entries(tableData).map(function (item, idx) {
+                                    let name = item[1].name
+                                    let instr = item[1].instr
+                                    let mode = item[1].mode
+                                    let address = item[1].address
+                                    let port = item[1].port
+                                    let gpib = item[1].gpib
                                     return (
                                         <tr key={idx} className='bg-white border-b hover:bg-gray-200' >
                                             <td className='px-6 py-4 font-bold text-gray-900 whitespace-nowrap'>
                                                 <button
                                                     type='button'
                                                     id='btn-name'
-                                                    onClick={setResourceName.bind(this, item[1].name)}>
-                                                    {item[1].name}
+                                                    onClick={setResourceName.bind(this, name)}>
+                                                    {name}
                                                 </button>
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
-                                                {item[1].instr}
+                                                {instr}
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
-                                                {item[1].mode}
+                                                {mode}
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
-                                                {item[1].address}
+                                                {address}
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
-                                                {item[1].port}
+                                                {port}
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
-                                                {item[1].gpib}
+                                                {gpib}
                                             </td>
                                             <td className='pr-2 py-3'>
                                                 <button
@@ -166,7 +173,7 @@ export default function Instruments() {
                                 type="text"
                                 id="resource"
                                 placeholder='<NAME> or <IP ADDRESS>'
-                                onChange={setConnectStatus.bind(this, undefined)}
+                                onChange={setStatusIcon.bind(this, getIcon(undefined))}
                                 className="font-mono text-cyan-700 border-2 w-full bg-cyan-50 hover:bg-green-50 focus:bg-green-50"
                             />
                         </div>
@@ -188,16 +195,12 @@ export default function Instruments() {
                         <div className="flex items-end">
                             <button
                                 id='connect-btn'
-                                onClick={handleClick.bind(this, 'connect')}
+                                onClick={handleClick.bind(this, 'connect', setStatusIcon)}
                                 className="ml-2 mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
                                 Connect
                             </button>
                             <div id='connectStatus'>
-                                <div className='text-gray-500'>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
+                                {statusIcon}
                             </div>
                         </div>
                     </div>
@@ -347,41 +350,42 @@ async function onClickCreate(setTableData, e) {
     }
 }
 
-function setConnectStatus(status) {
-    let statusIcon = ''
+const getIcon = (status) => {
+    let statusIcon;
 
     if (status === undefined) {
-        statusIcon = `<div class='text-gray-500'>\
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">\
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />\
-                        </svg>\
-                    </div >\
-                    `
-
+        statusIcon = (
+            <div className='text-gray-500'>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div >
+        )
     } else if (status === true) {
-        statusIcon = `<div class='text-green-500'>\
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>\
-                    </div >\
-                    `
-
+        statusIcon = (
+            <div className='text-green-500'>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div >
+        )
     } else if (status === false) {
-        statusIcon = `<div class='text-red-500'>\
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">\
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />\
-                        </svg>\
-                    </div>\
-                    `
+        statusIcon = (
+            <div className='text-red-500'>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        )
     }
 
-    document.getElementById('connectStatus').innerHTML = statusIcon
+    return statusIcon
 }
 
-async function handleClick(id, e) {
+async function handleClick(id, setStatusIcon, e) {
 
     if (id == 'connect') {
-        
+
         const resource = document.getElementById('resource').value
         const timeout = document.getElementById('timeout').value
 
@@ -405,7 +409,7 @@ async function handleClick(id, e) {
             let msg = body.data
             let newline = 'connection: ' + status + ', ' + msg + '\n'
             console.log('server: ', newline);
-            setConnectStatus(status)
+            setStatusIcon(getIcon(status))
             document.getElementById('response-box').value += newline;
 
 
@@ -429,7 +433,7 @@ async function handleClick(id, e) {
             },
             body: JSON.stringify(connect_instr)
         })
-        
+
         const body = await res.json();
         console.log('server: ', body);
 
