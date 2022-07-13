@@ -33,11 +33,16 @@ class Composer:
         """
         roster = self.roster.getList()  # list of instruments
         for instrument in roster:
-            if instrument['instr'] == 'f5730A':
-                seat = f5730A(instrument)
-            else:
-                seat = Instrument(instrument)
+            seat = self._assign_instrument(instrument)
             self.orchestra[instrument['name']] = seat
+
+    def _assign_instrument(self, instrument):
+        if instrument['instr'] == 'f5730A':
+            seat = f5730A(instrument)
+        else:
+            seat = None
+        print(f"{instrument['name']} has {seat}")
+        return seat
 
     def getStatus(self):
         # composer checks the state of each instrument (AND operation)
@@ -53,8 +58,9 @@ class Composer:
         # returns a list of dictionaries of each active instrument
         activeInstruments = []
         for seat in self.orchestra.values():
-            if seat.active:
-                activeInstruments.append(seat.config)
+            if seat is not None:
+                if seat.active:
+                    activeInstruments.append(seat.config)
                 
         return activeInstruments
     
@@ -62,8 +68,9 @@ class Composer:
         # returns a list of dictionaries of each active instrument
         inactiveInstruments = []
         for seat in self.orchestra.values():
-            if not seat.active:
-                inactiveInstruments.append(seat.config)
+            if seat is None:
+                if not seat.active:
+                    inactiveInstruments.append(seat.config)
 
         return inactiveInstruments
 
@@ -80,7 +87,7 @@ class Composer:
             self.roster.appendRow(config)
             # seat the instrument in the orchestra
             name = config['name']
-            seat = Instrument(config)
+            seat = self._assign_instrument(config)
             self.orchestra[name] = seat
 
             return True
@@ -123,7 +130,10 @@ class Composer:
     def connectToInstrument(self, name, timeout=2000):
         try:
             seat = self.orchestra[name]
-            return seat.connect(timeout)
+            if seat is not None:
+                return seat.connect(timeout)
+            else:
+                return {'status': False, 'data': '<Invalid Instrument>'}
         except Exception as e:
             print(e)
             return {'status': False, 'data': 'name does not exist!'}
@@ -134,55 +144,6 @@ class Composer:
             return seat.disconnect()
         except Exception:
             return {'status': False, 'data': ''}
-
-
-class Instrument:
-    def __init__(self, config) -> None:
-        self.config = config  # each instrument knows its own config
-        self.active = False  # each instrument knows its own state
-
-    def newConfig(self, new_config):
-        self.config = new_config
-
-    def write(self, arg):
-        if self.active:
-            print('receieved: ', arg)
-            return True
-        else:
-            return '<not connected>'  # not bool. naughty!
-
-    def read(self):
-        if self.active:
-            msg = f"reading {self.config['name']}:\nFLUKE,2271A,12345678,1.00"
-            return msg
-        else:
-            return '<not connected>'
-
-    def query(self, arg):
-        if self.active:
-            print('received: ', arg)
-            msg = f"{arg} queried to {self.config['name']}:\nFLUKE,2271A,12345678,1.00"
-            return msg
-        else:
-            return '<not connected>' 
-
-    def connect(self):
-        if not self.active:
-            print(f"{self.config['name']} has connected")
-            self.active = True
-            return True
-        else:
-            print(f"{self.config['name']} has already connected")
-            return True
-
-    def disconnect(self):
-        if self.active:
-            print(f"{self.config['name']} has disconnected")
-            self.active = False
-            return True
-        else:
-            print(f"{self.config['name']} was not connected")
-            return False
 
 
 class Performance:
