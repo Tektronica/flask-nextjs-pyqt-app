@@ -34,7 +34,7 @@ export default function History() {
                         <tbody>
                             {
                                 Object.entries(tableData).map(function (item, idx) {
-                                    let name = item[1].name
+                                    let name = (item[1].name).replace(/\.[^/.]+$/, "")
                                     let date = new Date(item[1].date * 1000)
                                     let dateSplit = date.toISOString().split('T')
 
@@ -45,7 +45,7 @@ export default function History() {
                                                     type='button'
                                                     id='btn-name'
                                                     onClick={openFile.bind(this, name)}>
-                                                    {item[1].name}
+                                                    {name}
                                                 </button>
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
@@ -64,7 +64,7 @@ export default function History() {
                                             </td>
                                             <td className='pr-2 py-3'>
                                                 <button
-                                                    onClick={deleteFile.bind(this, name)}
+                                                    onClick={deleteFile.bind(this, name, setTableData)}
                                                 // className='bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white px-2 border border-cyan-500 hover:border-transparent rounded uppercase'
                                                 >
                                                     {getIcon('trash')}
@@ -101,12 +101,58 @@ function openFile(name) {
     console.log('client: opening ', name)
 }
 
-function downloadFile(name) {
-    console.log('client: downloading ', name)
+async function downloadFile(filename) {
+    console.log('client: downloading ', filename)
+    const filePackage = { cmd: 'download', name: filename }
+    let url = 'api/history';
+
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(filePackage)
+    })
+
+    const blob = await res.blob();
+    const dl_url = window.URL.createObjectURL(
+        new Blob([blob]),
+    );
+    const link = document.createElement('a');
+    link.href = dl_url;
+    link.setAttribute(
+        'download',
+        `${filename}.csv`,
+    );
+
+    // Append to html link element page
+    document.body.appendChild(link);
+
+    // Start download
+    link.click();
+
+    // Clean up and remove the link
+    link.parentNode.removeChild(link);
 }
 
-function deleteFile(name) {
-    console.log('client: deleting ', name)
+async function deleteFile(filename, setTableData) {
+    console.log('client: deleting ', filename)
+    const filePackage = { cmd: 'delete', name: filename }
+    let url = 'api/history';
+
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(filePackage)
+    })
+
+    const body = await res.json();
+    console.log(body)
+    setTableData(body.data);
 }
 
 const getIcon = (name) => {

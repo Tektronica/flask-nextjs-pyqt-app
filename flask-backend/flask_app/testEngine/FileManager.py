@@ -1,4 +1,4 @@
-from os import listdir
+from os import listdir, remove
 from os.path import isfile, join, getmtime
 import pathlib
 
@@ -21,6 +21,26 @@ def get_history():
             history.append({'name': f, 'date': date})
 
     return history
+
+def download_file(filename):
+    filepath = join(DIRECTORY, filename)
+    with open(filepath) as fp:
+        csv = fp.read()
+    
+    return csv
+
+def delete_file(filename):
+    filepath = join(DIRECTORY, filename)
+    msg = f'{filename} was deleted from history.'
+    isDone = False
+    try:
+        remove(filepath)
+        isDone = True
+    except Exception as e:
+        msg = e
+        print(msg)
+    
+    return {'status': isDone, 'data': msg}
 
 if __name__ == "__main__":
     print(get_history())

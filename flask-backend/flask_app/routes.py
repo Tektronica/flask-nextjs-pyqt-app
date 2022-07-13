@@ -1,5 +1,5 @@
 from flask_app import app
-from flask import render_template, request
+from flask import render_template, request, Response
 from flask_app.testEngine.composer import Composer
 from subprocess import call
 from datetime import datetime
@@ -129,12 +129,37 @@ def command():
 
     # else POST Error 405 Method Not Allowed
 
-@app.route('/history')
+@app.route('/history', methods=['GET', 'POST'])
 def history():
-    history = FileManager.get_history()
-    print(history)
+    if request.method == 'GET':
+        history = FileManager.get_history()
+        status=True
+        return {'status': status, 'data': history}
 
-    return {'data': history}
+    if request.method == 'POST':
+        data = request.json
+        filename = data['name'] + '.csv'
+        cmd = data['cmd']
+
+        if cmd == 'download':
+            print(f'server: preparing {filename} for download.')
+            csv = FileManager.download_file(filename)
+
+            return Response(
+                    csv,
+                    mimetype="text/csv",
+                    headers={"Content-disposition":
+                            f"attachment; filename={filename}"
+                        }
+                    )
+
+        if cmd == 'delete':
+            print(f'server: deleting {filename} from history.')
+            status = FileManager.delete_file(filename)
+            history = FileManager.get_history()
+            return {'status': True, 'data': history}
+            
+
 
 @app.route('/time')
 def get_current_time():
