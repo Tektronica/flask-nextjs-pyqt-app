@@ -35,8 +35,8 @@ export default function Layout({ children }) {
                     />
                 </div> */}
             </div>
-            <div className="overflow-hidden h-screen bg-neutral-200 flex flex-row justify-center ">
-                <div className="flex flex-col h-screen bg-white max-w-[1100px] z-50 drop-shadow-lg">
+            <div className="overflow-hidden h-screen bg-neutral-200 flex flex-row justify-center">
+                <div className="w-full flex flex-col h-screen bg-white max-w-[1100px] z-50 drop-shadow-lg">
                     <div className="flex flex-1 overflow-hidden bg-slate-200">
 
                         {/* <!-- left column --> */}
@@ -52,7 +52,7 @@ export default function Layout({ children }) {
                                 <TopHeader />
                             </div>
                             <div className="flex flex-1 overflow-y-auto">
-                                <div className="">
+                                <div className="grow">
                                     {children}
                                 </div>
                             </div>
