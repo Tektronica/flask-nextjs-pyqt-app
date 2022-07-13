@@ -4,7 +4,7 @@ from flask_app.testEngine.composer import Composer
 from subprocess import call
 from datetime import datetime
 from flask_app.pystats import getStats
-
+import flask_app.testEngine.FileManager as FileManager
 try:
     import RPi.GPIO as gpio
 
@@ -129,6 +129,12 @@ def command():
 
     # else POST Error 405 Method Not Allowed
 
+@app.route('/history')
+def history():
+    history = FileManager.get_history()
+    print(history)
+
+    return {'data': history}
 
 @app.route('/time')
 def get_current_time():
