@@ -1,7 +1,8 @@
-import Layout from '../components/layout'
+import Layout from '../components/layout';
 import ShadowBox from '../components/containers/ShadowBox';
 import React, { useState, useEffect } from 'react';
-
+import Link
+ from 'next/link';
 export default function History() {
     const [tableData, setTableData] = useState(0);
 
@@ -41,12 +42,9 @@ export default function History() {
                                     return (
                                         <tr key={idx} className='bg-white border-b hover:bg-gray-200' >
                                             <td className='px-6 py-4 font-bold text-gray-900 whitespace-nowrap'>
-                                                <button
-                                                    type='button'
-                                                    id='btn-name'
-                                                    onClick={openFile.bind(this, name)}>
-                                                    {name}
-                                                </button>
+                                                <Link href={`/dataview/${name}`}>
+                                                    <a>{name}</a>
+                                                </Link>
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
                                                 {dateSplit[0]}
@@ -95,10 +93,6 @@ async function getHistory(setTableData) {
     const body = await resJSON.json();
     console.log(body)
     setTableData(body.data);
-}
-
-function openFile(name) {
-    console.log('client: opening ', name)
 }
 
 async function downloadFile(filename) {
