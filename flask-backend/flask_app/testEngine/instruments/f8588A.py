@@ -1,10 +1,8 @@
-import VisaClient
+from flask_app.testEngine.instruments import VisaClient
 import time
 import numpy as np
 
 DIGITIZER_SAMPLING_FREQUENCY = 5e6
-instruments = {'f8588A': {'address': '10.205.92.156', 'port': '3490', 'gpib': '6', 'mode': 'LAN'}}
-
 
 ########################################################################################################################
 def to_float(string_val):
@@ -107,33 +105,76 @@ def get_aperture(Fs, N):
     return aperture, runtime
 
 
-class f8588A_instrument:
-    """"""
+class f8588A:
+    def __init__(self, config) -> None:
+        self.config = config  # each instrument knows its own config
+        self.active = False  # each instrument knows its own state
+        self.VISA = None
 
-    def __init__(self):
-        super().__init__()
-        self.measurement = []
-        self.f8588A_IDN = ''
-        self.f8588_connected = False
+    def newConfig(self, new_config):
+        self.config = new_config
 
-        self.setup_complete = True
-        self.output_type = 'VOLT'
-        self.mode = 'DC'
-
-    def connect_to_f8588A(self, instr_id):
-        # ESTABLISH COMMUNICATION TO INSTRUMENTS -----------------------------------------------------------------------
-        self.f8588A = VisaClient.VisaClient(instr_id)  # Fluke 8588A
-
-        if self.f8588A.healthy:
-            self.f8588_connected = True
-            try:
-                self.f8588A_IDN = self.f8588A.query('*IDN?')
-            except ValueError:
-                raise
+    def write(self, arg):
+        if self.active:
+            print('received: ', arg)
+            return self.VISA.write(arg)
         else:
-            print('[X] Unable to connect to the Fluke 8588A. Check software configuration, ensure instrument is'
-                  '\nconnected properly or not being used by another remote session. Consider power cycling the '
-                  '\nsuspected instrument\n')
+            return {'status': False, 'data':'<not connected>'}
+    
+    def read(self):
+        if self.active:
+            print('reading')
+            return self.VISA.read()
+        else:
+            return {'status': False, 'data':'<not connected>'}
+
+    def query(self, arg):
+        if self.active:
+            print('received: ', arg)
+            return self.VISA.query(arg)
+        else:
+            return {'status': False, 'data':'<not connected>'}
+
+    def connect(self, timeout=2000):
+        if not self.active:
+            self.VISA = VisaClient.VisaClient(self.config)  # Instantiate VISA object class
+            body = self.VISA.connect(timeout) # attempt connection to the instrument
+            status = body['status']
+
+            if status:
+                # connection is good
+                self.active = True
+                msg = f"{self.config['name']} has connected"
+                print(msg)
+                return body
+            else:
+                # something went wrong
+                msg = '<SOMETHING WENT WRONG>'
+                return {'status': False, 'data': msg}
+        else:
+            # already connected
+            msg = f"{self.config['name']} has already connected"
+            print(msg)
+            return {'status': True, 'data': msg}
+
+    def disconnect(self):
+        if self.active:
+            time.sleep(1)
+            self.write('LOCal')
+            body = self.VISA.disconnect()
+
+            if body['status']:
+                self.VISA = None
+                self.active = False
+                print(f"{self.config['name']} has disconnected")
+            else:
+                print(f"{self.config['name']} failed to disconnect")
+            
+            return body
+        else:
+            msg = f"{self.config['name']} was not connected"
+            print(msg)
+            return {'status': True, 'data': msg}
 
     # SETUP METER ######################################################################################################
     def setup_f8588A_meter(self, autorange=True, **kwds):
@@ -151,11 +192,11 @@ class f8588A_instrument:
         self.output_type, self.mode = self._get_function_params(**kwds)  # Example: ('VOLT', 'AC')
 
         try:
-            self.f8588A.write(f'CONF:{self.output_type}:{self.mode}')
+            self.write(f'CONF:{self.output_type}:{self.mode}')
             time.sleep(0.5)
 
             if autorange:
-                self.f8588A.write(f'{self.output_type}:{self.mode}:RANGE:AUTO ON')
+                self.write(f'{self.output_type}:{self.mode}:RANGE:AUTO ON')
             else:
                 # Set Fluke 884xA to largest range for internal protection by default.
                 self.set_f8588A_range(ideal_range_val=1000, output_type=self.output_type, mode=self.mode)
@@ -174,7 +215,7 @@ class f8588A_instrument:
         with switching ranges. This method allows the meter to range correctly before performing the measurement.
         :return:
         """
-        dmm_range = to_float(self.f8588A.query(f'{self.output_type}:{self.mode}:RANGE?'))
+        dmm_range = to_float(self.query(f'{self.output_type}:{self.mode}:RANGE?'))
         return dmm_range
 
     def _get_function_params(self, **kwds):
@@ -305,14 +346,14 @@ class f8588A_instrument:
 
         # Causes the meter to exit autoranging on the primary display and enter manual ranging. The present range ------
         # becomes the selected range. ----------------------------------------------------------------------------------
-        self.f8588A.write(f"{self.output_type}:{self.mode}:FIXED")
+        self.write(f"{self.output_type}:{self.mode}:FIXED")
 
         # Calculate the closest range for measurement ------------------------------------------------------------------
         range_val, range_string = self.determine_f8588A_range(ideal_range_val, self.output_type)
 
         # Set new range ------------------------------------------------------------------------------------------------
         try:
-            self.f8588A.write(f"{self.output_type}:{self.mode}:RANGE {range_val}")
+            self.write(f"{self.output_type}:{self.mode}:RANGE {range_val}")
             print(f"Successfully set range of Fluke 884xA to {range_val} ({range_string})")
             return True
         except Exception:
@@ -330,18 +371,18 @@ class f8588A_instrument:
         """
         if self.setup_complete:
             time.sleep(1)
-            self.f8588A.write('INIT:IMM')
+            self.write('INIT:IMM')
 
             # Primary result = 1 (page 17 of 8588A's programmers manual)
             # A return of 9.91E+37 indicates there is not a valid value to return (NaN - not a number)
             # time delay prevents NaN result
             time.sleep(0.2)
-            outval = to_float(self.f8588A.query('FETCH? 1'))
+            outval = to_float(self.query('FETCH? 1'))
             dmm_range = self.get_f8588A_range()
 
             if self.mode == 'AC':
                 # FREQuency = 2 (page 17 of 8588A's programmers manual)
-                freqval = to_float(self.f8588A.query('FETCH? 2'))
+                freqval = to_float(self.query('FETCH? 2'))
             else:
                 freqval = 0.0
 
@@ -378,34 +419,34 @@ class f8588A_instrument:
         # Calculate the closest range for measurement ------------------------------------------------------------------
         range_val, range_string = self.determine_f8588A_range(ideal_range_val, self.output_type)  # (0.1, '0.1A')
 
-        self.f8588A.write('*RST')
+        self.write('*RST')
 
         try:
-            self.f8588A.write(f':FUNC "DIGitize:{self.output_type}" ')
-            self.f8588A.write(f':DIGitize:{self.output_type}:RANGe {range_val}')
+            self.write(f':FUNC "DIGitize:{self.output_type}" ')
+            self.write(f':DIGitize:{self.output_type}:RANGe {range_val}')
             print(f"Successfully set range of Fluke 8588A to {range_string}")
 
             # :FILTer OFF|100Khz|3MHZ ----------------------------------------------------------------------------------
             if filter_val not in ('None', '2MHz', '2.4MHz'):
-                self.f8588A.write(f':DIGitize:FILTer {filter_val}')
+                self.write(f':DIGitize:FILTer {filter_val}')
             else:
-                self.f8588A.write(f':DIGitize:FILTer OFF')
+                self.write(f':DIGitize:FILTer OFF')
 
             # AC1M = AC Coupling, 1Mohm input impedance
             # AC10M = AC Coupling, 10Mohm input impedance
             # DC1M = DC Coupling, 1Mohm input impedance
             # DC10M - DC Coupling, 10 Mohm input impedance
             # DCAuto = DC Coupling, maximum avialable input impedance
-            self.f8588A.write(f':DIGitize:VOLTage:COUPling:SIGNal {coupling}')
+            self.write(f':DIGitize:VOLTage:COUPling:SIGNal {coupling}')
 
             # setup digitizer with aperture length ---------------------------------------------------------------------
             # f8588A has a 5MHz sampled rate clock. adjusting aperture time,
             # averages more points, which adjusts sample rate
-            self.f8588A.write(f':DIGitize:APERture {aperture}')
-            self.f8588A.write('TRIGger:RESet')
-            self.f8588A.write(f'TRIGGER:COUNT {N}')
-            self.f8588A.write('TRIGger:DELay:AUTO OFF')
-            self.f8588A.write('TRIGGER:DELay 0')
+            self.write(f':DIGitize:APERture {aperture}')
+            self.write('TRIGger:RESet')
+            self.write(f'TRIGGER:COUNT {N}')
+            self.write('TRIGger:DELay:AUTO OFF')
+            self.write('TRIGGER:DELay 0')
             return True  # returns true if digitizer setup completes successfully
 
         except Exception as e:
@@ -438,29 +479,29 @@ class f8588A_instrument:
         # Calculate the closest range for measurement ------------------------------------------------------------------
         range_val, range_string = self.determine_f8588A_range(ideal_range_val, self.output_type)  # (0.1, '0.1A')
 
-        self.f8588A.write('*RST')
+        self.write('*RST')
 
         try:
-            self.f8588A.write(f':FUNC "DIGitize:{self.output_type}" ')
-            self.f8588A.write(f':DIGitize:{self.output_type}:RANGe {range_val}')
+            self.write(f':FUNC "DIGitize:{self.output_type}" ')
+            self.write(f':DIGitize:{self.output_type}:RANGe {range_val}')
             print(f"Successfully set range of Fluke 8588A to {range_string}")
 
             # :FILTer OFF|100Khz|3MHZ ----------------------------------------------------------------------------------
             if filter_val not in ('None', '2MHz', '2.4MHz'):
-                self.f8588A.write(f':DIGitize:FILTer {filter_val}')
+                self.write(f':DIGitize:FILTer {filter_val}')
             else:
-                self.f8588A.write(f':DIGitize:FILTer OFF')
+                self.write(f':DIGitize:FILTer OFF')
 
-            self.f8588A.write(f':DIGitize:VOLTage:COUPling:SIGNal {coupling}')
+            self.write(f':DIGitize:VOLTage:COUPling:SIGNal {coupling}')
 
             # setup digitizer with trigger timer -----------------------------------------------------------------------
-            self.f8588A.write("SENSE:DIG:APERTURE 0.000")
-            self.f8588A.write("TRIGger:RESet")
-            self.f8588A.write("TRIGger:SOURce TIMer")
-            self.f8588A.write(f"TRIGger:TIMer {interval}")
-            self.f8588A.write(f'TRIGGER:COUNT {N}')
-            self.f8588A.write("TRIGger:DELay:AUTO OFF")
-            self.f8588A.write("TRIGger:DELay 0")
+            self.write("SENSE:DIG:APERTURE 0.000")
+            self.write("TRIGger:RESet")
+            self.write("TRIGger:SOURce TIMer")
+            self.write(f"TRIGger:TIMer {interval}")
+            self.write(f'TRIGGER:COUNT {N}')
+            self.write("TRIGger:DELay:AUTO OFF")
+            self.write("TRIGger:DELay 0")
 
         except Exception as e:
             print('setup_digitizer for the Fluke 8588A failed. What error was thrown here?')
@@ -471,28 +512,21 @@ class f8588A_instrument:
     def retrieve_digitize(self):
         print('\tretrieving digitizer data')
 
-        self.f8588A.write('INIT:IMM')
+        self.write('INIT:IMM')
         time.sleep(5)
-        read = self.f8588A.query('FETCH?')
+        read = self.query('FETCH?')
         buffer = [float(i) for i in read.split(',')]
         return buffer
-
-    ####################################################################################################################
-    def close_f8588A(self):
-        if self.f8588_connected:
-            time.sleep(1)
-            self.f8588A.write('LOCal')
-            self.f8588A.close()
-            self.f8588_connected = False
 
 
 # Run
 if __name__ == "__main__":
     DUMMY_DATA = True
+    config = {'f8588A': {'address': '10.205.92.156', 'port': '3490', 'gpib': '6', 'mode': 'LAN'}}
 
     if not DUMMY_DATA:
-        instr = f8588A_instrument()
-        instr.connect_to_f8588A(instruments)
+        instr = f8588A()
+        instr.connect(config)
 
         # 1. Setup the meter for measurement
         instr.setup_f8588A_meter(autorange=True, output_type='VOLT', mode='AC')
@@ -504,7 +538,7 @@ if __name__ == "__main__":
         instr.close_f8588A()
 
     else:
-        instr = f8588A_instrument()
+        instr = f8588A()
         output_type, mode = instr._get_function_params(units='A', mode='AC')
         print(output_type, mode)
 

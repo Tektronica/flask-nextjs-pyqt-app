@@ -1,13 +1,13 @@
 - name: Bragi
-  instr: f5560A
-  mode: GPIB
-  address: 129.196.138.113
+  instr: f8588A
+  mode: LAN
+  address: 10.205.93.34
   port: '3490'
   gpib: '6'
 - name: "V\xED\xF0arr"
   instr: f5730A
   mode: LAN
-  address: 12.100.90.050
+  address: 10.205.93.24
   port: '3490'
   gpib: '10'
 - name: Sigurd
@@ -23,11 +23,11 @@
   port: '3490'
   gpib: '5'
 - name: Mikkel
-  instr: f884xA
+  instr: f5730A
   mode: LAN
-  address: 10.205.92.183
+  address: 10.205.93.24
   port: '3490'
-  gpib: '100'
+  gpib: '1'
 - name: Sigtrygr
   instr: f8588A
   mode: LAN

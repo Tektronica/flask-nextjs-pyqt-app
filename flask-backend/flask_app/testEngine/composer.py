@@ -1,6 +1,7 @@
 import pathlib
 from flask_app.testEngine.roster import Roster
 from flask_app.testEngine.instruments.f5730A import f5730A
+from flask_app.testEngine.instruments.f8588A import f8588A
 
 ########################################################################################################################
 FILE = 'config\\instrument_config.yaml'
@@ -39,6 +40,8 @@ class Composer:
     def _assign_instrument(self, instrument):
         if instrument['instr'] == 'f5730A':
             seat = f5730A(instrument)
+        elif instrument['instr'] == 'f8588A':
+            seat = f8588A(instrument)
         else:
             seat = None
         print(f"{instrument['name']} has {seat}")
