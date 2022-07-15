@@ -1,10 +1,15 @@
+// <!-- requires Tailwind CSS v2.0+ -->
+// <!-- requires papaparse -->
+
 import Layout from '../../components/layout'
 import ShadowBox from '../../components/containers/ShadowBox';
 import { useRouter } from 'next/router'
 import React, { useState, useEffect } from 'react';
 import TimePlot from '../../components/charts/TimePlot';
 // import TimePlot from '../../components/charts/_TimePlot' ;
-import Papa from 'papaparse'
+import Papa from 'papaparse';
+
+// https://stackoverflow.com/questions/68302182/reactjs-fetch-full-csv
 
 export default function DataView() {
     // https://itnext.io/chartjs-tutorial-with-react-nextjs-with-examples-2f514fdc130
@@ -84,29 +89,23 @@ function generateSin(f0, periods, dataLength) {
     return plotData
 }
 
-async function openFile(filename, setHaveData, setPlotData) {
+async function openFile(filename) {
     console.log('client: opening ', filename)
+    const fileRequest = { cmd: 'download', name: filename }
+    let url = 'api/history';
 
-    try {
-        // fetch data from csv
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(fileRequest)
+    })
 
-        const plotLength = 500;
-        let plotData = new Array(plotLength);
-        let yval = 0;
-        const amplitude = 1;
-        const f = 1000;  // signal frequency
-        const Fs = 8000; // sampling frequency
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder('utf-8')
 
-        for (let idx = 0; idx < plotLength; idx++) {
-            yval = Math.sin(2 * Math.PI * f * idx / Fs) * amplitude
-            plotData[idx] = { x: idx, y: yval }
-        }
-
-        setPlotData(data);
-        setHaveData(true); // here, and importantly after the above setChartData call
-    } catch (error) {
-        setHaveData(false);
-    }
 }
 
 const fetchData = async () => {

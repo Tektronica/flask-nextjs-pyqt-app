@@ -239,6 +239,12 @@ export default function Instruments() {
                                 className="mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
                                 Query
                             </button>
+                            <button
+                                id='query-btn'
+                                onClick={handleClick.bind(this, 'getinfo')}
+                                className="mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
+                                Instrument Info
+                            </button>
                         </div>
 
                         <div className='pb-2'>
@@ -444,7 +450,7 @@ async function handleClick(id, setStatusIcon, e) {
         const body = await res.json();
         console.log('server: ', body);
 
-    } else if (['write', 'read', 'query'].includes(id)) {
+    } else if (['write', 'read', 'query', 'getinfo'].includes(id)) {
 
         const resource = document.getElementById('resource').value;
         let arg = document.getElementById('cmd-select').value;
@@ -466,6 +472,11 @@ async function handleClick(id, setStatusIcon, e) {
             // send a READ + WRITE
             console.log('query')
             cmd = 'QUERY: '
+            line = '>>' + cmd + arg + '\n'
+        } else if (id == 'getinfo') {
+            // get instrument model information
+            console.log('getinfo')
+            cmd = 'Instrument Model Information: '
             line = '>>' + cmd + arg + '\n'
         }
 

@@ -97,7 +97,7 @@ async function getHistory(setTableData) {
 
 async function downloadFile(filename) {
     console.log('client: downloading ', filename)
-    const filePackage = { cmd: 'download', name: filename }
+    const fileRequest = { cmd: 'download', name: filename }
     let url = 'api/history';
 
     const res = await fetch(url, {
@@ -106,7 +106,7 @@ async function downloadFile(filename) {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(filePackage)
+        body: JSON.stringify(fileRequest)
     })
 
     const blob = await res.blob();
