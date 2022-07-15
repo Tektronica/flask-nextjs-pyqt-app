@@ -131,12 +131,16 @@ def command():
 
 @app.route('/history', methods=['GET', 'POST'])
 def history():
+    print('kk')
     if request.method == 'GET':
         history = FileManager.get_history()
         status=True
+        print('kdk')
         return {'status': status, 'data': history}
+       
 
     if request.method == 'POST':
+        print('ksk')
         data = request.json
         filename = data['name'] + '.csv'
         cmd = data['cmd']
