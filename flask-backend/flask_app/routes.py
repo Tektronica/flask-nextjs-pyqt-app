@@ -24,10 +24,12 @@ def index():
 
 composer = Composer()
 
+
 @app.route('/stats', methods=['GET'])
 def stats():
     stats = getStats()
     return {'data': stats}
+
 
 @app.route('/instruments', methods=['GET', 'POST', 'DELETE'])
 def instrument():
@@ -56,7 +58,7 @@ def instrument():
             instruments = composer.getActive()  # list of dictionaries
         elif req == 'inactive':
             instruments = composer.getInactive()  # list of dictionaries
-        
+
         return {'data': instruments}
 
 
@@ -91,7 +93,8 @@ def connect():
         try:
             if cmd == 'connect':
                 timeout = int(data['timeout'])
-                print('\nconnecting, ', name, 'with a timeout of: ', timeout, '\n')
+                print('\nconnecting, ', name,
+                      'with a timeout of: ', timeout, '\n')
                 return composer.connectToInstrument(name, timeout)
 
             elif cmd == 'disconnect':
@@ -129,18 +132,15 @@ def command():
 
     # else POST Error 405 Method Not Allowed
 
+
 @app.route('/history', methods=['GET', 'POST'])
 def history():
-    print('kk')
     if request.method == 'GET':
         history = FileManager.get_history()
-        status=True
-        print('kdk')
+        status = True
         return {'status': status, 'data': history}
-       
 
     if request.method == 'POST':
-        print('ksk')
         data = request.json
         filename = data['name'] + '.csv'
         cmd = data['cmd']
@@ -150,19 +150,18 @@ def history():
             csv = FileManager.download_file(filename)
 
             return Response(
-                    csv,
-                    mimetype="text/csv",
-                    headers={"Content-disposition":
-                            f"attachment; filename={filename}"
-                        }
-                    )
+                csv,
+                mimetype="text/csv",
+                headers={"Content-disposition":
+                         f"attachment; filename={filename}"
+                         }
+            )
 
         if cmd == 'delete':
             print(f'server: deleting {filename} from history.')
             status = FileManager.delete_file(filename)
             history = FileManager.get_history()
             return {'status': True, 'data': history}
-            
 
 
 @app.route('/time')
