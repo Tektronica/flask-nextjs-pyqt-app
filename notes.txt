@@ -306,3 +306,56 @@ https://headlessui.com/react/disclosure#rendering-a-different-element-for-a-comp
 	>> the Button default renders a <button>, Panel renders a <div>, but the 'as' prop can change the default componenet.
 	>> <Disclosure.Button as="tr">
 	
+
+
+DOM virtualization for large lists 
+====================================================================
+Since hundreds of lines of test data are generated, displaying each line is inefficient.
+
+react-virtualized held the crown until superseded by react-windows
+	>>	https://www.npmjs.com/package/react-virtualized
+	>>	https://www.npmjs.com/package/react-window
+
+React window works by only rendering part of a large data set creating a more performant viewport
+
+Many of the 'react-window' examples use an internal grid to control its own state. 
+This might be an example for how to support html table tags...
+	>>	https://stackoverflow.com/a/67420459
+
+The proposal is to plant the entire list inside the virtual window with a sticky header + child scroll.
+ModernUI has an example of this:
+	>>	https://mui.com/material-ui/react-table/#virtualized-table
+	>>	https://codesandbox.io/s/rpeb53?file=/demo.tsx
+	
+Note: react-virtualized / react-window break control+F
+	>> however, there is go-to-index support... 
+	
+react-virtualized library offers a table component, unlike react-window.
+	>>	https://github.com/bvaughn/react-window/issues/416#issuecomment-583123026
+	
+	here's a basic example:
+		>>	https://stackoverflow.com/a/52165889
+
+The official stance is to style non-table elements and instead use div elements to render the layout.
+Just the same, the react-virtualized's table component is not comprised of HTML table elements either... just fancy div's on a grid.
+
+There are various wrappers such as:
+	>>	react-base-table
+	>>	window-table
+	>>	react-fluid-table
+	
+But they are so bulky!
+
+Going back to react-window:
+	Sticky rows (or headers) are supported:
+	https://codesandbox.io/s/0mk3qwpl4l
+	https://codesandbox.io/s/wild-dust-jtf42?file=/src/index.js:1544-1548
+
+Table example, but headers are misaligned due to scroll bar:
+	>>	https://codesandbox.io/s/pk78pvwnkx
+	>>	https://window-table.netlify.app/
+
+A good discussion on table designs from the main repo:
+https://github.com/bvaughn/react-window/issues/60
+
+

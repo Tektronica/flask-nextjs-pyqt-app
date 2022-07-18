@@ -1,5 +1,6 @@
 // <!-- requires Tailwind CSS v2.0+ -->
 // <!-- requires papaparse -->
+// <!-- requires react-window -->
 
 import Layout from '../../components/layout'
 import ShadowBox from '../../components/containers/ShadowBox';
@@ -85,45 +86,28 @@ export default function DataView() {
                                 tableData.map((item, idx) => {
                                     return (
                                         <>
-                                            {/* <tr key={idx} className='bg-white border-b hover:bg-gray-200' >
-                                                <td className='px-6 text-gray-500'>
-                                                    {idx}
-                                                </td>
-                                                <td className='px-6 text-gray-500'>
-                                                    {item.mode}
-                                                </td>
-                                                <td className='px-6 text-gray-500'>
-                                                    {item.amp_nominal}
-                                                </td>
-                                                <td className='px-6 text-gray-500'>
-                                                    {item.dmm}
-                                                </td>
-                                                <td className='px-6 text-gray-500'>
-                                                    {item.passed}
-                                                </td>
-                                            </tr> */}
-                                          
-                                                <TableDisclosure key={idx}>
-                                                    <>
-                                                        <td className='px-6 text-gray-500'>
-                                                            {idx}
-                                                        </td>
-                                                        <td className='px-6 text-gray-500'>
-                                                            {item.mode}
-                                                        </td>
-                                                        <td className='px-6 text-gray-500'>
-                                                            {item.amp_nominal}
-                                                        </td>
-                                                        <td className='px-6 text-gray-500'>
-                                                            {item.dmm}
-                                                        </td>
-                                                        <td className='px-6 text-gray-500'>
-                                                            {item.passed}
-                                                        </td>
-                                                    </>
-                                                </TableDisclosure>
 
-                                            
+                                            <TableDisclosure key={idx}>
+                                                <>
+                                                    <td className='px-6 text-gray-500'>
+                                                        {idx}
+                                                    </td>
+                                                    <td className='px-6 text-gray-500'>
+                                                        {item.mode}
+                                                    </td>
+                                                    <td className='px-6 text-gray-500'>
+                                                        {item.amp_nominal}
+                                                    </td>
+                                                    <td className='px-6 text-gray-500'>
+                                                        {item.dmm}
+                                                    </td>
+                                                    <td className='px-6 text-gray-500'>
+                                                        {item.passed}
+                                                    </td>
+                                                </>
+                                            </TableDisclosure>
+
+
                                         </>
                                     )
                                 })
