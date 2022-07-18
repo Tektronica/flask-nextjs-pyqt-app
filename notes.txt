@@ -262,4 +262,47 @@ direct manipulation of dom node is not recommended in react...
 	>> dangerouslySetInnerHTML: React can ignore the inner HTML and allows direct DOM manipulation
 	>> react state: Using react states and callbacks achieves the same effect and preserves react structure
 
+CharJS
+====================================================================
+https://itnext.io/chartjs-tutorial-with-react-nextjs-with-examples-2f514fdc130
+	
+	
+	
+Papaparse
+====================================================================
+ReactJS fetch full CSV
+https://stackoverflow.com/questions/68302182/reactjs-fetch-full-csv
 
+https://stackoverflow.com/questions/39001078/get-just-header-from-remote-csv-file-using-papa-parse/43087596#43087596
+
+Papaparse currently implements XMLHttpRequest (XHR) objects to send requests... Custom headers *could* be supported
+https://github.com/mholt/PapaParse/issues/374#issuecomment-288356596
+
+
+
+Accordion (collapsible) table rows
+====================================================================
+
+https://therichpost.com/reactjs-material-table-with-expandable-collapsible-rows-working/
+https://codesandbox.io/s/collapsible-table-rows-in-react-ybb28
+https://stackoverflow.com/questions/70983024/how-to-expand-and-collapse-the-table-rows-in-plain-react-js-show-only-one-row-i
+https://gist.github.com/markerikson/bd9f03e0808558c5951e02f1aa98c563
+https://stackoverflow.com/questions/53240115/semantic-ui-react-map-accordion-in-every-table-row
+https://stackoverflow.com/questions/52108216/react-material-ui-multiple-collapse
+https://stackoverflow.com/questions/70983024/how-to-expand-and-collapse-the-table-rows-in-plain-react-js-show-only-one-row-i
+
+HeadlessUI may not work since wrapping componenents around table rows breaks tree inheritance
+https://github.com/TanStack/table/discussions/2336#discussioncomment-18339
+	>> There is an onClick prop of the table row that might work, but this would need to override the normal function of the headlessUI disclosure componenet
+	>> Children are wrapped around <Disclosure.Button> ... </Disclosure.Button>
+	>> This could possibly be overrided if the state of the button click is captured on the DOM
+	>> <button id="headlessui-disclosure-button-:r0:" className="..." type="button" aria-expanded="false"> ... </button>
+
+MaterialUI has an example where they incorporate an expandable panel below the table row
+https://mui.com/material-ui/react-table/#collapsible-table
+
+Very useful! headlessUI can render a default element as a different component.
+https://headlessui.com/react/disclosure#rendering-a-different-element-for-a-component
+	>> the Button default renders a <button>, Panel renders a <div>, but the 'as' prop can change the default componenet.
+	>> <Disclosure.Button as="tr">
+	

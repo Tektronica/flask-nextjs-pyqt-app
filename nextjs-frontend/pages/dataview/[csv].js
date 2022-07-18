@@ -8,6 +8,7 @@ import React, { useState, useEffect } from 'react';
 import TimePlot from '../../components/charts/TimePlot';
 // import TimePlot from '../../components/charts/_TimePlot' ;
 import Papa from 'papaparse';
+import TableDisclosure from '../../components/disclosure/tableDisclosure';
 
 // https://stackoverflow.com/questions/68302182/reactjs-fetch-full-csv
 
@@ -83,23 +84,47 @@ export default function DataView() {
                                 // https://headlessui.com/react/disclosure
                                 tableData.map((item, idx) => {
                                     return (
-                                        <tr key={idx} className='bg-white border-b hover:bg-gray-200' >
-                                            <td className='px-6 text-gray-500'>
-                                                {idx}
-                                            </td>
-                                            <td className='px-6 text-gray-500'>
-                                                {item.mode}
-                                            </td>
-                                            <td className='px-6 text-gray-500'>
-                                                {item.amp_nominal}
-                                            </td>
-                                            <td className='px-6 text-gray-500'>
-                                                {item.dmm}
-                                            </td>
-                                            <td className='px-6 text-gray-500'>
-                                                {item.passed}
-                                            </td>
-                                        </tr>
+                                        <>
+                                            {/* <tr key={idx} className='bg-white border-b hover:bg-gray-200' >
+                                                <td className='px-6 text-gray-500'>
+                                                    {idx}
+                                                </td>
+                                                <td className='px-6 text-gray-500'>
+                                                    {item.mode}
+                                                </td>
+                                                <td className='px-6 text-gray-500'>
+                                                    {item.amp_nominal}
+                                                </td>
+                                                <td className='px-6 text-gray-500'>
+                                                    {item.dmm}
+                                                </td>
+                                                <td className='px-6 text-gray-500'>
+                                                    {item.passed}
+                                                </td>
+                                            </tr> */}
+                                          
+                                                <TableDisclosure key={idx}>
+                                                    <>
+                                                        <td className='px-6 text-gray-500'>
+                                                            {idx}
+                                                        </td>
+                                                        <td className='px-6 text-gray-500'>
+                                                            {item.mode}
+                                                        </td>
+                                                        <td className='px-6 text-gray-500'>
+                                                            {item.amp_nominal}
+                                                        </td>
+                                                        <td className='px-6 text-gray-500'>
+                                                            {item.dmm}
+                                                        </td>
+                                                        <td className='px-6 text-gray-500'>
+                                                            {item.passed}
+                                                        </td>
+                                                    </>
+                                                </TableDisclosure>
+
+                                            
+                                        </>
                                     )
                                 })
                             }
@@ -163,9 +188,11 @@ function generateSin(f0, periods, dataLength) {
 function getItemsPassed(data) {
     let pass = 0;
     let fail = 0;
-
+    let hasPassed;
     for (let idx = 0; idx < data.length; idx++) {
-        if (data[idx].passed == 'pass') {
+        hasPassed = data[idx].passed;
+
+        if (hasPassed == 'pass' || hasPassed == '') {
             pass += 1
         } else {
             fail += 1
