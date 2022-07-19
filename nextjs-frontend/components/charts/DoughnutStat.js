@@ -1,5 +1,6 @@
 // <!-- requires chart.js -->
 // <!-- requires react-chartjs-2 -->
+// https://www.youtube.com/watch?v=x9TLusP2pj0
 
 import { Doughnut } from 'react-chartjs-2';
 
@@ -28,15 +29,15 @@ const DoughnutStat = ({ statData }) => {
     const faildetail = statData.faildetail  // ['100-125', '125-150', '150+']
 
     const pfDoughnut = {
-        labels: ['Pass', 'Fail'],
+        labels: ['<100%', '>100%'],
         datasets: [
             {
                 // data
                 data: passfail,
 
-                label: '# of Votes',
+                // label: '# of Votes',
                 backgroundColor: [
-                    'rgb(72, 159, 181)',
+                    'rgb(130, 192, 204)',
                     'rgb(255, 166, 43)',
                 ],
                 // borderColor: [
@@ -66,7 +67,7 @@ const DoughnutStat = ({ statData }) => {
     };
 
     const passDoughnut = {
-        labels: ['good', 'decent', 'marginal'],
+        labels: ['<50%', '50-75%', '>75%'],
         datasets: [
             {
                 // data
@@ -91,7 +92,7 @@ const DoughnutStat = ({ statData }) => {
         plugins: {
             title: {
                 display: true,
-                text: 'Passing',
+                text: 'Passing w.r.t. Spec',
             },
             legend: {
                 // position: 'left',
@@ -105,13 +106,13 @@ const DoughnutStat = ({ statData }) => {
     };
 
     const failDoughnut = {
-        labels: ['medicore', 'bad', 'terrible'],
+        labels: ['<125%', '125-150%', '>150%'],
         datasets: [
             {
                 // data
                 data: faildetail,
 
-                label: '# of Votes',
+                // label: '# of Votes',
                 backgroundColor: [
                     'rgb(237, 231, 227)',
                     'rgb(255, 166, 43)',
@@ -130,7 +131,7 @@ const DoughnutStat = ({ statData }) => {
         plugins: {
             title: {
                 display: true,
-                text: 'Failing',
+                text: 'Failing w.r.t. Spec',
             },
             legend: {
                 // position: 'left',
