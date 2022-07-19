@@ -16,13 +16,13 @@ import DoughnutStat from '../../components/charts/DoughnutStat';
 
 export default function DataView() {
     // https://itnext.io/chartjs-tutorial-with-react-nextjs-with-examples-2f514fdc130
-    const [tableData, setTableData] = useState([{ x: 0, y: 0 }, { x: 0, y: 1 }]);
+    const [tableData, setTableData] = useState([{ id: -1, x: 0, y: 0 }, { id: -2, x: 0, y: 1 }]);
     const [statData, setStatData] = useState({ passfail: [0, 0], passdetail: [0, 0, 0], faildetail: [0, 0, 0] })
     const [haveData, setHaveData] = useState(false);
 
     const router = useRouter()
     const { filename } = router.query
-    console.log(filename)
+    // console.log(filename)
     const f = '2022-07-18_Sweep_DCI'
     // get csv data determined by the dynamic route of this slug
 
@@ -79,32 +79,31 @@ export default function DataView() {
                             </tr>
                         </thead>
                         <tbody>
+                            {/* https://headlessui.com/react/disclosure */}
                             {
 
                                 tableData.map((item, idx) => {
+
                                     return (
-                                        <>
-                                            {/* https://headlessui.com/react/disclosure */}
-                                            <TableDisclosure panelContent={item} key={idx}>
-                                                <>
-                                                    <td className='px-6 text-gray-500'>
-                                                        {idx}
-                                                    </td>
-                                                    <td className='px-6 text-gray-500'>
-                                                        {item.mode}
-                                                    </td>
-                                                    <td className='px-6 text-gray-500'>
-                                                        {item.amp_nominal}
-                                                    </td>
-                                                    <td className='px-6 text-gray-500'>
-                                                        {item.dmm}
-                                                    </td>
-                                                    <td className='px-6 text-gray-500'>
-                                                        {item.passed}
-                                                    </td>
-                                                </>
-                                            </TableDisclosure>
-                                        </>
+                                        <TableDisclosure panelContent={item} key={item.id}>
+                                           <React.Fragment key={`${item.id}_fragment`}>
+                                                <td className='px-6 text-gray-500'>
+                                                    {item.id}
+                                                </td>
+                                                <td className='px-6 text-gray-500'>
+                                                    {item.mode}
+                                                </td>
+                                                <td className='px-6 text-gray-500'>
+                                                    {item.amp_nominal}
+                                                </td>
+                                                <td className='px-6 text-gray-500'>
+                                                    {item.dmm}
+                                                </td>
+                                                <td  className='px-6 text-gray-500'>
+                                                    {item.passed}
+                                                </td>
+                                                </React.Fragment>
+                                        </TableDisclosure>
                                     )
                                 })
                             }
@@ -261,6 +260,7 @@ async function openFile(filename, setHaveData, setTableData, setStatData) {
 
     const csvHeaders = p.meta.fields
     const csvRows = p.data
+    csvRows.pop()
     const passfail = getPassFail(csvRows)
 
     setStatData(passfail)
@@ -268,17 +268,17 @@ async function openFile(filename, setHaveData, setTableData, setStatData) {
     setHaveData(true)
 }
 
-const fetchData = async () => {
-    try {
-        const res = await fetch('/api');
-        const data = await res.json();
-        setPlotData(data);
-        setHaveData(true); // here, and importantly after the above setChartData call
-    } catch (error) {
-        setHaveData(false);
-        setError(error);
-    }
-}
+// const fetchData = async () => {
+//     try {
+//         const res = await fetch('/api');
+//         const data = await res.json();
+//         setPlotData(data);
+//         setHaveData(true); // here, and importantly after the above setChartData call
+//     } catch (error) {
+//         setHaveData(false);
+//         setError(error);
+//     }
+// }
 
 
 DataView.getLayout = function getLayout(page) {

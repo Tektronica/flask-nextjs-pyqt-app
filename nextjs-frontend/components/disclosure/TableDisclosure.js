@@ -3,15 +3,16 @@
 // https://headlessui.com/react/dialog
 
 import { Disclosure } from '@headlessui/react'
+import React from 'react';
 
-function TableDisclosure({ children, panelContent, key }) {
+function TableDisclosure({ children, panelContent }) {
+
     return (
-        <Disclosure>
-            <>
-                <Disclosure.Button className='bg-white border-b hover:bg-gray-200 cursor-pointer' key={key} as="tr">
+            <Disclosure>
+                <Disclosure.Button className='bg-white border-b hover:bg-gray-200 cursor-pointer' as="tr">
                     {children}
                 </Disclosure.Button>
-                <Disclosure.Panel key={key} as='tr'>
+                <Disclosure.Panel as='tr'>
                     <td colspan="5">
                         <div className='px-2 grid grid-cols-3 bg-gray-100 shadow-inner'>
                             <div className='grid grid-cols-2'>
@@ -41,8 +42,7 @@ function TableDisclosure({ children, panelContent, key }) {
                         </div>
                     </td>
                 </ Disclosure.Panel>
-            </>
-        </ Disclosure>
+            </ Disclosure>
     )
 }
 
