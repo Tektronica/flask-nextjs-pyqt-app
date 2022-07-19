@@ -12,7 +12,7 @@ export default function Queue() {
                 </h1>
                 <div className='flex flex-col items-center justify-center group'>
                     <div className="">
-                        <Image src='/blockdiagram.jpg'
+                        <Image src='/blockdiagram.png'
                             alt="Block diagram"
                             width={1352} height={792}
                         />
