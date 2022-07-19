@@ -10,23 +10,24 @@ import TimePlot from '../../components/charts/TimePlot';
 // import TimePlot from '../../components/charts/_TimePlot' ;
 import Papa from 'papaparse';
 import TableDisclosure from '../../components/disclosure/tableDisclosure';
+import DoughnutStat from '../../components/charts/DoughnutStat';
 
 // https://stackoverflow.com/questions/68302182/reactjs-fetch-full-csv
 
 export default function DataView() {
     // https://itnext.io/chartjs-tutorial-with-react-nextjs-with-examples-2f514fdc130
     const [tableData, setTableData] = useState([{ x: 0, y: 0 }, { x: 0, y: 1 }]);
+    const [statData, setStatData] = useState({ passfail: [0, 0], passdetail: [0, 0, 0], faildetail: [0, 0, 0] })
     const [haveData, setHaveData] = useState(false);
 
     const router = useRouter()
     const { filename } = router.query
     console.log(filename)
-    const f = '2022-05-05_Sweep_DCI'
+    const f = '2022-07-18_Sweep_DCI'
     // get csv data determined by the dynamic route of this slug
 
     useEffect(() => {
-
-        openFile(f, setHaveData, setTableData);
+        openFile(f, setHaveData, setTableData, setStatData);
     }, []);
 
     // const plotData = generateSin(1000, 4, 100);
@@ -38,20 +39,18 @@ export default function DataView() {
         <>
             <ShadowBox>
                 <h1 className="text-xl font-bold pb-4">
-                    Lissajous
+                    Highlights
+                </h1>
+                <DoughnutStat statData={statData} />
+            </ShadowBox>
+
+            <ShadowBox>
+                <h1 className="text-xl font-bold pb-4">
+                    Lissajous Plot
                 </h1>
                 <TimePlot pointData={plotData} />
             </ShadowBox>
-            <ShadowBox>
-                <h1 className="text-xl font-bold pb-4">
-                    Highlights
-                </h1>
-                <p>
-                    {
-                        getItemsPassed(tableData).fail
-                    }
-                </p>
-            </ShadowBox>
+
             <ShadowBox>
                 <h1 className="text-xl font-bold pb-4">
                     {f}
@@ -86,7 +85,6 @@ export default function DataView() {
                                 tableData.map((item, idx) => {
                                     return (
                                         <>
-
                                             <TableDisclosure key={idx}>
                                                 <>
                                                     <td className='px-6 text-gray-500'>
@@ -106,8 +104,6 @@ export default function DataView() {
                                                     </td>
                                                 </>
                                             </TableDisclosure>
-
-
                                         </>
                                     )
                                 })
@@ -169,23 +165,62 @@ function generateSin(f0, periods, dataLength) {
     return plotData
 }
 
-function getItemsPassed(data) {
+function getPassFail(data) {
     let pass = 0;
     let fail = 0;
     let hasPassed;
+
+    let good = 0;
+    let decent = 0;
+    let marginal = 0;
+
+    let medicore = 0;
+    let bad = 0;
+    let terrible = 0;
+
+    let percentOfLimit = 0;
+
     for (let idx = 0; idx < data.length; idx++) {
         hasPassed = data[idx].passed;
 
-        if (hasPassed == 'pass' || hasPassed == '') {
+        if (hasPassed == 'pass') {
             pass += 1
-        } else {
+            percentOfLimit = Math.abs(data[idx].PercentofLimit);
+            if (percentOfLimit >= 0 && percentOfLimit < 50) {
+                '0 to 50 percent of spec'
+                good += 1
+            } else if (percentOfLimit >= 50 && percentOfLimit < 75) {
+                '50 to 75 percent of spec'
+                decent += 1
+            } else if (percentOfLimit >= 75 && percentOfLimit < 100) {
+                '75 to 100 percent of spec'
+                marginal += 1
+            }
+
+        } else if (hasPassed == 'fail') {
             fail += 1
+            percentOfLimit = Math.abs(data[idx].PercentofLimit);
+            if (percentOfLimit >= 100 && percentOfLimit < 125) {
+                '100 to 125 percent of spec'
+                medicore += 1
+            } else if (percentOfLimit >= 120 && percentOfLimit > 150) {
+                '125 to 150 percent of spec'
+                bad += 1
+            } else if (percentOfLimit >= 150) {
+                '150 and above percent of spec'
+                terrible += 1
+            }
+        } else {
+            // pass
         }
     }
-    return { pass: pass, fail: fail }
+
+    const passfail = { passfail: [pass, fail], passdetail: [good, decent, marginal], faildetail: [medicore, bad, terrible] }
+    return passfail
+
 }
 
-async function openFile(filename, setHaveData, setTableData) {
+async function openFile(filename, setHaveData, setTableData, setStatData) {
     console.log('client: opening ', filename)
     const fileRequest = { cmd: 'download', name: filename }
     let url = '../api/history';
@@ -226,7 +261,9 @@ async function openFile(filename, setHaveData, setTableData) {
 
     const csvHeaders = p.meta.fields
     const csvRows = p.data
+    const passfail = getPassFail(csvRows)
 
+    setStatData(passfail)
     setTableData(csvRows)
     setHaveData(true)
 }
