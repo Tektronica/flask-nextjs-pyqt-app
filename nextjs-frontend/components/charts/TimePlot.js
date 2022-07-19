@@ -67,36 +67,34 @@ const TimePlot = ({ pointData }) => {
         ]
     };
 
-    const config = {
-        options: {
-            responsive: true,
-            title: {
-                // optional: your title here
-            },
-            events: [],
-            animation: false,
-            scales: {
-                xAxes: [{
-                    type: 'linear', // MANDATORY TO SHOW YOUR POINTS! (THIS IS THE IMPORTANT BIT) 
+    const options = {
+        responsive: true,
+        title: {
+            // optional: your title here
+        },
+        events: [],
+        animation: false,
+        scales: {
+            xAxes: [{
+                type: 'linear', // MANDATORY TO SHOW YOUR POINTS! (THIS IS THE IMPORTANT BIT) 
+                display: true, // mandatory
+                ticks: {
+                    max: 100,
+                    min: 0,
+                    stepSize: 10
+                },
+                scaleLabel: {
                     display: true, // mandatory
-                    ticks: {
-                        max: 100,
-                        min: 0,
-                        stepSize: 10
-                    },
-                    scaleLabel: {
-                        display: true, // mandatory
-                        labelString: 'Your label' // optional 
-                    },
-                }],
-                yAxes: [{ // and your y axis customization as you see fit...
+                    labelString: 'Your label' // optional 
+                },
+            }],
+            yAxes: [{ // and your y axis customization as you see fit...
+                display: true,
+                scaleLabel: {
                     display: true,
-                    scaleLabel: {
-                        display: true,
-                        labelString: 'Count'
-                    }
-                }],
-            }
+                    labelString: 'Count'
+                }
+            }],
         }
     };
 
@@ -104,7 +102,7 @@ const TimePlot = ({ pointData }) => {
         <>
             <Scatter
                 data={data}
-                options={config}
+                options={options}
             />
         </>
     )
