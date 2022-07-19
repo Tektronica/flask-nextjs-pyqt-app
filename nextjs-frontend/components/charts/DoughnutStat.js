@@ -97,6 +97,7 @@ const DoughnutStat = ({ statData }) => {
             legend: {
                 // position: 'left',
                 labels: {
+                    render: 'label',
                     // boxWidth: 10,
                     usePointStyle: true,
                     // pointStyle: 'rect'

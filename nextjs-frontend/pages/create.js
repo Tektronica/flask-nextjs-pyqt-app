@@ -1,37 +1,27 @@
 import Layout from '../components/layout'
 import ShadowBox from '../components/containers/ShadowBox';
+import Image from 'next/image';
 
 export default function Create() {
 
     return (
         <>
             <ShadowBox>
-                <h1 className="text-3xl font-bold underline">
-                    Hello world!
+                <h1 className="text-xl font-bold pb-4">
+                    Select a test to run:
                 </h1>
-                <div>
-                    Message
-                </div>
+                <div className='flex flex-col items-center justify-center group'>
+                    <button className='w-48 px-4 rounded bg-green-500 text-white text-2xl uppercase transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 duration-300'>
+                        Run Test
+                    </button>
 
-                <p>
-                    Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed
-                    code for the video you want to add. You can also type a keyword to search online for the video that best fits your
-                    document.
-                    <br /><br />
-                    To make your document look professionally produced, Word provides header, footer, cover page, and text box designs
-                    that complement each other. For example, you can add a matching cover page, header, and sidebar. Click Insert and
-                    then choose the elements you want from the different galleries.
-                    Themes and styles also help keep your document coordinated. When you click Design and choose a new Theme, the
-                    pictures, charts, and SmartArt graphics change to match your new theme. When you apply styles, your headings change
-                    to match the new theme.
-                    <br /><br />
-                    Save time in Word with new buttons that show up where you need them. To change the way a picture fits in your
-                    document, click it and a button for layout options appears next to it. When you work on a table, click where you
-                    want to add a row or a column, and then click the plus sign.
-                    Reading is easier, too, in the new Reading view. You can collapse parts of the document and focus on the text you
-                    want. If you need to stop reading before you reach the end, Word remembers where you left off - even on another
-                    device.
-                </p>
+                    <div className="transition-opacity ease-in duration-700 opacity-0 : group-hover:opacity-100">
+                        <Image src='/constructionpatrick.png'
+                            alt="Construction Patrick Star"
+                            width={357} height={536}
+                        />
+                    </div>
+                </div>
             </ShadowBox>
 
         </>
@@ -41,8 +31,8 @@ export default function Create() {
 
 Create.getLayout = function getLayout(page) {
     return (
-      <Layout>
-        {page}
-      </Layout>
+        <Layout>
+            {page}
+        </Layout>
     )
-  }
+}

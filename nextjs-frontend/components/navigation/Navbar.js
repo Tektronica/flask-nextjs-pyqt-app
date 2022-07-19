@@ -61,7 +61,7 @@ const Navbar = () => {
                     </Link>
                 </div>
                 <div className="pb-4 text-gray-400 hover:text-white">
-                    <Link href='/queue'>
+                    <Link href='/about'>
                         <a className="flex items-center">
                             <span className="mr-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24"
@@ -70,7 +70,7 @@ const Navbar = () => {
                                         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                                 </svg>
                             </span>
-                            Queue
+                            About
                         </a>
                     </Link>
                 </div>

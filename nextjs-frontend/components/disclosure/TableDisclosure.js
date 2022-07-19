@@ -4,39 +4,39 @@
 
 import { Disclosure } from '@headlessui/react'
 
-function TableDisclosure({ children, ...rest }) {
+function TableDisclosure({ children, panelContent, key }) {
     return (
         <Disclosure>
             <>
-                <Disclosure.Button className='bg-white border-b hover:bg-gray-200 cursor-pointer' {...rest} as="tr">
+                <Disclosure.Button className='bg-white border-b hover:bg-gray-200 cursor-pointer' key={key} as="tr">
                     {children}
                 </Disclosure.Button>
-                <Disclosure.Panel as='tr'>
+                <Disclosure.Panel key={key} as='tr'>
                     <td colspan="5">
                         <div className='px-2 grid grid-cols-3 bg-gray-100 shadow-inner'>
                             <div className='grid grid-cols-2'>
+                                <div className='font-bold'>Ambient:</div>
+                                <div>{panelContent.ambient}</div>
                                 <div className='font-bold'>Mode:</div>
-                                <div>DCI</div>
-                                <div className='font-bold'>Amplitude:</div>
-                                <div>5mA</div>
-                                <div className='font-bold'>Actual:</div>
-                                <div>0.00005</div>
+                                <div>{panelContent.mode}</div>
+                                <div className='font-bold'>DMM:</div>
+                                <div>{panelContent.dmm}</div>
                             </div>
                             <div className='grid grid-cols-2'>
-                                <div className='font-bold'>Mode:</div>
-                                <div>DCI</div>
-                                <div className='font-bold'>Amplitude:</div>
-                                <div>5mA</div>
+                                <div className='font-bold'>Nominal:</div>
+                                <div>{panelContent.amp_nominal}</div>
                                 <div className='font-bold'>Actual:</div>
-                                <div>0.00005</div>
+                                <div>{panelContent.amp_actual}</div>
+                                <div className='font-bold'>Frequency:</div>
+                                <div>{panelContent.freq_actual}</div>
                             </div>
                             <div className='grid grid-cols-2'>
                                 <div className='font-bold'>Total Error:</div>
-                                <div>0.0000000091</div>
+                                <div>{panelContent.total_error}</div>
                                 <div className='font-bold'>Reading Error:</div>
-                                <div>-0.00000000081</div>
+                                <div>{panelContent.reading_error}</div>
                                 <div className='font-bold'>% of Limit:</div>
-                                <div>-8.9011</div>
+                                <div>{panelContent.PercentofLimit}</div>
                             </div>
                         </div>
                     </td>

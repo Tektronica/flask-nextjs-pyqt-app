@@ -80,12 +80,12 @@ export default function DataView() {
                         </thead>
                         <tbody>
                             {
-                                // TODO: consider a headless ui disclosure here
-                                // https://headlessui.com/react/disclosure
+
                                 tableData.map((item, idx) => {
                                     return (
                                         <>
-                                            <TableDisclosure key={idx}>
+                                            {/* https://headlessui.com/react/disclosure */}
+                                            <TableDisclosure panelContent={item} key={idx}>
                                                 <>
                                                     <td className='px-6 text-gray-500'>
                                                         {idx}
