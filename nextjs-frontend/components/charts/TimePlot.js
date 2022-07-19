@@ -74,28 +74,28 @@ const TimePlot = ({ pointData }) => {
         },
         events: [],
         animation: false,
-        scales: {
-            xAxes: [{
-                type: 'linear', // MANDATORY TO SHOW YOUR POINTS! (THIS IS THE IMPORTANT BIT) 
-                display: true, // mandatory
-                ticks: {
-                    max: 100,
-                    min: 0,
-                    stepSize: 10
-                },
-                scaleLabel: {
-                    display: true, // mandatory
-                    labelString: 'Your label' // optional 
-                },
-            }],
-            yAxes: [{ // and your y axis customization as you see fit...
-                display: true,
-                scaleLabel: {
-                    display: true,
-                    labelString: 'Count'
-                }
-            }],
-        }
+        // scales: {
+        //     xAxes: [{
+        //         type: 'linear', // MANDATORY TO SHOW YOUR POINTS! (THIS IS THE IMPORTANT BIT) 
+        //         display: true, // mandatory
+        //         ticks: {
+        //             max: 100,
+        //             min: 0,
+        //             stepSize: 10
+        //         },
+        //         scaleLabel: {
+        //             display: true, // mandatory
+        //             labelString: 'Your label' // optional 
+        //         },
+        //     }],
+        //     yAxes: [{ // and your y axis customization as you see fit...
+        //         display: true,
+        //         scaleLabel: {
+        //             display: true,
+        //             labelString: 'Count'
+        //         }
+        //     }],
+        // }
     };
 
     return (
