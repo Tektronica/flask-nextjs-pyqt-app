@@ -8,7 +8,7 @@ function TableDisclosure({ children, ...rest }) {
     return (
         <Disclosure>
             <>
-                <Disclosure.Button className='bg-white border-b hover:bg-gray-200' {...rest} as="tr">
+                <Disclosure.Button className='bg-white border-b hover:bg-gray-200 cursor-pointer' {...rest} as="tr">
                     {children}
                 </Disclosure.Button>
                 <Disclosure.Panel as='tr'>
