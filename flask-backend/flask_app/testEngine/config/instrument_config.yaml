@@ -27,7 +27,7 @@
   mode: LAN
   address: 10.205.93.24
   port: '3490'
-  gpib: '1'
+  gpib: '5'
 - name: Sigtrygr
   instr: f8588A
   mode: LAN

@@ -130,6 +130,10 @@ def command():
             print('query cmd: ', arg, ' to ', name)
             return composer.getSeat(name).query(arg)
 
+        elif cmd == 'info':
+            print('getting info on ', name)
+            return composer.getSeat(name).getInfo()
+
     # else POST Error 405 Method Not Allowed
 
 

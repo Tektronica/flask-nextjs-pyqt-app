@@ -240,8 +240,8 @@ export default function Instruments() {
                                 Query
                             </button>
                             <button
-                                id='query-btn'
-                                onClick={handleClick.bind(this, 'getinfo')}
+                                id='info-btn'
+                                onClick={handleClick.bind(this, 'info')}
                                 className="mr-2 pl-2 pr-2 bg-transparent hover:bg-cyan-500 text-cyan-700 font-semibold hover:text-white border border-cyan-500 hover:border-transparent rounded">
                                 Instrument Info
                             </button>
@@ -250,7 +250,8 @@ export default function Instruments() {
                         <div className='pb-2'>
                             <textarea
                                 id='response-box'
-                                className='min-h-[100px] font-mono text-xs border-2 w-full bg-cyan-50 text-cyan-900'
+                                spellCheck="false"
+                                className='min-h-[150px] font-mono text-xs border-2 w-full bg-cyan-50 text-cyan-900'
                             >
                             </textarea>
                         </div>
@@ -395,6 +396,9 @@ async function handleClick(id, setStatusIcon, e) {
         const resource = document.getElementById('resource').value
         const timeout = document.getElementById('timeout').value
 
+        let newline = 'Attempting to connect to ' + resource + '\n'
+        document.getElementById('response-box').value += newline;
+
         // fetch if resource value is not null or empty string
         if (resource != '') {
             console.log('client: connecting, ', resource)
@@ -403,7 +407,7 @@ async function handleClick(id, setStatusIcon, e) {
 
             // 60 second timeout:
             const controller = new AbortController()
-            const timeoutId = setTimeout(() => controller.abort(), 60*1000)
+            const timeoutId = setTimeout(() => controller.abort(), 60 * 1000)
 
             const res = await fetch(url, {
                 signal: controller.signal,
@@ -420,7 +424,7 @@ async function handleClick(id, setStatusIcon, e) {
             let body = await res.json();
             let status = body.status
             let msg = body.data
-            let newline = 'connection: ' + status + ', ' + msg + '\n'
+            newline = 'connection: ' + status + ', ' + msg + '\n\n'
             console.log('server: ', newline);
             setStatusIcon(getIcon(status))
             document.getElementById('response-box').value += newline;
@@ -450,7 +454,7 @@ async function handleClick(id, setStatusIcon, e) {
         const body = await res.json();
         console.log('server: ', body);
 
-    } else if (['write', 'read', 'query', 'getinfo'].includes(id)) {
+    } else if (['write', 'read', 'query', 'info'].includes(id)) {
 
         const resource = document.getElementById('resource').value;
         let arg = document.getElementById('cmd-select').value;
@@ -473,11 +477,11 @@ async function handleClick(id, setStatusIcon, e) {
             console.log('query')
             cmd = 'QUERY: '
             line = '>>' + cmd + arg + '\n'
-        } else if (id == 'getinfo') {
+        } else if (id == 'info') {
             // get instrument model information
-            console.log('getinfo')
-            cmd = 'Instrument Model Information: '
-            line = '>>' + cmd + arg + '\n'
+            console.log('client: retrieving information on instrument...')
+            cmd = 'Instrument Model Information:'
+            line = '>>' + cmd + '\n'
         }
 
         // print the sent command to textarea
@@ -501,19 +505,41 @@ async function handleClick(id, setStatusIcon, e) {
         let body = await res.json();
         const status = body.status
         const data = body.data
-        let newline = data + '\n\n';
 
         console.log('server: ', body)
 
         // print the response to textarea
-        document.getElementById('response-box').value += newline;
+        if (id != 'info') {
+            const newline = data + '\n\n';
+            document.getElementById('response-box').value += newline;
+        } else {
+            let newlines = ''
+            newlines += 'Model: ' + data.model + '\n';
+            newlines += 'Serial: ' + data.serial + '\n';
+            newlines += 'Address: ' + `TCPIP0::${data.enet}::${data.port}::SOCKET` + ' / ' + `GPIB0::${data.gpib}::INSTR` + '\n';
+            newlines += 'EOL: ' + data.eol + '\n';
+            newlines += 'Cal Date: ' + formatDate(data.caldate) + '\n';
+            newlines += 'DC Zero Date: ' + formatDate(data.zero) + '\n\n';
+            document.getElementById('response-box').value += newlines;
+        }
 
     } else if (id == 'clear') {
         // clear the response text area
-        console.log('clear')
+        console.log('client: clear')
         document.getElementById('response-box').value = "";
     }
 };
+
+function formatDate(mmddyy) {
+    var myRegexp = /^([^\s]{2})([^\s]{2})([^\s]{2})$/g
+    var match = myRegexp.exec(mmddyy);
+    if (match) {
+        match.shift();
+        return match.join("-")
+    } else {
+        return mmddyy
+    }
+}
 
 // returns the selected row as dictionary
 function getRow(rowid) {

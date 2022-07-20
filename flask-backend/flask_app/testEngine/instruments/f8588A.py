@@ -175,6 +175,21 @@ class f8588A:
             msg = f"{self.config['name']} was not connected"
             print(msg)
             return {'status': True, 'data': msg}
+        
+    def getInfo(self):
+        idn = self.query('*IDN?')['data'].split(',')
+        modelnum = idn[1]
+        serialnum = idn[2]
+        enetADDR = self.query('SYST:COMM:LAN:IPAD?')['data']
+        portnum = self.query('SYST:COMM:LAN:CONT?')['data']
+        gpibADDR = self.query('SYST:COMM:GPIB:ADDR?')['data']
+        eol = 'N/A'
+        calDate = self.query('CAL:STOR:DATE? CERT')['data']
+        zero = 'N/A'
+
+        msg = {'model': modelnum, 'serial': serialnum, 'caldate': calDate, 'zero': zero, 'enet':enetADDR, 'port':portnum, 'eol':eol, 'gpib':gpibADDR}
+
+        return {'status': True, 'data': msg}
 
     # SETUP METER ######################################################################################################
     def setup_f8588A_meter(self, autorange=True, **kwds):

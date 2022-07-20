@@ -73,6 +73,21 @@ class f5730A:
             msg = f"{self.config['name']} was not connected"
             print(msg)
             return {'status': True, 'data': msg}
+    
+    def getInfo(self):
+        idn = self.query('*IDN?')['data'].split(',')
+        modelnum = idn[1]
+        serialnum = idn[2]
+        enetADDR = self.query('IPADDR?')['data']
+        portnum = self.query('ENETPORT?')['data']
+        gpibADDR = self.query('ADDR?')['data']
+        eol = self.query('EOL? ENET')['data']
+        calDate = self.query('CAL_DATE? CAL')['data']
+        zero = self.query('CAL_DATE? ZERO')['data']
+
+        msg = {'model': modelnum, 'serial': serialnum, 'caldate': calDate, 'zero': zero, 'enet':enetADDR, 'port':portnum, 'eol':eol, 'gpib':gpibADDR}
+
+        return {'status': True, 'data': msg}
 
     def setup_f5730A_source(self):
         self.write('*RST')
