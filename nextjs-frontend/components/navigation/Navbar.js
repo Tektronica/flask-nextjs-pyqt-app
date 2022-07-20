@@ -117,6 +117,13 @@ const Navbar = () => {
                         </a>
                     </Link>
                     <div className='border-t border-cyan-800 my-2 pl-4'>
+                        <div className='pb-2 text-gray-400 hover:text-white'>
+                            <Link href='/spectrum'>
+                                <a>
+                                    ◦ Spectrum Analyzer
+                                </a>
+                            </Link>
+                        </div>
                         <div className="pb-2 text-gray-400 hover:text-white">
                             ◦ Spec Wizard
                         </div>

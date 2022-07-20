@@ -26,7 +26,7 @@ ChartJS.register(
     Filler,
 );
 
-const TimePlot = ({ pointData }) => {
+const SpectrumPlot = ({ pointData }) => {
 
     // https://stackoverflow.com/questions/70684106/react-chartjs-2-typeerror-undefined-is-not-an-object-evaluating-nextdatasets
     // https://www.learnnext.blog/blogs/using-chartjs-in-your-nextjs-application
@@ -109,4 +109,4 @@ const TimePlot = ({ pointData }) => {
 }
 
 
-export default TimePlot
+export default SpectrumPlot

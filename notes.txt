@@ -359,3 +359,14 @@ A good discussion on table designs from the main repo:
 https://github.com/bvaughn/react-window/issues/60
 
 
+FFT
+====================================================================
+https://thebreakfastpost.com/2015/10/18/ffts-in-javascript/
+http://kissfft.sourceforge.net/
+https://github.com/j-funk/kissfft-js/tree/master/src
+https://www.nayuki.io/page/free-small-fft-in-multiple-languages
+
+>>	Looks like KISSfft C library compiled to Javascript with Emscripten was the fastest...
+>>	While native system computations (C compiled) were always better, at least Emscripten provides a performant client-side calculation for now...
+>>	Preliminary benchmarks of C programs compiled to asm.js are usually within a factor of 2 slowdown over native compilation with clang.
+
