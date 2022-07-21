@@ -4,6 +4,7 @@ import numpy as np
 
 DIGITIZER_SAMPLING_FREQUENCY = 5e6
 
+
 ########################################################################################################################
 def to_float(string_val):
     try:
@@ -32,7 +33,7 @@ def getSamplingFrequency(f0, bw=100e3):
     Nyquist 6dB down from the filter cutoff. 2BW is 1 octave from the BW
     """
     # Ideal sampling frequency
-    _Fs = max(2 * (2*bw), 100 * f0)
+    _Fs = max(2 * (2 * bw), 100 * f0)
 
     # An integer number of samples averaged per measurement determines actual sampling frequency
     N = max(round(DIGITIZER_SAMPLING_FREQUENCY / _Fs), 1)
@@ -119,26 +120,26 @@ class f8588A:
             print('received: ', arg)
             return self.VISA.write(arg)
         else:
-            return {'status': False, 'data':'<not connected>'}
-    
+            return {'status': False, 'data': '<not connected>'}
+
     def read(self):
         if self.active:
             print('reading')
             return self.VISA.read()
         else:
-            return {'status': False, 'data':'<not connected>'}
+            return {'status': False, 'data': '<not connected>'}
 
     def query(self, arg):
         if self.active:
             print('received: ', arg)
             return self.VISA.query(arg)
         else:
-            return {'status': False, 'data':'<not connected>'}
+            return {'status': False, 'data': '<not connected>'}
 
     def connect(self, timeout=2000):
         if not self.active:
             self.VISA = VisaClient.VisaClient(self.config)  # Instantiate VISA object class
-            body = self.VISA.connect(timeout) # attempt connection to the instrument
+            body = self.VISA.connect(timeout)  # attempt connection to the instrument
             status = body['status']
 
             if status:
@@ -169,13 +170,13 @@ class f8588A:
                 print(f"{self.config['name']} has disconnected")
             else:
                 print(f"{self.config['name']} failed to disconnect")
-            
+
             return body
         else:
             msg = f"{self.config['name']} was not connected"
             print(msg)
             return {'status': True, 'data': msg}
-        
+
     def getInfo(self):
         idn = self.query('*IDN?')['data'].split(',')
         modelnum = idn[1]
@@ -187,7 +188,8 @@ class f8588A:
         calDate = self.query('CAL:STOR:DATE? CERT')['data']
         zero = 'N/A'
 
-        msg = {'model': modelnum, 'serial': serialnum, 'caldate': calDate, 'zero': zero, 'enet':enetADDR, 'port':portnum, 'eol':eol, 'gpib':gpibADDR}
+        msg = {'model': modelnum, 'serial': serialnum, 'caldate': calDate, 'zero': zero, 'enet': enetADDR,
+               'port': portnum, 'eol': eol, 'gpib': gpibADDR}
 
         return {'status': True, 'data': msg}
 
@@ -562,4 +564,3 @@ if __name__ == "__main__":
                                           filter_val='100kHz', N=20000, aperture=0)
         except AttributeError:
             print("AttributeError was raised. The instrument isn't currently connected.")
-            

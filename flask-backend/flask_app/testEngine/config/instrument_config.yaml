@@ -1,7 +1,7 @@
 - name: Bragi
   instr: f8588A
   mode: LAN
-  address: 10.205.93.34
+  address: 10.205.93.31
   port: '3490'
   gpib: '6'
 - name: "V\xED\xF0arr"

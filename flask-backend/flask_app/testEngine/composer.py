@@ -56,7 +56,7 @@ class Composer:
                 break
 
         return active
-    
+
     def getActive(self):
         # returns a list of dictionaries of each active instrument
         activeInstruments = []
@@ -64,9 +64,9 @@ class Composer:
             if seat is not None:
                 if seat.active:
                     activeInstruments.append(seat.config)
-                
+
         return activeInstruments
-    
+
     def getInactive(self):
         # returns a list of dictionaries of each active instrument
         inactiveInstruments = []

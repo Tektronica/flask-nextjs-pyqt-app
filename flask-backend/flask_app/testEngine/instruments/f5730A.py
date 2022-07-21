@@ -1,6 +1,7 @@
 from flask_app.testEngine.instruments import VisaClient
 import time
 
+
 ########################################################################################################################
 class f5730A:
 
@@ -17,26 +18,26 @@ class f5730A:
             print('received: ', arg)
             return self.VISA.write(arg)
         else:
-            return {'status': False, 'data':'<not connected>'}
-    
+            return {'status': False, 'data': '<not connected>'}
+
     def read(self):
         if self.active:
             print('reading')
             return self.VISA.read()
         else:
-            return {'status': False, 'data':'<not connected>'}
+            return {'status': False, 'data': '<not connected>'}
 
     def query(self, arg):
         if self.active:
             print('received: ', arg)
             return self.VISA.query(arg)
         else:
-            return {'status': False, 'data':'<not connected>'}
+            return {'status': False, 'data': '<not connected>'}
 
     def connect(self, timeout=2000):
         if not self.active:
             self.VISA = VisaClient.VisaClient(self.config)  # Instantiate VISA object class
-            body = self.VISA.connect(timeout) # attempt connection to the instrument
+            body = self.VISA.connect(timeout)  # attempt connection to the instrument
             status = body['status']
 
             if status:
@@ -67,13 +68,13 @@ class f5730A:
                 print(f"{self.config['name']} has disconnected")
             else:
                 print(f"{self.config['name']} failed to disconnect")
-            
+
             return body
         else:
             msg = f"{self.config['name']} was not connected"
             print(msg)
             return {'status': True, 'data': msg}
-    
+
     def getInfo(self):
         idn = self.query('*IDN?')['data'].split(',')
         modelnum = idn[1]
@@ -85,7 +86,8 @@ class f5730A:
         calDate = self.query('CAL_DATE? CAL')['data']
         zero = self.query('CAL_DATE? ZERO')['data']
 
-        msg = {'model': modelnum, 'serial': serialnum, 'caldate': calDate, 'zero': zero, 'enet':enetADDR, 'port':portnum, 'eol':eol, 'gpib':gpibADDR}
+        msg = {'model': modelnum, 'serial': serialnum, 'caldate': calDate, 'zero': zero, 'enet': enetADDR,
+               'port': portnum, 'eol': eol, 'gpib': gpibADDR}
 
         return {'status': True, 'data': msg}
 
