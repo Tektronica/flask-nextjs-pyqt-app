@@ -30,7 +30,7 @@ ChartJS.register(
 const SpectrumPlot = ({ pointData }) => {
     const rangePosition = 20;
     let dataLength = pointData.length
-    let sliceRange = parseInt(rangePosition / 100 * dataLength);
+    let sliceRange = Math.floor(rangePosition / 100 * dataLength);
 
     // default is 50% slice
     let newSlice = pointData.slice(0, sliceRange);
@@ -129,8 +129,8 @@ const SpectrumPlot = ({ pointData }) => {
 
 function updateMax(pointData, setPointData, e) {
     // slices a percent of the plot array based on range value
-    const range_value = parseInt(e.target.value)
-    const newSliceRange = parseInt(range_value / 100 * pointData.length)
+    const range_value = Math.floor(e.target.value)
+    const newSliceRange = Math.floor(range_value / 100 * pointData.length)
     console.log('client: range slider adjusted to:', range_value, 'Updating slice to: ', newSliceRange)
     setPointData(pointData.slice(0, newSliceRange))
 }
