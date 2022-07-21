@@ -377,11 +377,56 @@ https://arachnoid.com/SigGen/index.html
 
 
 
-Input range slider
+ChartJS: Input range slider
 ====================================================================
 
 User interactions have no effect because an <input> with value prop is considered as controlled. 
 https://stackoverflow.com/a/36123370
 https://www.youtube.com/watch?v=FAyDsmyVnPA
+
+The video slices the labels (x axis) to adjust the content being displayed.
+However, our pointData is an object {x: 0, y: 0}, which has no labels.
+The first commit on this topic sliced the data each time the slider range updated.
+This wasn't efficient since the chart required to be redrawn with new data each time.
+
+Commit #59 proposes dynamically changing the config x max value onChange of the range slider.
+Still evaluating performance of this method. Larger range steps (such as '10') help compensate for the update lag.
+
+I'm not sure what occurs behind the curtain, but looks like chartJS redraws the canvas each time the range changes regardless of whether the data has changed.
+Is the performance better? Not sure, but I would argue this pattern is more approachable than slice the labels / data object.
+
+https://stackoverflow.com/a/67916563
+
+
+
+ChartJS: 'window is not defined' when using 
+====================================================================
+https://github.com/reactjs/react-chartjs/issues/57
+https://bobbyhadz.com/blog/typescript-uncaught-referenceerror-exports-is-not-defined
+
+I was struggling to get pan feature of the chartjs zoom plugin working. When the page isn't rehydrated, everything works.
+However, looks like the window is lost on refresh, which forces a new render of the page.
+
+'window is not defined' 
+
+As there is no window while doing server rendering we cannot do much as a part of this lib.
+
+So, perhaps this content can be rendered once the page has mounted?
+https://stackoverflow.com/a/59403018
+
+However, do to the design of webpack, we can't dynamic import libraries like this...
+
+
+Another solution is to disable server-side rendering (SSR) for this page:
+https://stackoverflow.com/a/57848309
+https://stackoverflow.com/a/57848309/16181400
+
+
+Looks to have been a NextJS issue... which makes sense
+
+Instead of the plot component being imported as usual, we use the suggested dynamic non-ssr approach in the link above.
+
+
+
 
 

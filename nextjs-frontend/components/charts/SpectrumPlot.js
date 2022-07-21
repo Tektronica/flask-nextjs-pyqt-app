@@ -1,8 +1,11 @@
 // <!-- requires chart.js -->
 // <!-- requires react-chartjs-2 -->
+// <!-- chartjs-plugin-zoom -->
 
-import { Scatter } from 'react-chartjs-2';
+import dynamic from 'next/dynamic'
 import React, { useState, useEffect } from 'react';
+import { Scatter } from 'react-chartjs-2';
+import zoomPlugin from 'chartjs-plugin-zoom';
 
 import {
     Chart as ChartJS,
@@ -25,30 +28,33 @@ ChartJS.register(
     Tooltip,
     Legend,
     Filler,
+    zoomPlugin,
 );
 
 const SpectrumPlot = ({ pointData }) => {
-    const rangePosition = 20;
-    let dataLength = pointData.length
-    let sliceRange = Math.floor(rangePosition / 100 * dataLength);
+    const rangeSliderPosition = 20;
 
-    // default is 50% slice
-    let newSlice = pointData.slice(0, sliceRange);
+    let xScaleMax = pointData[pointData.length - 1].x;
+    let newRangeMax = getRangeMax(rangeSliderPosition, xScaleMax);
 
-    const [dataPoints, setDataPoints] = useState(newSlice);
+    const [rangeMax, setRangeMax] = useState(newRangeMax);
 
+
+    // tracks when data updates by an external state
     useEffect(() => {
-        // tracks when data updates by an external state
-        newSlice = pointData.slice(0, sliceRange);
-        setDataPoints(newSlice)
-     }, [pointData]) 
+        xScaleMax = pointData[pointData.length - 1].x
+        const newRangeMax = getRangeMax(rangeSliderPosition, xScaleMax);
+        console.log(rangeSliderPosition, xScaleMax, newRangeMax)
+        setRangeMax(newRangeMax)
+
+    }, [pointData])
 
     // data is a list of point objects
     const data = {
         datasets: [
             {
                 // data
-                data: dataPoints,
+                data: pointData,
                 indexAxis: 'x',
                 showLine: true,
 
@@ -82,28 +88,32 @@ const SpectrumPlot = ({ pointData }) => {
         },
         events: [],
         animation: false,
-        // scales: {
-        //     xAxes: [{
-        //         type: 'linear', // MANDATORY TO SHOW YOUR POINTS! (THIS IS THE IMPORTANT BIT) 
-        //         display: true, // mandatory
-        //         ticks: {
-        //             max: 100,
-        //             min: 0,
-        //             stepSize: 10
-        //         },
-        //         scaleLabel: {
-        //             display: true, // mandatory
-        //             labelString: 'Your label' // optional 
-        //         },
-        //     }],
-        //     yAxes: [{ // and your y axis customization as you see fit...
-        //         display: true,
-        //         scaleLabel: {
-        //             display: true,
-        //             labelString: 'Count'
-        //         }
-        //     }],
-        // }
+        // pan: {
+        //     enabled: true,
+        //     mode: 'x'
+        // },
+        scales: {
+            x: {
+                suggestedMin: '0',
+                max: `${rangeMax}`,
+            }
+        },
+        plugins: {
+            zoom: {
+                zoom: {
+                    wheel: {
+                        enabled: true
+                    },
+                    mode: "xy",
+                    speed: 100
+                },
+                pan: {
+                    enabled: true,
+                    mode: "x",
+                    // speed: 100
+                }
+            }
+        }
     };
 
     return (
@@ -113,13 +123,13 @@ const SpectrumPlot = ({ pointData }) => {
                 options={options}
             />
             <input
-                onChange={updateMax.bind(this, pointData, setDataPoints)}
+                onChange={updateMax.bind(this, xScaleMax, setRangeMax)}
                 type="range"
                 id="end"
                 min="10"
                 max="100"
                 step="10"
-                defaultValue={rangePosition}
+                defaultValue={rangeSliderPosition}
                 // className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
                 className="w-full h-2 rounded-lg cursor-pointer"
             />
@@ -127,12 +137,22 @@ const SpectrumPlot = ({ pointData }) => {
     )
 }
 
-function updateMax(pointData, setPointData, e) {
+function getRangeMax(percentOfRange, maxRange) {
+    let newRangeMax = Math.round((percentOfRange / 100 * maxRange) * 10000) / 10000;
+
+    if (newRangeMax === 0) {
+        newRangeMax = maxRange
+    }
+    return newRangeMax
+
+}
+
+function updateMax(xScaleMax, setRangeMax, e) {
     // slices a percent of the plot array based on range value
-    const range_value = Math.floor(e.target.value)
-    const newSliceRange = Math.floor(range_value / 100 * pointData.length)
-    console.log('client: range slider adjusted to:', range_value, 'Updating slice to: ', newSliceRange)
-    setPointData(pointData.slice(0, newSliceRange))
+    const newSliderValue = parseInt(e.target.value)
+    const newRangeMax = getRangeMax(newSliderValue, xScaleMax)
+    console.log('client: range slider adjusted to:', newRangeMax, 'Updating max range to: ', newRangeMax)
+    setRangeMax(newRangeMax)
 }
 
 export default SpectrumPlot

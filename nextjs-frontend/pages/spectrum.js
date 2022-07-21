@@ -2,10 +2,16 @@ import Layout from '../components/layout'
 import ShadowBox from '../components/containers/ShadowBox';
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
-import SpectrumPlot from '../components/charts/SpectrumPlot';
+// import SpectrumPlot from '../components/charts/SpectrumPlot';
+import dynamic from 'next/dynamic';
+
+const SpectrumPlot = dynamic(
+    () => import('../components/charts/SpectrumPlot'),
+    { ssr: false }
+)
 
 export default function Spectrum() {
-    const [plotData, setPlotData] = useState([{ x: 0, y: 0 }, { x: 0, y: 1 }]);
+    const [plotData, setPlotData] = useState([{ x: 0, y: 0 }, { x: 1, y: 1 }]);
     const [haveData, setHaveData] = useState(false);
 
     const f = 'generated_Harmonics_Noise'
@@ -187,10 +193,10 @@ async function openFile(filename, setHaveData, setPlotData) {
     })
 
     const csvHeaders = p.meta.fields
-    const csvCols = p.data
-    // csvRows.pop()
+    const csvRows = p.data
+    csvRows.pop()
 
-    setPlotData(csvCols)
+    setPlotData(csvRows)
     setHaveData(true)
 }
 
