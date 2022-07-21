@@ -168,6 +168,22 @@ def history():
             return {'status': True, 'data': history}
 
 
+@app.route('/spectrum', methods=['POST'])
+def spectrum():
+    if request.method == 'POST':
+        # client sends form containing spectrum analyzer config and instrument names
+        data = request.json
+        names = data['name']  # contains names
+        cmd = data['cmd']
+        arg = data['arg']
+
+        print('requested command to instrument from client')
+
+        if cmd == 'write':
+            print('write cmd: ', arg, ' to ', name)
+            return composer.getSeat(name).write(arg)
+
+
 @app.route('/time')
 def get_current_time():
     timestamp = datetime.now().strftime("%H:%M:%S")
