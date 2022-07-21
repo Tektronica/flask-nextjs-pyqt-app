@@ -370,3 +370,18 @@ https://www.nayuki.io/page/free-small-fft-in-multiple-languages
 >>	While native system computations (C compiled) were always better, at least Emscripten provides a performant client-side calculation for now...
 >>	Preliminary benchmarks of C programs compiled to asm.js are usually within a factor of 2 slowdown over native compilation with clang.
 
+https://github.com/j-funk/js-dsp-test/
+
+Cool interactive tools
+https://arachnoid.com/SigGen/index.html
+
+
+
+Input range slider
+====================================================================
+
+User interactions have no effect because an <input> with value prop is considered as controlled. 
+https://stackoverflow.com/a/36123370
+https://www.youtube.com/watch?v=FAyDsmyVnPA
+
+

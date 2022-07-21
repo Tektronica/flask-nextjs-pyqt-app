@@ -2,6 +2,7 @@
 // <!-- requires react-chartjs-2 -->
 
 import { Scatter } from 'react-chartjs-2';
+import React, { useState, useEffect } from 'react';
 
 import {
     Chart as ChartJS,
@@ -27,20 +28,27 @@ ChartJS.register(
 );
 
 const SpectrumPlot = ({ pointData }) => {
+    const rangePosition = 20;
+    let dataLength = pointData.length
+    let sliceRange = parseInt(rangePosition / 100 * dataLength);
 
-    // https://stackoverflow.com/questions/70684106/react-chartjs-2-typeerror-undefined-is-not-an-object-evaluating-nextdatasets
-    // https://www.learnnext.blog/blogs/using-chartjs-in-your-nextjs-application
-    // https://www.chartjs.org/docs/latest/general/data-structures.html
-    // https://stackoverflow.com/questions/38341758/how-to-dynamically-set-chartjs-line-chart-width-based-on-dataset-size
-    // https://blog.bitsrc.io/customizing-chart-js-in-react-2199fa81530a
+    // default is 50% slice
+    let newSlice = pointData.slice(0, sliceRange);
+
+    const [dataPoints, setDataPoints] = useState(newSlice);
+
+    useEffect(() => {
+        // tracks when data updates by an external state
+        newSlice = pointData.slice(0, sliceRange);
+        setDataPoints(newSlice)
+     }, [pointData]) 
 
     // data is a list of point objects
-    
     const data = {
         datasets: [
             {
                 // data
-                data: pointData,
+                data: dataPoints,
                 indexAxis: 'x',
                 showLine: true,
 
@@ -104,9 +112,27 @@ const SpectrumPlot = ({ pointData }) => {
                 data={data}
                 options={options}
             />
+            <input
+                onChange={updateMax.bind(this, pointData, setDataPoints)}
+                type="range"
+                id="end"
+                min="10"
+                max="100"
+                step="10"
+                defaultValue={rangePosition}
+                // className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-2 rounded-lg cursor-pointer"
+            />
         </>
     )
 }
 
+function updateMax(pointData, setPointData, e) {
+    // slices a percent of the plot array based on range value
+    const range_value = parseInt(e.target.value)
+    const newSliceRange = parseInt(range_value / 100 * pointData.length)
+    console.log('client: range slider adjusted to:', range_value, 'Updating slice to: ', newSliceRange)
+    setPointData(pointData.slice(0, newSliceRange))
+}
 
 export default SpectrumPlot
