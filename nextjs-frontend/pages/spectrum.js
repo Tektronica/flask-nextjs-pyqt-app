@@ -28,158 +28,219 @@ export default function Spectrum() {
                 </h1>
 
                 {/* main panel */}
-                <div className='flex flex-row'>
+                <div className='flex flex-col'>
 
                     {/* left-hand options */}
-                    <div className='flex-none w-1/4'>
-                        <div className="grid grid-cols-1 gap-4">
 
-                            {/* instrument setup */}
-                            <div>
-                                <div className="border-b font-bold">
-                                    Instruments
-                                </div>
+                    <div className="p-2 flex flex-rows-1 gap-4 border">
+
+                        {/* instrument setup */}
+                        <div>
+                            <div className="border-b font-bold">
+                                Instruments
                             </div>
-
-                            {/* amplitude setup */}
-                            <div>
-                                <div className="border-b font-bold">
-                                    Amplitude
-                                </div>
-                                <div className="grid grid-cols-3 gap-2 text-sm">
-                                    <div>
-                                        Amplitude:
+                            <div className='mt-2 text-sm grid grid-rows-2 gap-2'>
+                                <div className='flex flex-cols-2'>
+                                    <div className='w-24'>
+                                        Fluke 8588A:
                                     </div>
-                                    <input />
-                                    <select id="amplitude_type" name="amplitude_type">
+                                    <select
+                                        id="amplitude_type"
+                                        name="amplitude_type"
+                                        className='form-select form-select-sm px-2 py-1 text-sm font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-cyan-600 focus:outline-none'
+                                    >
                                         <option value="rms">RMS</option>
                                         <option value="peak">Peak</option>
                                     </select>
-
-                                    <div>
-                                        Frequency:
+                                </div>
+                                <div className='flex flex-cols-2'>
+                                    <div className='w-24'>
+                                        Fluke 5730A:
                                     </div>
-                                    <input />
-                                    {'(Hz)'}
+                                    <select
+                                        id="amplitude_type"
+                                        name="amplitude_type"
+                                        className='form-select form-select-sm px-2 py-1 text-sm font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-cyan-600 focus:outline-none'
+                                    >
+                                        <option value="rms">RMS</option>
+                                        <option value="peak">Peak</option>
+                                    </select>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* measurement setup */}
-                            <div>
-                                <div className="border-b font-bold">
-                                    Measurement
-                                </div>
-                                <div className="grid grid-cols-3 gap-2 text-sm">
-                                    <select id="mainlobe_width" name="mainlobe_width">
-                                        <option value="relative">Relative</option>
-                                        <option value="absolute">Absolute</option>
-                                    </select>
-                                    <input />
-                                    <div>
-                                        {"MLW (HZ)"}
-                                    </div>
-
-                                    <div>
-                                        Filter:
-                                    </div>
-                                    <select id="filter_val" name="filter_val">
-                                        <option value="none">None</option>
-                                        <option value="100khz">100kHz</option>
-                                        <option value="2mhz">2MHz</option>
-                                        <option value="2.4mhz">2.4MHz</option>
-                                        <option value="3mhz">3MHz</option>
-                                    </select>
-                                    <div> {/* blank */} </div>
-
-                                    <div>
-                                        Coupling:
-                                    </div>
-                                    <select id="coupling_val" name="coupling_val">
-                                        <option value="ac1m">AC1M</option>
-                                        <option value="ac10m">AC10M</option>
-                                        <option value="dc1m">DC1M</option>
-                                        <option value="dc10m">DC10M</option>
-                                        <option value="dcauto">DCAuto</option>
-                                    </select>
-                                    <div> {/* blank */} </div>
-
-                                    <div>Fs:</div>
-                                    <div>--</div>
-                                    <div> {/* blank */} </div>
-
-                                    <div>Samples:</div>
-                                    <div>--</div>
-                                    <div> {/* blank */} </div>
-
-                                    <div>Aperture:</div>
-                                    <div>--</div>
-                                    <div> {/* blank */} </div>
-                                </div>
-
-                                {/* distortion results */}
+                        {/* amplitude setup */}
+                        <div>
+                            <div className="border-b font-bold">
+                                Amplitude
+                            </div>
+                            <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
                                 <div>
-                                    <div className="border-b"> {/* blank */} </div>
-                                    <div className="grid grid-cols-3 gap-2 text-sm">
-                                        <div>Fs:</div>
-                                        <div>--</div>
-                                        <div> {/* blank */} </div>
-
-                                        <div>Samples:</div>
-                                        <div>--</div>
-                                        <div> {/* blank */} </div>
-
-                                        <div>Aperture:</div>
-                                        <div>--</div>
-                                        <div> {/* blank */} </div>
-                                    </div>
+                                    Amplitude:
                                 </div>
-                            </div>
-
-                            {/* measurement setup */}
-                            <div>
-                                <div className="border-b">{/* blank */}</div>
-                            </div>
-                            <div className="grid grid-cols-3 gap-2 text-sm">
-                                <button>Run</button>
-                                <select id="run_mode" name="run_mode">
-                                    <option value="single">Single</option>
-                                    <option value="sweep">Sweep</option>
-                                    <option value="single_shunt">Single w/ Shunt</option>
-                                    <option value="sweep_shunt">Sweep w/ Shunt</option>
-                                    <option value="continuous">Continuous</option>
+                                <input className='shadow appearance-none border rounded w-full px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' />
+                                <select
+                                    id="amplitude_type"
+                                    name="amplitude_type"
+                                    className='form-select form-select-sm px-2 py-1 text-sm font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-cyan-600 focus:outline-none'
+                                >
+                                    <option value="rms">RMS</option>
+                                    <option value="peak">Peak</option>
                                 </select>
-                                <button>Breakpoints</button>
+
+                                <div>
+                                    Frequency:
+                                </div>
+                                <input className='shadow appearance-none border rounded w-full px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' />
+                                {'(Hz)'}
+                            </div>
+                        </div>
+
+                        {/* measurement setup */}
+                        <div>
+                            <div className="border-b font-bold">
+                                Measurement
+                            </div>
+                            <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
+                                <select
+                                    id="mainlobe_width"
+                                    name="mainlobe_width"
+                                    className='form-select form-select-sm px-2 py-1 text-sm font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-cyan-600 focus:outline-none'
+                                >
+                                    <option value="relative">Relative</option>
+                                    <option value="absolute">Absolute</option>
+                                </select>
+                                <input className='shadow appearance-none border rounded w-full px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' />
+                                <div>
+                                    {"MLW (HZ)"}
+                                </div>
+
+                                <div>
+                                    Filter:
+                                </div>
+                                <select
+                                    id="filter_val"
+                                    name="filter_val"
+                                    className='form-select form-select-sm px-2 py-1 text-sm font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-cyan-600 focus:outline-none'
+                                >
+                                    <option value="none">None</option>
+                                    <option value="100khz">100kHz</option>
+                                    <option value="2mhz">2MHz</option>
+                                    <option value="2.4mhz">2.4MHz</option>
+                                    <option value="3mhz">3MHz</option>
+                                </select>
+                                <div> {/* blank */} </div>
+
+                                <div>
+                                    Coupling:
+                                </div>
+
+                                <select
+                                    id="coupling_val"
+                                    name="coupling_val"
+                                    className='form-select form-select-sm px-2 py-1 text-sm font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-cyan-600 focus:outline-none'
+                                >
+                                    <option value="ac1m">AC1M</option>
+                                    <option value="ac10m">AC10M</option>
+                                    <option value="dc1m">DC1M</option>
+                                    <option value="dc10m">DC10M</option>
+                                    <option value="dcauto">DCAuto</option>
+                                </select>
+                                <div> {/* blank */} </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* right-hand plot */}
-                    <div className='grow m-2 p-2 border rounded'>
-                        <div className='h-full'>
-                            {
-                                haveData ? (
-                                    <>
-                                        <SpectrumPlot pointData={plotData} title='Temporal Plot' />
-                                        <SpectrumPlot pointData={plotData} title='Spectral Plot' />
-                                    </>
-                                ) : (
-                                    <>
-                                        <div role="status" className="h-full flex items-center justify-center">
-                                            <svg aria-hidden="true" className="mr-2 w-32 h-32 text-gray-200 animate-spin fill-cyan-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
-                                                <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
-                                            </svg>
-                                            <span className="sr-only">Loading...</span>
-                                        </div>
-                                    </>
-                                )
-                            }
-                        </div>
-
-
+                    <div className="mt-4 text-sm flex flex-cols-3 space-x-4 justify-start">
+                        <button className='px-4 border round uppercase bg-cyan-500 text-white font-bold'>
+                            Run
+                        </button>
+                        <select
+                            id="run_mode"
+                            name="run_mode"
+                            className='form-select form-select-sm px-2 py-1 text-sm font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-cyan-600 focus:outline-none'
+                        >
+                            <option value="single">Single</option>
+                            <option value="sweep">Sweep</option>
+                            <option value="single_shunt">Single w/ Shunt</option>
+                            <option value="sweep_shunt">Sweep w/ Shunt</option>
+                            <option value="continuous">Continuous</option>
+                        </select>
+                        <button className='px-4 border round uppercase bg-orange-400 text-white font-bold'>
+                            Breakpoints
+                        </button>
                     </div>
 
                 </div>
+
+            </ShadowBox>
+
+            <ShadowBox>
+                <div className="flex">
+                    <div className="grow grid grid-cols-2 text-sm">
+
+                        {/* distortion results */}
+                        <div className="text-sm grid grid-cols-3">
+                            <div>Fs:</div>
+                            <div>--</div>
+                            <div> {/* blank */} </div>
+
+                            <div>Samples:</div>
+                            <div>--</div>
+                            <div> {/* blank */} </div>
+
+                            <div>Aperture:</div>
+                            <div>--</div>
+                            <div> {/* blank */} </div>
+                        </div>
+
+                        {/* distortion results */}
+                        <div className="text-sm grid grid-cols-3">
+                            <div>THD</div>
+                            <div>--</div>
+                            <div> {/* blank */} </div>
+
+                            <div>THD+N:</div>
+                            <div>--</div>
+                            <div> {/* blank */} </div>
+
+                            <div>Aperture:</div>
+                            <div>--</div>
+                            <div> {/* blank */} </div>
+                        </div>
+                    </div>
+                </div>
+
+            </ShadowBox >
+
+            <ShadowBox>
+                {/* bottom plot */}
+                <div className='grow m-2 p-2 border rounded'>
+                    <div className='h-full'>
+                        {
+                            haveData ? (
+                                <>
+                                    <SpectrumPlot pointData={plotData} title='Temporal Plot' />
+                                    <SpectrumPlot pointData={plotData} title='Spectral Plot' />
+                                </>
+                            ) : (
+                                <>
+                                    <div role="status" className="h-full flex items-center justify-center">
+                                        <svg aria-hidden="true" className="mr-2 w-32 h-32 text-gray-200 animate-spin fill-cyan-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
+                                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
+                                        </svg>
+                                        <span className="sr-only">Loading...</span>
+                                    </div>
+                                </>
+                            )
+                        }
+                    </div>
+
+
+                </div>
+
+
             </ShadowBox>
         </>
     )
