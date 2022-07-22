@@ -31,7 +31,7 @@ ChartJS.register(
     zoomPlugin,
 );
 
-const SpectrumPlot = ({ pointData, title }) => {
+const SpectrumPlot = ({ pointData, title, color='rgba(75,192,192,1)'}) => {
     const rangeSliderPosition = 20;
 
     let xScaleMax = pointData[pointData.length - 1].x;
@@ -59,11 +59,11 @@ const SpectrumPlot = ({ pointData, title }) => {
                 // showLine: true,
 
                 //label
-                label: 'test',
+                label: title,
                 // fill: false,
                 lineTension: 0.1,
-                borderColor: 'rgba(75,192,192,1)',
-                backgroundColor: 'rgba(75,192,192,1)',
+                borderColor: color,
+                backgroundColor: color,
                 pointRadius: 0,
             }
         ]
@@ -71,6 +71,7 @@ const SpectrumPlot = ({ pointData, title }) => {
 
     const options = {
         responsive: true,
+        maintainAspectRatio: false,
         events: [],
         animation: false,
         scales: {
@@ -86,7 +87,7 @@ const SpectrumPlot = ({ pointData, title }) => {
         },
         plugins: {
             title: {
-                display: true,
+                display: false,
                 text: title,
             },
             legend: {
@@ -100,7 +101,7 @@ const SpectrumPlot = ({ pointData, title }) => {
             zoom: {
                 zoom: {
                     wheel: {
-                        enabled: true
+                        enabled: false
                     },
                     mode: "xy",
                     speed: 100
@@ -116,7 +117,6 @@ const SpectrumPlot = ({ pointData, title }) => {
 
     return (
         <>
-
             <Line
                 // className='bg-zinc-800'
                 data={data}
