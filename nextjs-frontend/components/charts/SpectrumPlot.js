@@ -4,7 +4,7 @@
 
 import dynamic from 'next/dynamic'
 import React, { useState, useEffect } from 'react';
-import { Scatter } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
 import zoomPlugin from 'chartjs-plugin-zoom';
 
 import {
@@ -31,7 +31,7 @@ ChartJS.register(
     zoomPlugin,
 );
 
-const SpectrumPlot = ({ pointData }) => {
+const SpectrumPlot = ({ pointData, title }) => {
     const rangeSliderPosition = 20;
 
     let xScaleMax = pointData[pointData.length - 1].x;
@@ -56,49 +56,47 @@ const SpectrumPlot = ({ pointData }) => {
                 // data
                 data: pointData,
                 indexAxis: 'x',
-                showLine: true,
+                // showLine: true,
 
                 //label
                 label: 'test',
-                fill: false,
+                // fill: false,
                 lineTension: 0.1,
-                backgroundColor: 'rgba(75,192,192,0.4)',
                 borderColor: 'rgba(75,192,192,1)',
-                borderCapStyle: 'butt',
-                borderDash: [],
-                borderDashOffset: 0.0,
-                borderJoinStyle: 'miter',
-                pointBorderColor: 'rgba(75,192,192,1)',
-                pointBackgroundColor: '#fff',
-                pointBorderWidth: 1,
-                pointHoverRadius: 5,
-                pointHoverBackgroundColor: 'rgba(75,192,192,1)',
-                pointHoverBorderColor: 'rgba(220,220,220,1)',
-                pointHoverBorderWidth: 2,
-                pointRadius: 1,
-                pointHitRadius: 10,
+                backgroundColor: 'rgba(75,192,192,1)',
+                pointRadius: 0,
             }
         ]
     };
 
     const options = {
         responsive: true,
-        title: {
-            // optional: your title here
-        },
         events: [],
         animation: false,
-        // pan: {
-        //     enabled: true,
-        //     mode: 'x'
-        // },
         scales: {
             x: {
+                type: 'linear',
                 suggestedMin: '0',
                 max: `${rangeMax}`,
-            }
+                gridLines: {
+                    display: false,
+                    color: "#FFFFFF"
+                },
+            },
         },
         plugins: {
+            title: {
+                display: true,
+                text: title,
+            },
+            legend: {
+                // position: 'left',
+                labels: {
+                    // boxWidth: 10,
+                    usePointStyle: true,
+                    // pointStyle: 'rect'
+                }
+            },
             zoom: {
                 zoom: {
                     wheel: {
@@ -118,7 +116,9 @@ const SpectrumPlot = ({ pointData }) => {
 
     return (
         <>
-            <Scatter
+
+            <Line
+                // className='bg-zinc-800'
                 data={data}
                 options={options}
             />
@@ -138,7 +138,7 @@ const SpectrumPlot = ({ pointData }) => {
 }
 
 function getRangeMax(percentOfRange, maxRange) {
-    let newRangeMax = Math.round((percentOfRange / 100 * maxRange) * 10000) / 10000;
+    let newRangeMax = Math.round(Math.round((percentOfRange / 100 * maxRange) * 10000 * 6)) / (6 * 10000);
 
     if (newRangeMax === 0) {
         newRangeMax = maxRange
