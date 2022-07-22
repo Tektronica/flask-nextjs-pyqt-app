@@ -23,7 +23,7 @@ export default function DataView() {
     const router = useRouter()
     const { filename } = router.query
     // console.log(filename)
-    const f = '2022-07-18_Sweep_DCI'
+    const f = 'Sweep_DCI_2022-07-18'
     // get csv data determined by the dynamic route of this slug
 
     useEffect(() => {
@@ -48,7 +48,7 @@ export default function DataView() {
                 <h1 className="text-xl font-bold pb-4">
                     Lissajous Plot
                 </h1>
-                <TimePlot pointData={plotData} />
+                <TimePlot pointData={plotData} title='Lissajous' />
             </ShadowBox>
 
             <ShadowBox>
