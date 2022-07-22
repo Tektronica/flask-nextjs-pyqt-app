@@ -6,7 +6,7 @@ import ModalNewInstrument from '../components/modal/ModalNewInstrument'
 // https://github.com/facebook/react/issues/14326
 
 export default function Instruments() {
-    const [tableData, setTableData] = useState(0);
+    const [tableData, setTableData] = useState([]);
     let [isOpen, setIsOpen] = useState(false)
     const [contentModal, setContentModal] = useState("");
     const [statusIcon, setStatusIcon] = useState(getIcon(undefined));
@@ -107,37 +107,32 @@ export default function Instruments() {
                         </thead>
                         <tbody>
                             {
-                                Object.entries(tableData).map(function (item, idx) {
-                                    let name = item[1].name
-                                    let instr = item[1].instr
-                                    let mode = item[1].mode
-                                    let address = item[1].address
-                                    let port = item[1].port
-                                    let gpib = item[1].gpib
+                                tableData.map(function (item, idx) {
+
                                     return (
                                         <tr key={idx} className='bg-white border-b hover:bg-gray-200' >
                                             <td className='px-6 py-4 font-bold text-gray-900 whitespace-nowrap'>
                                                 <button
                                                     type='button'
                                                     id='btn-name'
-                                                    onClick={setResourceName.bind(this, name)}>
-                                                    {name}
+                                                    onClick={setResourceName.bind(this, item.name)}>
+                                                    {item.name}
                                                 </button>
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
-                                                {instr}
+                                                {item.instr}
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
-                                                {mode}
+                                                {item.mode}
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
-                                                {address}
+                                                {item.address}
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
-                                                {port}
+                                                {item.port}
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
-                                                {gpib}
+                                                {item.gpib}
                                             </td>
                                             <td className='pr-2 py-3'>
                                                 <button
