@@ -428,5 +428,21 @@ Instead of the plot component being imported as usual, we use the suggested dyna
 
 
 
+Setting state inline within Return
+====================================================================
+This is very useful as it doesn't require a callback. Arrow functions are a compact form of function expression. I need to use this more...
+
+e is the event of the fired element. For instance, the change of a select option.
+onChange={e => setSomeState(e.target.value)}
+
+somewhere else in the return, the state can be updated. In this case, the truth string has its own inline logic
+
+{(isRelative === 'true') ? ('MLW/f0') : ('MLW (HZ)')}
+
+
+Rendering twice or thrice on page refresh
+====================================================================
+Not sure why instruments.js and spectrum.js (and perhaps more) are updated three or so times on page refresh...
+
 
 
