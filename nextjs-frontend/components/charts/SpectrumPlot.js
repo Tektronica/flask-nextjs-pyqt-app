@@ -2,7 +2,6 @@
 // <!-- requires react-chartjs-2 -->
 // <!-- chartjs-plugin-zoom -->
 
-import dynamic from 'next/dynamic'
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import zoomPlugin from 'chartjs-plugin-zoom';
