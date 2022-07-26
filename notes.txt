@@ -445,4 +445,60 @@ Rendering twice or thrice on page refresh
 Not sure why instruments.js and spectrum.js (and perhaps more) are updated three or so times on page refresh...
 
 
+Numpy-like array functions
+====================================================================
+To get FFT working, I have ported kissFFT using emscripten
+
+All the other dsp functions of computing distortion values are next. 
+This process is slow but has minimal risk in rework.
+Not everything is entirely 1:1 however, since Numpy has an array C-like struct
+
+stdlib is a npm library with an emphasis on numerical and scientific computing applications.
+Could be useful in the future, but for now, I'm migrating the numpy functions I was already using.
+	>>	https://www.npmjs.com/package/@stdlib/stdlib
+
+
+	
+Zip, map, and function references
+====================================================================
+One of the fun things about porting numpy code to javascript is understanding map, zip, and zipWith functions more.
+
+For instance, the base.js file has two functions:
+	1. zip
+	2. zipWith
+	3. where
+
+for 'zip', when x1 and x2 are array-like, they are zipped element-by-element into a new array of length equal to the shortest axis:
+
+	zip(x1, x2)
+	
+	x1.map((x, i) => func(x, x2[i]))
+	
+	zip(x1, x2) = [[a1, a2], [b1, b2], [c1, c2]]
+
+'zipWith' does something similiar, but passes the element-by-element argument to a reference function argument
+
+	zipWith(x1, x2, less_equal)
+	
+	x1.map((x, i) => func(x, x2[i]))
+	
+	[ ( a1 <= a2 ), ( b1 <= b2 ), ( c1 <= c2 ) ]
+	
+	
+'where' somewhat does the operation of zipWith, but isn't zipping two arrays.
+Instead, one array is passed with a condition, and the boolean result is mapped to a user-defined value
+
+	where(less_equal, x1, x2)
+	
+	x1.map((x, i) => func(x, x2[i]))
+	
+	[ ( a1 <= a2 ), ( b1 <= b2 ), ( c1 <= c2 ) ]
+	
+
+
+
+
+	
+
+
 

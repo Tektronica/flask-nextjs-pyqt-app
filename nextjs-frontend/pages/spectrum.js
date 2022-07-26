@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 // import SpectrumPlot from '../components/charts/SpectrumPlot';
 import dynamic from 'next/dynamic';
+import DSP from '../modules/dsp/dsp';
 
 const SpectrumPlot = dynamic(
     () => import('../components/charts/SpectrumPlot'),
