@@ -16,6 +16,7 @@ import {
     Tooltip,
     Legend,
     Filler,
+    LogarithmicScale,
 } from "chart.js";
 
 ChartJS.register(
@@ -27,10 +28,11 @@ ChartJS.register(
     Tooltip,
     Legend,
     Filler,
+    LogarithmicScale,
     zoomPlugin,
 );
 
-const SpectrumPlot = ({ pointData, title, color='rgba(75,192,192,1)'}) => {
+const SpectrumPlot = ({ pointData, yscale = 'linear', title, color = 'rgba(75,192,192,1)' }) => {
     const rangeSliderPosition = 20;
 
     let xScaleMax = pointData[pointData.length - 1].x;
@@ -43,7 +45,7 @@ const SpectrumPlot = ({ pointData, title, color='rgba(75,192,192,1)'}) => {
     useEffect(() => {
         xScaleMax = pointData[pointData.length - 1].x
         const newRangeMax = getRangeMax(rangeSliderPosition, xScaleMax);
-        console.log(rangeSliderPosition, xScaleMax, newRangeMax)
+        console.log('Client starting plot scale:', rangeSliderPosition, xScaleMax, newRangeMax)
         setRangeMax(newRangeMax)
 
     }, [pointData])
@@ -82,6 +84,9 @@ const SpectrumPlot = ({ pointData, title, color='rgba(75,192,192,1)'}) => {
                     display: false,
                     color: "#FFFFFF"
                 },
+            },
+            y: {
+                type: yscale,
             },
         },
         plugins: {

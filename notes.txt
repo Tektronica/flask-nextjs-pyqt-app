@@ -546,3 +546,14 @@ react and angular do not support modules in node like "fs" and "path"
 Importing headaches
 ====================================================================
 https://stackoverflow.com/a/33179024
+
+
+mapping values from a Float32Array
+====================================================================
+This one caught me by surprise. Since the FFT returns a Float32Array, it needs to be convertered to Array before being mapped.
+Float32Array#map() expects the callback to return a number, and the method itself returns a Float32Array. 
+
+https://stackoverflow.com/a/54640282
+
+
+

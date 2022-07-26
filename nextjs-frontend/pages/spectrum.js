@@ -13,7 +13,8 @@ const SpectrumPlot = dynamic(
 )
 
 export default function Spectrum() {
-    const [plotData, setPlotData] = useState([{ x: 0, y: 0 }, { x: 1, y: 1 }]);
+    const [timeData, setTimeData] = useState([{ x: 0, y: 0 }, { x: 1, y: 1 }]);
+    const [spectralData, setSpectralData] = useState([{ x: 0, y: 0 }, { x: 1, y: 1 }]);
     const [haveData, setHaveData] = useState(false);
     const [isRelative, setIsRelative] = useState(false);
     const [instrumentList, setInstrumentList] = useState({ matching: ['k'], allOther: ['k'] });
@@ -24,7 +25,7 @@ export default function Spectrum() {
 
     useEffect(() => {
         getInstrumentsMatching('f8588A', setInstrumentList);
-        openFile(f, setHaveData, setPlotData);
+        openFile(f, setHaveData, setTimeData, setSpectralData);
     }, []);
 
     return (
@@ -274,10 +275,10 @@ export default function Spectrum() {
                         haveData ? (
                             <div className='h-full grid grid-rows-2 gap-8'>
                                 <div className='h-[300px]'>
-                                    <SpectrumPlot pointData={plotData} title='Temporal Plot' />
+                                    <SpectrumPlot pointData={timeData} title='Temporal Plot' />
                                 </div>
                                 <div className='h-[300px]'>
-                                    <SpectrumPlot pointData={plotData} title='Spectral Plot' color='rgba(162,20,47,1)' />
+                                    <SpectrumPlot pointData={spectralData} yscale='logarithmic' title='Spectral Plot' color='rgba(162,20,47,1)' />
                                 </div>
                             </div>
                         ) : (
@@ -325,7 +326,7 @@ async function getInstrumentsMatching(matchingInstr, setState) {
     setState({ matching: matching, allOther: allOther });
 };
 
-async function openFile(filename, setHaveData, setPlotData) {
+async function openFile(filename, setHaveData, setTimeData, setSpectralData) {
     console.log('client: opening ', filename)
     const fileRequest = { cmd: 'download', name: filename }
     let url = '../api/history';
@@ -353,11 +354,15 @@ async function openFile(filename, setHaveData, setPlotData) {
     csvRows.pop()
 
     const yt = toDictOfLists(csvRows).y
-    console.log(yt)
-    const yf = dsp.windowed_fft(yt)
-    console.log('fft result: ', yf)
+    const out = dsp.windowed_fft(yt)
+    const spectralData = toListOfDicts(out.yf)
 
-    setPlotData(csvRows)
+    console.log(yt)
+    console.log('fft result1: ', out)
+    console.log('fft result2: ', spectralData)
+
+    setTimeData(csvRows)
+    setSpectralData(spectralData)
     setHaveData(true)
 };
 
@@ -370,18 +375,23 @@ function handleClick(e, thisState, setState) {
 
 };
 
-function toDictOfLists(listOfDicts) {
+function toDictOfLists(obj) {
     // converts a list of data points to array
     // [ {x: 0.0, y: 0.0}, ... ] ==> { x:[0.0, ...], y:[0.0, ...] }
 
     let dictOfLists = {};
 
     // all objects must have the same key
-    Object.keys(listOfDicts[0]).forEach(k => {
-        dictOfLists[k] = listOfDicts.map(o => o[k]);
+    Object.keys(obj[0]).forEach(k => {
+        dictOfLists[k] = obj.map(o => o[k]);
     });
 
     return dictOfLists
+};
+
+function toListOfDicts(arr) {
+    // https://stackoverflow.com/a/54640282
+    return Array.from(arr).map((y, idx) => ({ x: idx, y: y }))
 };
 
 

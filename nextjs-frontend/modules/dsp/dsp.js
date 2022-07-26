@@ -1,7 +1,6 @@
 import * as kissFFT from '../kissFFT/FFT';
 import * as np from './base';  // numpy-like base functions
 import * as windowing from './windowing';  // windowing functions
-import { blackman, bartlett, hanning, hamming, rectangular } from "./windowing"
 
 function windowData(arr) {
     const dataLength = arr.length
@@ -181,9 +180,10 @@ export function windowed_fft(yt, windfunc = 'rectangular') {
 
         var rfft = new kissFFT.FFTR(buffered.length)
 
-        var yf_rfft = np.multiply(np.divide(rfft.forward(buffered), yt.length), amplitude_correction_factor);
+        var yf_rfft = np.absolute(np.multiply(np.divide(rfft.forward(buffered), yt.length), amplitude_correction_factor));
         const xf_rfft = np.rfftfreq(M, 1. / Fs);  // one - sided
         console.log(yf_rfft[np.argmax(yf_rfft)])
+        
         rfft.dispose();
 
         return { xf: xf_rfft, yf: yf_rfft, mlw: main_lobe_width }
