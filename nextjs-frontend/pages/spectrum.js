@@ -5,6 +5,8 @@ import Papa from 'papaparse';
 // import SpectrumPlot from '../components/charts/SpectrumPlot';
 import dynamic from 'next/dynamic';
 
+import dsp from '../modules/dsp/dsp';
+
 const SpectrumPlot = dynamic(
     () => import('../components/charts/SpectrumPlot'),
     { ssr: false }
@@ -349,6 +351,11 @@ async function openFile(filename, setHaveData, setPlotData) {
     const csvHeaders = p.meta.fields
     const csvRows = p.data
     csvRows.pop()
+
+    const yt = dsp.toDictOfLists(csvRows).y
+    console.log(yt)
+    const yf = dsp.rfft(yt)
+    console.log(yf)
 
     setPlotData(csvRows)
     setHaveData(true)

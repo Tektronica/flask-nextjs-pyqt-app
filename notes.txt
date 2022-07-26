@@ -502,8 +502,47 @@ More FFT
 https://toughengineer.github.io/demo/dsp/fft-perf/
 
 	>>	fft.js has great performance in Chrome, the same order of magnitude as the best binding implementation of KISS FFT 
-
 	
+https://github.com/toughengineer/demo/tree/main/dsp/fft-perf
+
+https://github.com/AWSM-WASM/PulseFFT
+
+WebAssembly is downloaded as binary data and needs to be instantiated before it can be used.
+
+https://www.npmjs.com/package/assemblyscript
+https://www.npmjs.com/package/as-bind
+
+https://codeburst.io/getting-started-with-react-and-webassembly-using-hooks-441818c91608
+
+https://github.com/j-funk/js-dsp-test/
 
 
 
+More Javascript math libraries 
+====================================================================
+This one doesn't look too bad.
+	>>	https://github.com/PatGleeson101/mathicall.js
+	>> >>	several array-based (matrix) multiplication implementations
+	>> >>	line 119 of src/matrix/matrix.src.js
+	>> >>	uses explicit looping rather than recursive calls. functionally the same, but verbose
+	>> >> >>	slightly more memory overhead per function call and appears to support only up to 2d axis (this is why recursion is better)
+
+
+Module not found: Can't resolve 'fs'
+====================================================================
+https://stackoverflow.com/a/62011612
+
+add the following tot he packages.json file in the react project
+
+"browser": {
+  "fs": false,
+  "path": false,
+  "os": false
+}
+
+react and angular do not support modules in node like "fs" and "path"
+
+
+Importing headaches
+====================================================================
+https://stackoverflow.com/a/33179024

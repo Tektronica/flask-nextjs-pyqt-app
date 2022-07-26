@@ -1,4 +1,4 @@
-import * as KissFFT from '../kissFFT/FFT';
+import FFT from '../kissFFT/FFT';
 import * as np from './base';  // numpy-like base functions
 import { blackman, bartlett, hanning, hamming, rectangular } from "./windowing"
 
@@ -19,12 +19,13 @@ function toDictOfLists(listOfDicts) {
 function rfft(yt) {
     // yt should be an array of floats yt = [0.0, 0.0, 0.0, ...]
     // xt are normalized and must be scaled xt = [1, 2, 3, ...]
-    var rfft = new KissFFTModule.FFTR(yt.length)
-    var transform = fftr.forward(buffer);
-    var transScaled = scaleTransform(transform, non2PowSize);
-    var backAgain = fftr.inverse(transScaled);
+    var rfft = new FFT.FFTR(yt.length)
+    var out = rfft.forward(yt);
+    // var transScaled = scaleTransform(transform, non2PowSize);
+    // var backAgain = fftr.inverse(transScaled);
+    rfft.dispose();
 
-    fftr.dispose();
+    return out
 };
 
 function rms_flat(a) {
@@ -381,3 +382,5 @@ function rms_noise(yf, fs, N, hpf = 0, lpf = 100e3) {
     }
     return yf
 };
+
+export default {toDictOfLists, rfft}

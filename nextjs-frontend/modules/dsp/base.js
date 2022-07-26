@@ -4,7 +4,7 @@ function fsum(arr) {
 };
 
 function multiply(x1, x2) {
-    // supports up to n-dimensions
+    // supports up to n-dimensions - this is not a cross-mult operation!
 
     if ((typeof x1 === 'object') && (typeof x2 === 'object')) {
         return zipWith(x1, x2, multiply)
@@ -15,6 +15,17 @@ function multiply(x1, x2) {
     } else if ((typeof x1 === 'object') && (typeof x2 === 'number')) {
         return x1.map((a) => (a * x2))
 
+    } else {
+        return (x1 * x2)
+    }
+};
+
+// TODO: not implemented!
+function _cross(x1, x2) {
+    // supports up to n-dimensions - assumes x1 and x2 are arrays!
+    // BROKEN
+    if ((typeof x1 === 'object') && (typeof x2 === 'object')) {
+        return zipWith(x1, x2, _cross)
     } else {
         return (x1 * x2)
     }

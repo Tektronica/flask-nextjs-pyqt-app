@@ -103,5 +103,4 @@ class FFTR {
     }
 }
 
-// export const FFT = FFT;
-// export const FFTR = FFTR;
+export default {FFT, FFTR}
