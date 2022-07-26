@@ -1,9 +1,30 @@
-function fsum(arr) {
+export function subtract(x1, x2) {
+    // supports up to n-dimensions - this is not a cross-mult operation!
+
+    if ((typeof x1 === 'object') && (typeof x2 === 'object')) {
+        return zipWith(x1, x2, subtract)
+
+    } else if ((typeof x1 === 'number') && (typeof x2 === 'object')) {
+        return x2.map((b) => (x1 - b))
+
+    } else if ((typeof x1 === 'object') && (typeof x2 === 'number')) {
+        return x1.map((a) => (a - x2))
+
+    } else {
+        return (x1 - x2)
+    }
+};
+
+export function fsum(arr) {
     // returns the sum of all list items
     return arr.reduce((a, b) => a + b)
 };
 
-function multiply(x1, x2) {
+export function mean(arr) {
+    return arr.reduce((a, b) => a + b) / arr.length;
+};
+
+export function multiply(x1, x2) {
     // supports up to n-dimensions - this is not a cross-mult operation!
 
     if ((typeof x1 === 'object') && (typeof x2 === 'object')) {
@@ -21,7 +42,7 @@ function multiply(x1, x2) {
 };
 
 // TODO: not implemented!
-function _cross(x1, x2) {
+export function _cross(x1, x2) {
     // supports up to n-dimensions - assumes x1 and x2 are arrays!
     // BROKEN
     if ((typeof x1 === 'object') && (typeof x2 === 'object')) {
@@ -31,7 +52,7 @@ function _cross(x1, x2) {
     }
 };
 
-function divide(x1, x2) {
+export function divide(x1, x2) {
     // supports up to n-dimensions
 
     if ((typeof x1 === 'object') && (typeof x2 === 'object')) {
@@ -48,8 +69,8 @@ function divide(x1, x2) {
     }
 };
 
-function round(arr) {
-    // returns absolute value for each list item 
+export function round(arr) {
+    // returns rounded value for each list item 
     if (typeof arr === 'object') {
         return arr.map(Math.round);
     } else {
@@ -57,7 +78,7 @@ function round(arr) {
     }
 };
 
-function absolute(arr) {
+export function absolute(arr) {
     // returns absolute value for each list item 
     if (typeof arr === 'object') {
         return arr.map(Math.abs);
@@ -66,7 +87,7 @@ function absolute(arr) {
     }
 };
 
-function argmax(arr) {
+export function argmax(arr) {
     // returns the indices of the maximum values along an axis.
     // TODO: support multiple axes (recursive call)
     if (arr.length === 0) {
@@ -86,7 +107,7 @@ function argmax(arr) {
     return maxIndex;
 };
 
-function sqr(arr) {
+export function sqr(arr) {
     // returns squared value for each list item
     if (typeof arr === 'object') {
         return arr.map((x) => Math.pow(x, 2));
@@ -95,7 +116,7 @@ function sqr(arr) {
     }
 };
 
-function zip(x1, x2) {
+export function zip(x1, x2) {
     // two array-like objects are passed element-by-element to func
     // return length is equal to the shortest input array length
     // returns [func(a1, a2), func(b1, b2), func(c1, c2), ...]
@@ -103,7 +124,7 @@ function zip(x1, x2) {
     return x1.map((x, i) => [x, x2[i]]);
 }
 
-function zipWith(x1, x2, func) {
+export function zipWith(x1, x2, func) {
     // two array-like objects are passed element-by-element to func
     // return length is equal to the shortest input array length
     // returns [func(a1, a2), func(b1, b2), func(c1, c2), ...]
@@ -111,7 +132,7 @@ function zipWith(x1, x2, func) {
     return x1.map((x, i) => func(x, x2[i]));
 }
 
-function less_equal(x1, x2) {
+export function less_equal(x1, x2) {
     // supports up to n-dimensions
 
     if ((typeof x1 === 'object') && (typeof x2 === 'object')) {
@@ -128,7 +149,7 @@ function less_equal(x1, x2) {
     }
 };
 
-function where(condition, x, y) {
+export function where(condition, x, y) {
     // Return elements chosen from x or y depending on condition.
 
     const func = (condition) => (condition ? x : y)
@@ -140,7 +161,7 @@ function where(condition, x, y) {
     }
 };
 
-function arange(start = 0, stop, step = 1) {
+export function arange(start = 0, stop, step = 1) {
     /*
     Returns an array with evenly spaced elements as per the interval.
 
@@ -155,7 +176,7 @@ function arange(start = 0, stop, step = 1) {
     return Array(listLength).fill(start).map((x, y) => x + y * step)
 };
 
-function NDimArray(dimensions, value = undefined) {
+export function NDimArray(dimensions, value = undefined) {
     // [row, col, stack]. default fill value is undefined
 
     if (dimensions.length > 0) {
@@ -168,31 +189,31 @@ function NDimArray(dimensions, value = undefined) {
     }
 };
 
-function ones(shape) {
+export function ones(shape) {
     // returns a n-dimensional array of ones
     // shape is a dimensional list [ row, col, stack, ... ]
     return NDimArray(shape, 1)
 };
 
-function zeros(shape) {
+export function zeros(shape) {
     // returns a n-dimensional array of zeros
     // shape is a dimensional list [ row, col, stack, ... ]
     return NDimArray(shape, 0)
 };
 
-function empty(shape) {
+export function empty(shape) {
     // returns a n-dimensional array of undefined
     // shape is a dimensional list [ row, col, stack, ... ]
     return NDimArray(shape)
 };
 
-function full(shape, value = undefined) {
+export function full(shape, value = undefined) {
     // returns a n-dimensional array of some value - else undefined
     // shape is a dimensional list [ row, col, stack, ... ]
     return NDimArray(shape, value)
 };
 
-function fftfreq(n, d = 1.0) {
+export function fftfreq(n, d = 1.0) {
     /* 
     Return the Discrete Fourier Transform sample frequencies.
         f = [0, 1, ...,   n/2-1,     -n/2, ..., -1] / (d*n)   if n is even
@@ -207,15 +228,15 @@ function fftfreq(n, d = 1.0) {
     const N = Math.floor((n - 1) / 2) + 1
 
     const p1 = arange(0, N)
-    results.splice(0, N, ...p1)
+    results.splice(0, N, ...p1)  // start, end, array
 
     const p2 = arange(-Math.floor(n / 2), 0)
-    results.splice(N, n, ...p2)
+    results.splice(N, n, ...p2)  // start, end, array
 
     return multiply(round(results), val)
 };
 
-function rfftfreq(n, d = 1.0) {
+export function rfftfreq(n, d = 1.0) {
     /* 
     Return the Discrete Fourier Transform sample frequencies (for usage with rfft, irfft).
         f = [0, 1, ...,     n/2-1,     n/2] / (d*n)   if n is even

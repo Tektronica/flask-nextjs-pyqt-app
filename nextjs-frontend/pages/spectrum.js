@@ -5,7 +5,7 @@ import Papa from 'papaparse';
 // import SpectrumPlot from '../components/charts/SpectrumPlot';
 import dynamic from 'next/dynamic';
 
-import dsp from '../modules/dsp/dsp';
+import * as dsp from '../modules/dsp/dsp';
 
 const SpectrumPlot = dynamic(
     () => import('../components/charts/SpectrumPlot'),
@@ -352,10 +352,10 @@ async function openFile(filename, setHaveData, setPlotData) {
     const csvRows = p.data
     csvRows.pop()
 
-    const yt = dsp.toDictOfLists(csvRows).y
+    const yt = toDictOfLists(csvRows).y
     console.log(yt)
-    const yf = dsp.rfft(yt)
-    console.log(yf)
+    const yf = dsp.windowed_fft(yt)
+    console.log('fft result: ', yf)
 
     setPlotData(csvRows)
     setHaveData(true)
@@ -368,7 +368,21 @@ function handleClick(e, thisState, setState) {
         setState(false)
     }
 
-}
+};
+
+function toDictOfLists(listOfDicts) {
+    // converts a list of data points to array
+    // [ {x: 0.0, y: 0.0}, ... ] ==> { x:[0.0, ...], y:[0.0, ...] }
+
+    let dictOfLists = {};
+
+    // all objects must have the same key
+    Object.keys(listOfDicts[0]).forEach(k => {
+        dictOfLists[k] = listOfDicts.map(o => o[k]);
+    });
+
+    return dictOfLists
+};
 
 
 Spectrum.getLayout = function getLayout(page) {

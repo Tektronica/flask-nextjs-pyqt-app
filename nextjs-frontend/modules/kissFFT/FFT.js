@@ -33,7 +33,7 @@ var kiss_fft_free = kissFFTModule.cwrap(
     'kiss_fft_free', 'void', ['number']
 );
 
-class FFT {
+export class FFT {
     constructor(size) {
 
         this.size = size;
@@ -68,7 +68,7 @@ class FFT {
     }
 }
 
-class FFTR {
+export class FFTR {
     constructor(size) {
 
         this.size = size;
@@ -102,5 +102,3 @@ class FFTR {
         };
     }
 }
-
-export default {FFT, FFTR}
