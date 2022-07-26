@@ -1,4 +1,4 @@
-import KissFFTModule from "./kissFFT";
+import * as KissFFT from '../kissFFT/FFT';
 import * as np from './base';  // numpy-like base functions
 import { blackman, bartlett, hanning, hamming, rectangular } from "./windowing"
 
@@ -171,10 +171,10 @@ function windowed_fft(yt, Fs, M, windfunc = 'blackman') {
 
     try {
         yf_fft = (Math.fft.fft(yt * w) / fft_length) * amplitude_correction_factor
-        xf_fft = Math.round(Math.fft.fftfreq(N, d = 1. / Fs), 6)  // two - sided
+        xf_fft = np.round(np.fftfreq(N, d = 1. / Fs), 6)  // two - sided
 
         yf_rfft = yf_fft.slice(0, fft_length);
-        xf_rfft = Math.round(Math.fft.rfftfreq(N, d = 1. / Fs), 6)  // one - sided
+        xf_rfft = np.round(np.rfftfreq(N, d = 1. / Fs), 6)  // one - sided
 
     } catch (error) {
         console.error('Client Error: caught while performing fft of presumably length mismatched arrays.\n', e)
@@ -204,7 +204,7 @@ function THDN_F(xf, _yf, fs, N, main_lobe_width = None, hpf = 0, lpf = 100e3) {
 
     // FIND FUNDAMENTAL(peak of frequency spectrum)--------------------------------------------------------------------
     try {
-        f0_idx = Math.argmax(np.absolute(yf))
+        f0_idx = np.argmax(np.absolute(yf))
         fundamental = xf[f0_idx]
     } catch (error) {
         console.log('Client Error:Failed to find fundamental. Most likely index was outside of bounds.')
@@ -215,7 +215,7 @@ function THDN_F(xf, _yf, fs, N, main_lobe_width = None, hpf = 0, lpf = 100e3) {
     if (!(hpf == 0) && (hpf < lpf)) {
         console.log('>>applying high pass filter<<')
         fc = Math.floor(hpf * N / fs)
-        yf.fill(fc, 1e-10)
+        yf.fill(1e-10, 0, fc)  // value, start, end
     }
 
     // APPLY LOW PASS FILTERING-----------------------------------------------------------------------------------------
@@ -223,7 +223,7 @@ function THDN_F(xf, _yf, fs, N, main_lobe_width = None, hpf = 0, lpf = 100e3) {
         fc = Math.floor(lpf * N / fs) + 1
     }
 
-    yf.fill(fc, 1e-10)
+    yf.fill(1e-10, fc)  // value, start, end
 
     // COMPUTE RMS FUNDAMENTAL------------------------------------------------------------------------------------------
     // https://stackoverflow.com/questions/23341935/find-rms-value-in-frequency-domain
@@ -239,7 +239,7 @@ function THDN_F(xf, _yf, fs, N, main_lobe_width = None, hpf = 0, lpf = 100e3) {
 
     // REJECT FUNDAMENTAL FOR NOISE RMS---------------------------------------------------------------------------------
     // Throws out values within the region of the main lobe fundamental frequency
-    yf.fill(left_of_lobe, right_of_lobe, 1e-10)
+    yf.fill(1e-10, left_of_lobe, right_of_lobe)  // value, start, end
 
     // COMPUTE RMS NOISE------------------------------------------------------------------------------------------------
     rms_noise = np.sqrt(np.fsum(np.sqr(np.absolute(yf))))
@@ -276,7 +276,7 @@ function THDN_R(xf, yf, fs, N, hpf = 0, lpf = 100e3) {
 
     // FIND FUNDAMENTAL(peak of frequency spectrum)--------------------------------------------------------------------
     try {
-        f0_idx = Math.argmax(Math.np.absolute(_yf))
+        f0_idx = np.argmax(np.absolute(_yf))
         fundamental = xf[f0_idx]
     } catch (error) {
         console.error('Client Error: Failed to find fundamental. Most likely index was outside of bounds.')
@@ -287,13 +287,13 @@ function THDN_R(xf, yf, fs, N, hpf = 0, lpf = 100e3) {
     if (!(hpf == 0) && (hpf < lpf)) {
         console.log('\t>>applying high pass filter<<')
         fc = Math.floor(hpf * N / fs)
-        _yf.fill(1e-10, 0, fc)
+        _yf.fill(1e-10, 0, fc)  // value, start, end
     }
 
     // APPLY LOW PASS FILTERING-----------------------------------------------------------------------------------------
     if (lpf != 0) {
         fc = Math.floor(lpf * N / fs) + 1
-        _yf.fill(1e-10, fc)
+        _yf.fill(1e-10, fc)  // value, start, end
     }
 
     // REJECT FUNDAMENTAL FOR NOISE RMS---------------------------------------------------------------------------------
@@ -304,7 +304,7 @@ function THDN_R(xf, yf, fs, N, hpf = 0, lpf = 100e3) {
     // Find local minimas around main lobe fundamental frequency and throws out values within this window.
     // TODO: Calculate mainlobe width of the windowing function rather than finding local minimas ?
     left_of_lobe, right_of_lobe = find_range(np.absolute(_yf), f0_idx)
-    _yf.fill(1e-10, left_of_lobe, right_of_lobe)
+    _yf.fill(1e-10, left_of_lobe, right_of_lobe)  // value, start, end
 
     // COMPUTE RMS NOISE------------------------------------------------------------------------------------------------
     rms_noise = rms_flat(_yf)  // Parseval's Theorem
@@ -323,7 +323,7 @@ function THD(xf, yf, Fs, N, main_lobe_width) {
 
     // FIND FUNDAMENTAL(peak of frequency spectrum)
     try {
-        f0_idx = Math.argmax(Math.np.absolute(_yf))
+        f0_idx = np.argmax(np.absolute(_yf))
         f0 = xf[f0_idx]
     }
     catch (error) {
@@ -349,7 +349,7 @@ function THD(xf, yf, Fs, N, main_lobe_width) {
                 left_of_lobe = Math.floor((freq - main_lobe_width / 2) * (N / Fs))
                 right_of_lobe = Math.floor((freq + main_lobe_width / 2) * (N / Fs))
 
-                amplitude[h] = Math.sqrt(math.fsum(np.sqr(Math.np.absolute(Math.sqrt(2) * yf.slice(left_of_lobe, right_of_lobe)))))
+                amplitude[h] = Math.sqrt(math.fsum(np.sqr(np.absolute(Math.sqrt(2) * yf.slice(left_of_lobe, right_of_lobe)))))
 
             } catch (error) {
                 console.error('Client Error: Failed to capture all peaks for calculating THD.\nMost likely zero-size array.')

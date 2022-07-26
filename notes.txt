@@ -488,15 +488,20 @@ for 'zip', when x1 and x2 are array-like, they are zipped element-by-element int
 'where' somewhat does the operation of zipWith, but isn't zipping two arrays.
 Instead, one array is passed with a condition, and the boolean result is mapped to a user-defined value
 
-	where(less_equal, x1, x2)
+	where(less_than(a, 5), a, 10*a)  // if true, return a, else 10*a
 	
 	x1.map((x, i) => func(x, x2[i]))
 	
 	[ ( a1 <= a2 ), ( b1 <= b2 ), ( c1 <= c2 ) ]
 	
+	[   ( true ), 	  ( false ), 	( false )  ] ==> [ ( a ), ( 10*a ), ( 10*a ) ] 
 
 
+More FFT
+====================================================================
+https://toughengineer.github.io/demo/dsp/fft-perf/
 
+	>>	fft.js has great performance in Chrome, the same order of magnitude as the best binding implementation of KISS FFT 
 
 	
 
