@@ -3,6 +3,49 @@ function fsum(arr) {
     return arr.reduce((a, b) => a + b)
 };
 
+function multiply(x1, x2) {
+    // supports up to n-dimensions
+
+    if ((typeof x1 === 'object') && (typeof x2 === 'object')) {
+        return zipWith(x1, x2, multiply)
+
+    } else if ((typeof x1 === 'number') && (typeof x2 === 'object')) {
+        return x2.map((b) => (x1 * b))
+
+    } else if ((typeof x1 === 'object') && (typeof x2 === 'number')) {
+        return x1.map((a) => (a * x2))
+
+    } else {
+        return (x1 * x2)
+    }
+};
+
+function divide(x1, x2) {
+    // supports up to n-dimensions
+
+    if ((typeof x1 === 'object') && (typeof x2 === 'object')) {
+        return zipWith(x1, x2, divide)
+
+    } else if ((typeof x1 === 'number') && (typeof x2 === 'object')) {
+        return x2.map((b) => (x1 / b))
+
+    } else if ((typeof x1 === 'object') && (typeof x2 === 'number')) {
+        return x1.map((a) => (a / x2))
+
+    } else {
+        return (x1 / x2)
+    }
+};
+
+function round(arr) {
+    // returns absolute value for each list item 
+    if (typeof arr === 'object') {
+        return arr.map(Math.round);
+    } else {
+        return Math.round(arr)
+    }
+};
+
 function absolute(arr) {
     // returns absolute value for each list item 
     if (typeof arr === 'object') {
@@ -64,10 +107,10 @@ function less_equal(x1, x2) {
         return zipWith(x1, x2, less_equal)
 
     } else if ((typeof x1 === 'number') && (typeof x2 === 'object')) {
-        return x2.map((a) => (a <= x2))
+        return x2.map((b) => (x1 <= b))
 
     } else if ((typeof x1 === 'object') && (typeof x2 === 'number')) {
-        return x1.map((a) => (x1 <= a))
+        return x1.map((a) => (a <= x2))
 
     } else {
         return (x1 <= x2)
@@ -76,7 +119,7 @@ function less_equal(x1, x2) {
 
 function where(condition, x, y) {
     // Return elements chosen from x or y depending on condition.
-    
+
     const func = (condition) => (condition ? x : y)
 
     if (Array.isArray(condition[0])) {
@@ -85,12 +128,6 @@ function where(condition, x, y) {
         return condition.map((a) => func(a));
     }
 };
-
-function wh(condition, x, y) {
-    condition.map(a => {
-        return a
-    })
-}
 
 function arange(start = 0, stop, step = 1) {
     /*
@@ -142,4 +179,44 @@ function full(shape, value = undefined) {
     // returns a n-dimensional array of some value - else undefined
     // shape is a dimensional list [ row, col, stack, ... ]
     return NDimArray(shape, value)
+};
+
+function fftfreq(n, d = 1.0) {
+    /* 
+    Return the Discrete Fourier Transform sample frequencies.
+        f = [0, 1, ...,   n/2-1,     -n/2, ..., -1] / (d*n)   if n is even
+        f = [0, 1, ..., (n-1)/2, -(n-1)/2, ..., -1] / (d*n)   if n is odd
+        n: Window length (int)
+        d: Sample spacing, timestep (scalar, optional)
+        f: ndarray
+    */
+
+    const val = 1.0 / (n * d)
+    const results = empty([n])
+    const N = Math.floor((n - 1) / 2) + 1
+
+    const p1 = arange(0, N)
+    results.splice(0, N, ...p1)
+
+    const p2 = arange(-Math.floor(n / 2), 0)
+    results.splice(N, n, ...p2)
+
+    return multiply(round(results), val)
+};
+
+function rfftfreq(n, d = 1.0) {
+    /* 
+    Return the Discrete Fourier Transform sample frequencies (for usage with rfft, irfft).
+        f = [0, 1, ...,     n/2-1,     n/2] / (d*n)   if n is even
+        f = [0, 1, ..., (n-1)/2-1, (n-1)/2] / (d*n)   if n is odd
+        n: Window length (int)
+        d: Sample spacing, timestep (scalar, optional)
+        f: ndarray (length: n//2 + 1)
+    */
+
+    const val = 1.0 / (n * d);
+    const N = Math.floor(n / 2) + 1;
+
+    const results = arange(0, N);
+    return multiply(round(results), val)
 };
