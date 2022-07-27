@@ -69,16 +69,16 @@ export function divide(x1, x2) {
     }
 };
 
-export function round(arr) {
+export function round(arr, decimals = 1) {
     // returns rounded value for each list item 
     if (typeof arr === 'object') {
-        return arr.map(Math.round);
+        return arr.map(a => round(a, decimals));
     } else {
-        return Math.round(arr)
+        return Math.round(arr * (10 ** decimals)) / (10 ** decimals)
     }
 };
 
-export function absolute(arr) {
+export function abs(arr) {
     // returns absolute value for each list item 
     if (typeof arr === 'object') {
         return arr.map(Math.abs);
