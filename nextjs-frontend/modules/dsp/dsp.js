@@ -12,15 +12,36 @@ function windowData(arr) {
     return newArr
 };
 
+function fft_next_fast_size(n) {
+    while (1) {
+        const m = n;
+        while ((m % 2) == 0) m /= 2;
+        while ((m % 3) == 0) m /= 3;
+        while ((m % 5) == 0) m /= 5;
+        if (m <= 1) {
+            break; /* n is completely factorable by twos, threes, and fives */
+        }
+        n++;
+    }
+    return n;
+};
+
+function fftr_next_fast_size(n) {
+    const ceil_half_n = Math.round((n + 1) / 2);
+    return 2 * fft_next_fast_size(ceil_half_n);
+};
+
 function bufferData(arr) {
     const dataLength = arr.length
 
-    const bufferLength = 2 ** Math.ceil(Math.log2(dataLength));
+    // const bufferLength = 2 ** Math.ceil(Math.log2(dataLength));
+    const bufferLength = fftr_next_fast_size(dataLength);
     const newArr = np.zeros([bufferLength])
 
     newArr.splice(0, dataLength, ...arr)
     return newArr
 };
+
 
 function rms_flat(a) {
     // Return the root mean square of all the elements of * a *, flattened out.
@@ -28,7 +49,7 @@ function rms_flat(a) {
     // https://code.activestate.com/recipes/393090/
     // https://stackoverflow.com/a/33004170
 
-    const sqr = np.absolute(a) ** 2
+    const sqr = np.abs(a) ** 2
     const mean = np.fsum(sqr) / sqr.length  // computed from partial sums
     return Math.sqrt(mean)
 };
@@ -98,7 +119,7 @@ function getWindowLength(f0 = 10e3, fs = 2.5e6, windfunc = 'blackman', error = 0
 };
 
 
-export function windowed_fft(yt, windfunc = 'rectangular') {
+export function windowed_fft(yt, xt, windfunc = 'rectangular') {
     /*
     :param yt: time series data
     :param Fs: sampling frequency
@@ -111,18 +132,22 @@ export function windowed_fft(yt, windfunc = 'rectangular') {
         main_lobe_width : The bandwidth(Hz) of the main lobe of the frequency domain window function.
     */
 
-    console.log('\tperforming windowed FFT')
+    console.log('Client: computing windowed FFT.')
 
     // remove DC offset
     yt = np.subtract(yt, np.mean(yt))
 
     const M = yt.length;
-    const Fs = (M - 1) / (yt[M - 1] - yt[0])
+    const MM = fftr_next_fast_size(M)
+    console.log(M, MM)
+    const Fs = np.round(1 / (xt[1] - xt[0]), 2) // sampling frequency
+    const Fn = Fs / 2;  // nyquist frequency
 
     let w = undefined;
     let main_lobe_width = 1.0;
 
     // Calculate windowing function and its length----------------------------------------------------------------------
+    console.log(`\t1> calculating parameters for a ${windfunc} window.`)
     if (windfunc == 'rectangular') {
         w = windowing.rectangular(M)
         main_lobe_width = 2 * (Fs / M)
@@ -153,19 +178,22 @@ export function windowed_fft(yt, windfunc = 'rectangular') {
     const amplitude_correction_factor = 1 / np.mean(w)
 
     // Calculate the length of the FFT----------------------------------------------------------------------------------
+    console.log('\t2> calculating FFT length')
+
     let fft_length = 0;
 
     if ((M % 2) == 0) {
-        // for even values of N: FFT length is(N / 2) + 1
+        // for even values of N: FFT length is (N / 2) + 1
         fft_length = Math.floor(M / 2) + 1
     }
     else {
-        // for odd values of N: FFT length is(N + 1) / 2
+        // for odd values of N: FFT length is (N + 1) / 2
         fft_length = Math.floor((M + 2) / 2)
     }
 
     // TODO: buffer length to a power of 2 needs some work....
     // const buffered = bufferData(np.multiply(yt, w))
+    console.log('\t3> zero padding data into next largest power-of-2 buffer')
     const buffered = np.multiply(yt, w)
 
     /*
@@ -175,23 +203,32 @@ export function windowed_fft(yt, windfunc = 'rectangular') {
     */
 
     try {
+        console.log('\t4> computing the one-dimensional FFT for real input.')
+
         // yf_fft = (Math.fft.fft(yt * w) / fft_length) * amplitude_correction_factor
         // xf_fft = np.round(np.fftfreq(N, d = 1. / Fs), 6)  // two - sided
 
+        /*
+        frequency-domain data is stored from dc up to 2pi.
+            so out[0] is the dc bin of the FFT
+            and out[nfft/2] is the Nyquist bin (if exists)
+
+        The FFTR optimization code only works for even length ffts. 
+        */
+
         var rfft = new kissFFT.FFTR(buffered.length)
 
-        // (np.fft.fft(ytw) / fft_length) * amplitude_correction_factor
-        var yf_rfft = np.multiply(np.divide(Array.from(rfft.forward(buffered)), fft_length), amplitude_correction_factor);
+        var out = rfft.forward(buffered)
+        var yf_rfft = out.map((yf) => (yf / fft_length) * amplitude_correction_factor);
+        const yfdBm = yf_rfft.map((yf) => (20 * np.log10(np.abs(yf))));
+        const yfdBm_sliced = yfdBm.slice(0, fft_length)
 
-        // 20 * np.log10(np.abs(yf_rfft))
-        const yfdBm = np.multiply(np.log10(np.absolute(yf_rfft)), 20);
-
-        const xf_rfft = np.rfftfreq(M, 1. / Fs);  // one - sided
-        console.log('peak:', yf_rfft[np.argmax(yf_rfft)])
+        const xf_rfft = np.rfftfreq(M, 1. / Fs);
+        const xf_kHz = xf_rfft.map((xf) => (np.round(xf, 6) / 1000));  // one - sided
 
         rfft.dispose();
-
-        return { xf: xf_rfft, yf: yfdBm, mlw: main_lobe_width }
+        console.log(xt.length, yt.length, fft_length, xf_rfft.length, yfdBm.length, main_lobe_width)
+        return { xf: xf_kHz, yf: yfdBm_sliced, mlw: main_lobe_width }
 
     } catch (error) {
         console.error('Client Error: caught while performing fft of presumably length mismatched arrays.')
@@ -221,7 +258,7 @@ export function THDN_F(xf, _yf, fs, N, main_lobe_width = None, hpf = 0, lpf = 10
 
     // FIND FUNDAMENTAL(peak of frequency spectrum)--------------------------------------------------------------------
     try {
-        const f0_idx = np.argmax(np.absolute(yf))
+        const f0_idx = np.argmax(np.abs(yf))
         const fundamental = xf[f0_idx]
     } catch (error) {
         console.log('Client Error:Failed to find fundamental. Most likely index was outside of bounds.')
@@ -253,11 +290,11 @@ export function THDN_F(xf, _yf, fs, N, main_lobe_width = None, hpf = 0, lpf = 10
         left_of_lobe = Math.floor((fundamental - main_lobe_width / 2) * (N / fs))
         right_of_lobe = Math.floor((fundamental + main_lobe_width / 2) * (N / fs))
     } else {
-        const lobeValue = find_range(np.absolute(yf), f0_idx)
+        const lobeValue = find_range(np.abs(yf), f0_idx)
         left_of_lobe = lobeValue.left
         right_of_lobe = lobeValue.right
 
-        rms_fundamental = Math.sqrt(np.fsum(np.sqr((np.absolute(yf.slice(left_of_lobe, right_of_lobe))))));
+        rms_fundamental = Math.sqrt(np.fsum(np.sqr((np.abs(yf.slice(left_of_lobe, right_of_lobe))))));
     }
 
     // REJECT FUNDAMENTAL FOR NOISE RMS---------------------------------------------------------------------------------
@@ -265,7 +302,7 @@ export function THDN_F(xf, _yf, fs, N, main_lobe_width = None, hpf = 0, lpf = 10
     yf.fill(1e-10, left_of_lobe, right_of_lobe)  // value, start, end
 
     // COMPUTE RMS NOISE------------------------------------------------------------------------------------------------
-    rms_noise = np.sqrt(np.fsum(np.sqr(np.absolute(yf))))
+    rms_noise = np.sqrt(np.fsum(np.sqr(np.abs(yf))))
 
     // THDN CALCULATION-------------------------------------------------------------------------------------------------
     // https://www.thierry-lequeu.fr/data/PESL-00101-2003-R2.pdf
@@ -299,7 +336,7 @@ export function THDN_R(xf, yf, fs, N, hpf = 0, lpf = 100e3) {
 
     // FIND FUNDAMENTAL(peak of frequency spectrum)--------------------------------------------------------------------
     try {
-        const f0_idx = np.argmax(np.absolute(_yf))
+        const f0_idx = np.argmax(np.abs(_yf))
         const fundamental = xf[f0_idx]
     } catch (error) {
         console.error('Client Error: Failed to find fundamental. Most likely index was outside of bounds.')
@@ -328,7 +365,7 @@ export function THDN_R(xf, yf, fs, N, hpf = 0, lpf = 100e3) {
     // NOTCH REJECT FUNDAMENTAL AND MEASURE NOISE-----------------------------------------------------------------------
     // Find local minimas around main lobe fundamental frequency and throws out values within this window.
     // TODO: Calculate mainlobe width of the windowing function rather than finding local minimas ?
-    const lobeValue = find_range(np.absolute(_yf), f0_idx)
+    const lobeValue = find_range(np.abs(_yf), f0_idx)
 
     const left_of_lobe = lobeValue.left
     const right_of_lobe = lobeValue.right
@@ -348,11 +385,11 @@ export function THDN_R(xf, yf, fs, N, hpf = 0, lpf = 100e3) {
 export function THD(xf, yf, Fs, N, main_lobe_width) {
     console.log('\tClient: computing THD value')
     _yf = [...yf] // protects yf from mutation
-    _yf_data_peak = max(np.absolute(yf))
+    _yf_data_peak = max(np.abs(yf))
 
     // FIND FUNDAMENTAL(peak of frequency spectrum)
     try {
-        f0_idx = np.argmax(np.absolute(_yf))
+        f0_idx = np.argmax(np.abs(_yf))
         f0 = xf[f0_idx]
     }
     catch (error) {
@@ -372,13 +409,13 @@ export function THD(xf, yf, Fs, N, main_lobe_width) {
             local_idx = f0_idx * Math.floor(h + 1)
 
             try {
-                local_idx = local_idx + (4 - np.argmax(np.absolute(yf.slice(local_idx - 4, local_idx + 4))))
+                local_idx = local_idx + (4 - np.argmax(np.abs(yf.slice(local_idx - 4, local_idx + 4))))
                 freq = xf[local_idx]
 
                 left_of_lobe = Math.floor((freq - main_lobe_width / 2) * (N / Fs))
                 right_of_lobe = Math.floor((freq + main_lobe_width / 2) * (N / Fs))
 
-                amplitude[h] = Math.sqrt(math.fsum(np.sqr(np.absolute(Math.sqrt(2) * yf.slice(left_of_lobe, right_of_lobe)))))
+                amplitude[h] = Math.sqrt(math.fsum(np.sqr(np.abs(Math.sqrt(2) * yf.slice(left_of_lobe, right_of_lobe)))))
 
             } catch (error) {
                 console.error('Client Error: Failed to capture all peaks for calculating THD.\nMost likely zero-size array.')
@@ -386,7 +423,7 @@ export function THD(xf, yf, Fs, N, main_lobe_width) {
             }
         }
 
-        thd = Math.sqrt(math.fsum(np.sqr(Math.np.absolute(amplitude.slice(1))))) / np.absolute(amplitude[0])
+        thd = Math.sqrt(math.fsum(np.sqr(Math.np.abs(amplitude.slice(1))))) / np.abs(amplitude[0])
 
     } else {
         console.log('Check the damn connection, you husk of an oat!')
