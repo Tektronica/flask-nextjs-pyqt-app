@@ -8,7 +8,8 @@ export function blackman(M) {
         return np.ones([1])
     }
     const n = np.arange(1 - M, M, 2)
-    return 0.42 + 0.5 * Math.cos(Math.PI * n / (M - 1)) + 0.08 * Math.cos(2.0 * Math.PI * n / (M - 1))
+
+    return n.map((a) => (0.42 + 0.5 * Math.cos(Math.PI * a / (M - 1)) + 0.08 * Math.cos(2.0 * Math.PI * a / (M - 1))))
 };
 
 export function bartlett(M) {
@@ -18,7 +19,7 @@ export function bartlett(M) {
         return np.ones([1])
     }
     const n = np.arange(1 - M, M, 2)
-    return np.where(np.less_equal(n, 0), 1 + n / (M - 1), 1 - n / (M - 1))
+    return n.map((a) => (np.where(np.less_equal(a, 0), 1 + a / (M - 1), 1 - a / (M - 1))))
 };
 
 export function hanning(M) {
@@ -28,7 +29,7 @@ export function hanning(M) {
         return np.ones([1])
     }
     const n = np.arange(1 - M, M, 2)
-    return 0.5 + 0.5 * cos(Math.PI * n / (M - 1))
+    return n.map((a) => (0.5 + 0.5 * Math.cos(Math.PI * a / (M - 1))))
 };
 
 export function hamming(M) {
@@ -38,7 +39,7 @@ export function hamming(M) {
         return np.ones([1])
     }
     const n = np.arange(1 - M, M, 2)
-    return 0.54 + 0.46 * cos(Math.PI * n / (M - 1))
+    return n.map((a) => (0.54 + 0.46 * Math.cos(Math.PI * a / (M - 1))))
 };
 
 export function rectangular(M) {
