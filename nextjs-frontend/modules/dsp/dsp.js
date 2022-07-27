@@ -106,8 +106,6 @@ export function windowed_fft(yt, windfunc = 'rectangular') {
     :param windfunc: the chosen windowing function
 
     : return:
-        xf_fft: Two sided frequency axis.
-        yf_fft  : Two sided power spectrum.
         xf_rfft : One sided frequency axis.
         yf_rfft : One sided power spectrum.
         main_lobe_width : The bandwidth(Hz) of the main lobe of the frequency domain window function.
@@ -166,12 +164,14 @@ export function windowed_fft(yt, windfunc = 'rectangular') {
         fft_length = Math.floor((M + 2) / 2)
     }
 
-    const buffered = bufferData(np.multiply(yt, w))
+    // TODO: buffer length to a power of 2 needs some work....
+    // const buffered = bufferData(np.multiply(yt, w))
+    const buffered = np.multiply(yt, w)
 
     /*
-    Compute the FFT of the signal Divide by the length of the FFT to recover the original amplitude.Note dividing 
-    alternatively by N samples of the time - series data splits the power between the positive and negative sides.
-        However, we are only looking at one side of the FFT.
+    Compute the FFT of the signal Divide by the length of the FFT to recover the original amplitude.
+    Note dividing alternatively by N samples of the timeseries data splits the power between the positive and negative sides.
+    However, we are only looking at one side of the FFT.
     */
 
     try {
@@ -180,13 +180,18 @@ export function windowed_fft(yt, windfunc = 'rectangular') {
 
         var rfft = new kissFFT.FFTR(buffered.length)
 
-        var yf_rfft = np.absolute(np.multiply(np.divide(rfft.forward(buffered), yt.length), amplitude_correction_factor));
+        // (np.fft.fft(ytw) / fft_length) * amplitude_correction_factor
+        var yf_rfft = np.multiply(np.divide(Array.from(rfft.forward(buffered)), fft_length), amplitude_correction_factor);
+
+        // 20 * np.log10(np.abs(yf_rfft))
+        const yfdBm = np.multiply(np.log10(np.absolute(yf_rfft)), 20);
+
         const xf_rfft = np.rfftfreq(M, 1. / Fs);  // one - sided
-        console.log(yf_rfft[np.argmax(yf_rfft)])
-        
+        console.log('peak:', yf_rfft[np.argmax(yf_rfft)])
+
         rfft.dispose();
 
-        return { xf: xf_rfft, yf: yf_rfft, mlw: main_lobe_width }
+        return { xf: xf_rfft, yf: yfdBm, mlw: main_lobe_width }
 
     } catch (error) {
         console.error('Client Error: caught while performing fft of presumably length mismatched arrays.')

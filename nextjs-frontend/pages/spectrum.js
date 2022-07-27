@@ -278,7 +278,7 @@ export default function Spectrum() {
                                     <SpectrumPlot pointData={timeData} title='Temporal Plot' />
                                 </div>
                                 <div className='h-[300px]'>
-                                    <SpectrumPlot pointData={spectralData} yscale='logarithmic' title='Spectral Plot' color='rgba(162,20,47,1)' />
+                                    <SpectrumPlot pointData={spectralData} title='Spectral Plot' color='rgba(162,20,47,1)' />
                                 </div>
                             </div>
                         ) : (

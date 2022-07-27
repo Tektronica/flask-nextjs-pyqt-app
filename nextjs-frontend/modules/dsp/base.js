@@ -116,13 +116,22 @@ export function sqr(arr) {
     }
 };
 
+export function log10(arr) {
+    // returns log10 value for each list item
+    if (typeof arr === 'object') {
+        return arr.map((x) => Math.log10(x));
+    } else {
+        return Math.log10(arr)
+    }
+};
+
 export function zip(x1, x2) {
     // two array-like objects are passed element-by-element to func
     // return length is equal to the shortest input array length
     // returns [func(a1, a2), func(b1, b2), func(c1, c2), ...]
 
     return x1.map((x, i) => [x, x2[i]]);
-}
+};
 
 export function zipWith(x1, x2, func) {
     // two array-like objects are passed element-by-element to func
@@ -130,7 +139,7 @@ export function zipWith(x1, x2, func) {
     // returns [func(a1, a2), func(b1, b2), func(c1, c2), ...]
 
     return x1.map((x, i) => func(x, x2[i]));
-}
+};
 
 export function less_equal(x1, x2) {
     // supports up to n-dimensions
