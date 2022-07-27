@@ -19,7 +19,7 @@ export default function Spectrum() {
     const [isRelative, setIsRelative] = useState(false);
     const [instrumentList, setInstrumentList] = useState({ matching: ['k'], allOther: ['k'] });
     const [isRunning, setIsRunning] = useState(false);
-
+    const [distortion, setDistortion] = useState({});
 
     const f = 'timeseries_generated_Harmonics_Noise'
 
@@ -237,30 +237,30 @@ export default function Spectrum() {
                         {/* distortion results */}
                         <div className="text-sm grid grid-cols-3">
                             <div>Fs:</div>
-                            <div>--</div>
+                            <div>{haveData ? (distortion.fs) : ('--')}</div>
                             <div> {/* blank */} </div>
 
                             <div>Samples:</div>
-                            <div>--</div>
+                            <div>{haveData ? (distortion.samples) : ('--')}</div>
                             <div> {/* blank */} </div>
 
                             <div>Aperture:</div>
-                            <div>--</div>
+                            <div>{haveData ? (distortion.aperture) : ('--')}</div>
                             <div> {/* blank */} </div>
                         </div>
 
                         {/* distortion results */}
                         <div className="text-sm grid grid-cols-3">
                             <div>RMS:</div>
-                            <div>--</div>
+                            <div>{haveData ? (distortion.rms) : ('--')}</div>
                             <div> {/* blank */} </div>
 
                             <div>THD</div>
-                            <div>--</div>
+                            <div>{haveData ? (distortion.thd) : ('--')}</div>
                             <div> {/* blank */} </div>
 
                             <div>THD+N:</div>
-                            <div>--</div>
+                            <div>{haveData ? (distortion.thdn) : ('--')}</div>
                             <div> {/* blank */} </div>
                         </div>
                     </div>
@@ -354,15 +354,14 @@ async function openFile(filename, setHaveData, setTimeData, setSpectralData) {
     csvRows.pop()
 
     const yt = toDictOfLists(csvRows).y
-    const out = dsp.windowed_fft(yt)
-    const spectralData = toListOfDicts(out.yf)
-
-    console.log(yt)
-    console.log('fft result1: ', out)
-    console.log('fft result2: ', spectralData)
+    const xt = toDictOfLists(csvRows).x
+    const out = dsp.windowed_fft(yt, xt, 'blackman')
+    const spectralData = toListOfDicts(out.yf, out.xf)
+    // const distortionData = getDistortion(out.yf, out.xf)
 
     setTimeData(csvRows)
     setSpectralData(spectralData)
+    // setDistortion(distortionData)
     setHaveData(true)
 };
 
@@ -389,9 +388,9 @@ function toDictOfLists(obj) {
     return dictOfLists
 };
 
-function toListOfDicts(arr) {
+function toListOfDicts(a1, a2) {
     // https://stackoverflow.com/a/54640282
-    return Array.from(arr).map((y, idx) => ({ x: idx, y: y }))
+    return Array.from(a1).map((y, idx) => ({ x: a2[idx], y: y }))
 };
 
 
