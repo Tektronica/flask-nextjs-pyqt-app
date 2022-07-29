@@ -18,24 +18,17 @@ def test():
     # setup meter
     # DMM.setup_f8588A_meter(autorange=True, output_type='CURR', mode='DC')
     print('setting up meter')
-    # DMM.write(f'CONF:CURR:DC')
-    DMM.write(f'CONF:CURR:AC')
+    DMM.write(f'CONF:VOLT:DC')
+    # DMM.write(f'CONF:VOLT:AC')
     time.sleep(1)
-    # DMM.write(f'CURR:DC:RANGE:AUTO ON')
-    DMM.write(f'CURR:AC:RANGE:AUTO ON')
-    time.sleep(1)
-
-    # setup dut in boost mode
-    print('Setting dut to BOOST mode')
-    DUT.write('BOOST')
-    time.sleep(1)
-    DUT.write('CUR_POST IB5725')
+    DMM.write(f'VOLT:DC:RANGE:AUTO ON')
+    # DMM.write(f'CURR:AC:RANGE:AUTO ON')
     time.sleep(1)
 
     # operate dut
-    print('OUT 2 A; OPER')
-    # DUT.write('OUT 2 A; OPER')
-    DUT.write('OUT 2 A, 1000 Hz; OPER')
+    print('OUT 1 V; OPER')
+    DUT.write('OUT 1 V; OPER')
+    # DUT.write('OUT 1 V, 1000 Hz; OPER')
     time.sleep(1)
 
     # measure dut using dmm
@@ -45,7 +38,7 @@ def test():
     outval = DMM.query('FETCH? 1')
     time.sleep(2)
 
-    mode = 'AC'
+    mode = 'DC'
     if mode == 'AC':
         freqval = DMM.query('FETCH? 2')
     else:
