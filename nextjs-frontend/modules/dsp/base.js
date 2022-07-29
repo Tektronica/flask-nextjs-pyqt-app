@@ -15,9 +15,27 @@ export function subtract(x1, x2) {
     }
 };
 
-export function fsum(arr) {
-    // returns the sum of all list items
+export function sum(arr) {
+    // returns the sum for all list items
     return arr.reduce((a, b) => a + b)
+};
+
+export function ksum(arr) {
+    // returns the kahan sum for all list items
+    // https://stackoverflow.com/a/4940219
+
+    var sum = 0.0
+        , c = 0.0  // A running compensation for lost low-order bits.
+        
+    for (var i = 0; i < arr.length; i++) {
+        const y = arr[i] - c    // So far, so good: c is zero.
+        const t = sum + y       // Alas, sum is big, y small, so low-order digits of y are lost.
+
+        c = (t - sum) - y       // (t - sum) recovers the high-order part of y; subtracting y recovers -(low part of y)
+        sum = t                 // Algebraically, c should always be zero. Beware eagerly optimising compilers!
+    }                           // Next time around, the lost low part will be added to y in a fresh attempt.
+    
+    return sum
 };
 
 export function mean(arr) {
@@ -87,6 +105,16 @@ export function abs(arr) {
     }
 };
 
+export function max(arr) {
+    // returns the indices of the maximum values along an axis.
+    // TODO: support multiple axes (recursive call)
+    if (arr.length === 0) {
+        return -1;
+    }
+
+    return Math.max(...arr);
+};
+
 export function argmax(arr) {
     // returns the indices of the maximum values along an axis.
     // TODO: support multiple axes (recursive call)
@@ -113,6 +141,15 @@ export function sqr(arr) {
         return arr.map((x) => Math.pow(x, 2));
     } else {
         return Math.pow(arr, 2)
+    }
+};
+
+export function sqrt(arr) {
+    // returns squared value for each list item
+    if (typeof arr === 'object') {
+        return arr.map((x) => Math.sqrt(x));
+    } else {
+        return Math.sqrt(arr)
     }
 };
 
