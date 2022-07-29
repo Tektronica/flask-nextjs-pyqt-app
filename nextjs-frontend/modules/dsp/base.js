@@ -26,7 +26,7 @@ export function ksum(arr) {
 
     var sum = 0.0
         , c = 0.0  // A running compensation for lost low-order bits.
-        
+
     for (var i = 0; i < arr.length; i++) {
         const y = arr[i] - c    // So far, so good: c is zero.
         const t = sum + y       // Alas, sum is big, y small, so low-order digits of y are lost.

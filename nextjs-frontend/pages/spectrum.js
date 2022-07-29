@@ -25,7 +25,7 @@ export default function Spectrum() {
 
     useEffect(() => {
         getInstrumentsMatching('f8588A', setInstrumentList);
-        openFile(f, setHaveData, setTimeData, setSpectralData);
+        openFile(f, setHaveData, setTimeData, setSpectralData, setDistortion);
     }, []);
 
     return (
@@ -245,7 +245,7 @@ export default function Spectrum() {
                             <div> {/* blank */} </div>
 
                             <div>Aperture:</div>
-                            <div>{haveData ? (distortion.aperture) : ('--')}</div>
+                            <div>{haveData ? (distortion.thdn.f0) : ('--')}</div>
                             <div> {/* blank */} </div>
                         </div>
 
@@ -260,7 +260,7 @@ export default function Spectrum() {
                             <div> {/* blank */} </div>
 
                             <div>THD+N:</div>
-                            <div>{haveData ? (distortion.thdn) : ('--')}</div>
+                            <div>{haveData ? (distortion.thdn.thdn) : ('--')}</div>
                             <div> {/* blank */} </div>
                         </div>
                     </div>
@@ -326,7 +326,7 @@ async function getInstrumentsMatching(matchingInstr, setState) {
     setState({ matching: matching, allOther: allOther });
 };
 
-async function openFile(filename, setHaveData, setTimeData, setSpectralData) {
+async function openFile(filename, setHaveData, setTimeData, setSpectralData, setDistortion) {
     console.log('client: opening ', filename)
     const fileRequest = { cmd: 'download', name: filename }
     let url = '../api/history';
@@ -355,13 +355,16 @@ async function openFile(filename, setHaveData, setTimeData, setSpectralData) {
 
     const yt = toDictOfLists(csvRows).y
     const xt = toDictOfLists(csvRows).x
-    const out = dsp.windowed_fft(yt, xt, 'blackman')
+    const out = dsp.windowed_fft(yt, xt, 'rectangular')
     const spectralData = toListOfDicts(out.yf, out.xf)
-    // const distortionData = getDistortion(out.yf, out.xf)
+
+    console.log(out);
+
+    const distortionData = { thdn: out.thdn, thd: out.thd, rms: out.rms, samples: out.samples, fs: out.fs, f0: out.f0 }
 
     setTimeData(csvRows)
     setSpectralData(spectralData)
-    // setDistortion(distortionData)
+    setDistortion(distortionData)
     setHaveData(true)
 };
 

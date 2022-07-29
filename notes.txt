@@ -562,3 +562,145 @@ https://dsp.stackexchange.com/questions/1262/creating-a-spectrogram
 https://electronics.stackexchange.com/a/12412
 
 
+
+Zero Padding
+====================================================================
+https://mechanicalvibration.com/Zero_Padding_FFTs.html
+
+Strictly speaking, the FFT operates on 2^n datasets
+
+zero padding is a method for adding zeros to the data to expand the dataset to a power of 2 length
+For instance, we may have 1023 data points, but wish to run a 1024 point FFT.
+
+Unfortunately, tones can become indistinguishable and zero padding the FFT does not help the situtation.
+To resolve these, one must take a longer data sample. Or... truncate the dataset...
+
+This is fine, but we lose spectral resolution when we truncate below sample length.
+
+A good opportunity is to rewrite the distortion analyzer backend to perform 2^n sample length captures. 
+
+Since zero-padding does not affect DFT magnitude of the original N-DFT Samples, we still divide by the fft length for the signal only
+https://dsp.stackexchange.com/a/65994
+
+Spectral Leakage:
+https://dsp.stackexchange.com/a/34216
+
+When zero padding is employed on M samples out to N bins the additional DFT frequency samples are interpolated.
+
+Windowing may improve this by tapering the signal ends...
+https://dsp.stackexchange.com/a/13740
+
+
+FFT yields two-times the actual frequency
+====================================================================
+x-axis limits should be bounded between ±Fn, where ‘Fn’ is the Nyquist frequency.  
+https://www.mathworks.com/matlabcentral/answers/493756-fft-yields-two-times-the-actual-frequency#answer_403840
+
+However, I don't think this is the issue here.
+
+For some reason, this implementation of kissFFT is double the intended output length
+https://github.com/mborgerding/kissfft
+
+kiss_fftr c implementation is defined at line 71 of kissfft-js/src/tools/kiss_fftr.c 
+
+let's explore optimization techniques similiar to in kissFFT:
+
+	int kiss_fftr_next_fast_size( int x ) {
+		int ceil_half_x = (x+1)/2;
+		return 2 * kiss_fft_next_fast_size( ceil_half_x );
+	}
+	
+	int kiss_fft_next_fast_size(int n)
+	{
+		while(1) {
+			int m=n;
+			while ( (m%2) == 0 ) m/=2;
+			while ( (m%3) == 0 ) m/=3;
+			while ( (m%5) == 0 ) m/=5;
+			if (m<=1)
+				break; /* n is completely factorable by twos, threes, and fives */
+			n++;
+		}
+		return n;
+	}
+
+
+Common FFT Scaling Factors
+====================================================================
+https://stackoverflow.com/a/5629093
+
+Scaling is a big problem with fixed point FFTs.
+Some solve it with scaling to prevent overflow (as kissfft does), but this loses low bits.
+
+This is sort of a trigonometric interpolation.
+
+https://stackoverflow.com/a/51732562
+
+kissfft uses overlap add method for computing FFT
+https://en.wikipedia.org/wiki/Overlap%E2%80%93add_method
+
+
+Floating point math!
+====================================================================
+https://0.30000000000000004.com/
+
+Kahan sum
+https://en.wikipedia.org/wiki/Kahan_summation_algorithm
+
+deimal.js
+https://www.npmjs.com/package/decimal.js?activeTab=versions
+
+Kahan sum (javascript)
+https://github.com/viktors/node-kahan/blob/master/index.js
+
+
+Shewchuk algorithm (fsum or aka msum)
+The comment alleges that the first algorithm in the article is incorrect.
+Lot's of overhead
+https://code.activestate.com/recipes/393090-binary-floating-point-summation-accurate-to-full-p/
+
+Adaptive Precision Floating-Point Arithmetic and Fast Robust Geometric Predicates
+http://www-2.cs.cmu.edu/afs/cs/project/quake/public/papers/robust-arithmetic.ps
+
+
+FFT size discrepancy
+====================================================================
+So far, I'm a bit perplexed with kissFFT, here.
+
+My sample data length, N, is 12000
+This length is even, thus:
+
+	> fft length = (12000/2) + 1 = 6001
+
+(the + 1 is the DC component)
+
+However, when I compute the FFTR using kissFFT,
+
+	> fft length = 120002 (6001 + 6001) ???
+
+I'm not familiar with this translation coming from numpy fft package.
+
+Consequently, this is what I do:
+
+	> var out = rfft.forward(buffered)
+	> fft_length = out.length
+	> yf_rfft = out.map((yf) => (yf / fft_length) * amplitude_correction_factor);
+	> xf_rfft = np.rfftfreq(2 * (out.length-1), 1. / Fs);
+
+The key issue is that I must adjust my rfftfreq spacing!
+
+In numpy, I would do:
+
+	> xf_rfft = np.rfftfreq(N, 1. / Fs);
+
+However, now I must set
+
+	> N = 2*(fft_length - 1)
+
+That's nuts!
+
+Also, blackman and other windowing filters are not being handled appropriately. 
+
+KissFFT doing some sort of filtering? I read a lot about 'overlap add' method for computing FFT...
+
+

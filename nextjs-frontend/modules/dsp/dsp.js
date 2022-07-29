@@ -50,8 +50,8 @@ function rms_flat(a) {
     // https://stackoverflow.com/a/33004170
 
     const sqr = np.abs(a) ** 2
-    const mean = np.fsum(sqr) / sqr.length  // computed from partial sums
-    return Math.sqrt(mean)
+    const mean = np.sum(sqr) / sqr.length  // computed from partial sums
+    return np.sqrt(mean)
 };
 
 function find_range(f, x) {
@@ -132,14 +132,16 @@ export function windowed_fft(yt, xt, windfunc = 'rectangular') {
         main_lobe_width : The bandwidth(Hz) of the main lobe of the frequency domain window function.
     */
 
+    const yrms = np.sqrt(np.mean(yt.map((y) => (np.abs(y) ** 2))));
+
     console.log('Client: computing windowed FFT.')
 
     // remove DC offset
     yt = np.subtract(yt, np.mean(yt))
 
-    const M = yt.length;
-    const MM = fftr_next_fast_size(M)
-    console.log(M, MM)
+    const N = yt.length;
+    const M = fftr_next_fast_size(N)
+    console.log(N, M)
     const Fs = np.round(1 / (xt[1] - xt[0]), 2) // sampling frequency
     const Fn = Fs / 2;  // nyquist frequency
 
@@ -149,24 +151,24 @@ export function windowed_fft(yt, xt, windfunc = 'rectangular') {
     // Calculate windowing function and its length----------------------------------------------------------------------
     console.log(`\t1> calculating parameters for a ${windfunc} window.`)
     if (windfunc == 'rectangular') {
-        w = windowing.rectangular(M)
-        main_lobe_width = 2 * (Fs / M)
+        w = windowing.rectangular(N)
+        main_lobe_width = 2 * (Fs / N)
     }
     else if (windfunc == 'bartlett') {
-        w = windowing.bartlett(M)
-        main_lobe_width = 4 * (Fs / M)
-    }
-    else if (windfunc == 'hanning') {
-        w = windowing.hanning(M)
-        main_lobe_width = 4 * (Fs / M)
-    }
-    else if (windfunc == 'hamming') {
-        w = windowing.hamming(M)
-        main_lobe_width = 4 * (Fs / M)
+        w = windowing.bartlett(N)
+        main_lobe_width = 4 * (Fs / N)
     }
     else if (windfunc == 'blackman') {
-        w = windowing.blackman(M)
-        main_lobe_width = 6 * (Fs / M)
+        w = windowing.blackman(N)
+        main_lobe_width = 6 * (Fs / N)
+    }
+    else if (windfunc == 'hanning') {
+        w = windowing.hanning(N)
+        main_lobe_width = 4 * (Fs / N)
+    }
+    else if (windfunc == 'hamming') {
+        w = windowing.hamming(N)
+        main_lobe_width = 4 * (Fs / N)
     }
     else {
         // TODO - maybe include kaiser as well, but main lobe width varies with alpha
@@ -182,19 +184,19 @@ export function windowed_fft(yt, xt, windfunc = 'rectangular') {
 
     let fft_length = 0;
 
-    if ((M % 2) == 0) {
+    if ((N % 2) == 0) {
         // for even values of N: FFT length is (N / 2) + 1
-        fft_length = Math.floor(M / 2) + 1
+        fft_length = Math.floor(N / 2) + 1
     }
     else {
         // for odd values of N: FFT length is (N + 1) / 2
-        fft_length = Math.floor((M + 2) / 2)
+        fft_length = Math.floor((N + 2) / 2)
     }
 
+    console.log('\t3> zero padding data into next largest power-of-2 buffer')
     // TODO: buffer length to a power of 2 needs some work....
     // const buffered = bufferData(np.multiply(yt, w))
-    console.log('\t3> zero padding data into next largest power-of-2 buffer')
-    const buffered = np.multiply(yt, w)
+    const buffered = np.multiply(yt, w);
 
     /*
     Compute the FFT of the signal Divide by the length of the FFT to recover the original amplitude.
@@ -204,10 +206,6 @@ export function windowed_fft(yt, xt, windfunc = 'rectangular') {
 
     try {
         console.log('\t4> computing the one-dimensional FFT for real input.')
-
-        // yf_fft = (Math.fft.fft(yt * w) / fft_length) * amplitude_correction_factor
-        // xf_fft = np.round(np.fftfreq(N, d = 1. / Fs), 6)  // two - sided
-
         /*
         frequency-domain data is stored from dc up to 2pi.
             so out[0] is the dc bin of the FFT
@@ -217,21 +215,24 @@ export function windowed_fft(yt, xt, windfunc = 'rectangular') {
         */
 
         var rfft = new kissFFT.FFTR(buffered.length)
-
         var out = rfft.forward(buffered)
+        fft_length = out.length
+
         var yf_rfft = out.map((yf) => (yf / fft_length) * amplitude_correction_factor);
         const yfdBm = yf_rfft.map((yf) => (20 * np.log10(np.abs(yf))));
-        const yfdBm_sliced = yfdBm.slice(0, fft_length)
 
-        const xf_rfft = np.rfftfreq(M, 1. / Fs);
+        const xf_rfft = np.rfftfreq(2 * (out.length-1), 1. / Fs);
         const xf_kHz = xf_rfft.map((xf) => (np.round(xf, 6) / 1000));  // one - sided
-
+        console.log(xf_kHz.length, yfdBm.length)
         rfft.dispose();
-        console.log(xt.length, yt.length, fft_length, xf_rfft.length, yfdBm.length, main_lobe_width)
-        return { xf: xf_kHz, yf: yfdBm_sliced, mlw: main_lobe_width }
+
+        const thdn = THDN_F(xf_rfft, yf_rfft, Fs, 2*fft_length, main_lobe_width, 0, 100e3);
+        const thd = THD(xf_rfft, yf_rfft, Fs, 2*fft_length, main_lobe_width);
+
+        return { xf: xf_kHz, yf: yfdBm, mlw: main_lobe_width, rms: yrms, fs: Fs, samples: N, thd: thd, thdn: thdn };
 
     } catch (error) {
-        console.error('Client Error: caught while performing fft of presumably length mismatched arrays.')
+        // console.error('Client Error: caught while performing fft of presumably length mismatched arrays.')
         console.error(error)
         return undefined
     }
@@ -242,73 +243,88 @@ export function THDN_F(xf, _yf, fs, N, main_lobe_width = None, hpf = 0, lpf = 10
     /*
     [THDF compares the harmonic content of a waveform to its fundamental] and is a much better measure of harmonics
     content than THDR.Thus, the usage of THDF is advocated.
-        Source: https://www.thierry-lequeu.fr/data/PESL-00101-2003-R2.pdf
+
+    Source: https://www.thierry-lequeu.fr/data/PESL-00101-2003-R2.pdf
+
     Performs a windowed fft of a time - series signal y and calculate THDN.
         + Estimates fundamental frequency by finding peak value in fft
         + Skirts the fundamental by finding local minimas and throws those values away
-            + Applies a Low - pass filter at fc(100kHz)
-                + Calculates THD + N by calculating the rms ratio of the entire signal to the fundamental removed signal
+        + Applies a Low - pass filter at fc(100kHz)
+        + Calculates THD + N by calculating the rms ratio of the entire signal to the fundamental removed signal
+    
     : returns: THD and fundamental frequency
     */
 
-    console.log('\tcomputing THDN_F figure')
+    console.log('Computing THDN_F figure:')
 
-    const yf = [..._yf] // protects yf from mutation
+    const yf = [..._yf]; // protects yf from mutation
     // freqs = Math.fft.rfftfreq(len(_yf))
 
     // FIND FUNDAMENTAL(peak of frequency spectrum)--------------------------------------------------------------------
+    console.log('\t1> searching for fundamental')
     try {
-        const f0_idx = np.argmax(np.abs(yf))
-        const fundamental = xf[f0_idx]
+        const f0_idx = np.argmax(np.abs(yf));
+        var fundamental = xf[f0_idx];
     } catch (error) {
-        console.log('Client Error:Failed to find fundamental. Most likely index was outside of bounds.')
+        console.error('Client Error: Failed to find fundamental. Most likely index was outside of bounds.')
         console.error(error);
     }
 
+    let fc = 0.0;
+
     // APPLY HIGH PASS FILTERING----------------------------------------------------------------------------------------
     if (!(hpf == 0) && (hpf < lpf)) {
-        console.log('>>applying high pass filter<<')
-        fc = Math.floor(hpf * N / fs)
-        yf.fill(1e-10, 0, fc)  // value, start, end
+        console.log('\t2> applying highpass filter')
+        fc = Math.floor(hpf * N / fs);
+        yf.fill(1e-10, 0, fc);  // value, start, end
     }
 
     // APPLY LOW PASS FILTERING-----------------------------------------------------------------------------------------
     if (lpf != 0) {
-        fc = Math.floor(lpf * N / fs) + 1
+        console.log('\t2> applying lowpass filter')
+        fc = Math.floor(lpf * N / fs) + 1;
+        yf.fill(1e-10, fc);  // value, start, end
     }
 
-    yf.fill(1e-10, fc)  // value, start, end
 
     // COMPUTE RMS FUNDAMENTAL------------------------------------------------------------------------------------------
+    console.log('\t3> computing rms fundamental')
     // https://stackoverflow.com/questions/23341935/find-rms-value-in-frequency-domain
     // Find the local minimas of the main lobe fundamental frequency
     let left_of_lobe = 0;
     let right_of_lobe = 0;
-    let rms_fundamental = 0.0;
 
     if (main_lobe_width) {
-        left_of_lobe = Math.floor((fundamental - main_lobe_width / 2) * (N / fs))
-        right_of_lobe = Math.floor((fundamental + main_lobe_width / 2) * (N / fs))
+        left_of_lobe = Math.floor((fundamental - main_lobe_width / 2) * (N / fs));
+        right_of_lobe = Math.floor((fundamental + main_lobe_width / 2) * (N / fs));
     } else {
-        const lobeValue = find_range(np.abs(yf), f0_idx)
-        left_of_lobe = lobeValue.left
-        right_of_lobe = lobeValue.right
-
-        rms_fundamental = Math.sqrt(np.fsum(np.sqr((np.abs(yf.slice(left_of_lobe, right_of_lobe))))));
+        const lobeValue = find_range(np.abs(yf), f0_idx);
+        left_of_lobe = lobeValue.left;
+        right_of_lobe = lobeValue.right;
     }
 
+    console.log('57 63 ==> ', left_of_lobe, right_of_lobe)
+    //  np.sqrt(math.sum(np.abs(yf[left_of_lobe:right_of_lobe]) ** 2))
+    const rms_fundamental = np.sqrt(np.ksum((yf.slice(left_of_lobe, right_of_lobe)).map((yf) => (np.sqr(np.abs(yf))))));
+
+
     // REJECT FUNDAMENTAL FOR NOISE RMS---------------------------------------------------------------------------------
+    console.log('\t4> rejecting fundamental for noise measurement')
     // Throws out values within the region of the main lobe fundamental frequency
     yf.fill(1e-10, left_of_lobe, right_of_lobe)  // value, start, end
 
     // COMPUTE RMS NOISE------------------------------------------------------------------------------------------------
-    rms_noise = np.sqrt(np.fsum(np.sqr(np.abs(yf))))
+    console.log('\t5> computing rms noise')
+    // np.sqrt(math.sum(np.abs(yf) ** 2))
+    const rms_noise = np.sqrt(np.sum(yf.map((y) => (np.sqr(np.abs(y))))))
 
     // THDN CALCULATION-------------------------------------------------------------------------------------------------
+    console.log('\t6> computing THD+N (F)')
     // https://www.thierry-lequeu.fr/data/PESL-00101-2003-R2.pdf
-    THDN = rms_noise / rms_fundamental
+    console.log('0.001330213337603094 1.3138961354195464 ==> ', rms_noise, rms_fundamental)
+    const THDN = rms_noise / rms_fundamental
 
-    return THDN, fundamental, round(1e6 * rms_noise, 2)
+    return { thdn: THDN, f0: fundamental, rms: np.round(1e6 * rms_noise, 2) }
 };
 
 export function THDN_R(xf, yf, fs, N, hpf = 0, lpf = 100e3) {
@@ -320,7 +336,9 @@ export function THDN_R(xf, yf, fs, N, hpf = 0, lpf = 100e3) {
         definitions of THD was acceptable.However, THDF  is a much better measure of harmonics content.Employment of
         THDR in measurements may yield high errors in significant quantities such as power - factor and distortion - factor,
         derived from THD measurement.
+
         Source: https://www.thierry-lequeu.fr/data/PESL-00101-2003-R2.pdf
+
         Performs a windowed fft of a time - series signal y and calculate THDN.
             + Estimates fundamental frequency by finding peak value in fft
             + Skirts the fundamental by finding local minimas and throws those values away
@@ -329,15 +347,16 @@ export function THDN_R(xf, yf, fs, N, hpf = 0, lpf = 100e3) {
             : returns: THD and fundamental frequency
     */
 
-    console.log('\tcomputing THDN_R figure')
+    console.log('Computing THDN_R figure:')
 
     const _yf = [...yf] // protects yf from mutation
     const freqs = np.rfftfreq(len(_yf))
 
     // FIND FUNDAMENTAL(peak of frequency spectrum)--------------------------------------------------------------------
+    console.log('\t1> searching for fundamental')
     try {
         const f0_idx = np.argmax(np.abs(_yf))
-        const fundamental = xf[f0_idx]
+        var fundamental = xf[f0_idx]
     } catch (error) {
         console.error('Client Error: Failed to find fundamental. Most likely index was outside of bounds.')
         console.error(error)
@@ -347,18 +366,20 @@ export function THDN_R(xf, yf, fs, N, hpf = 0, lpf = 100e3) {
 
     // APPLY HIGH PASS FILTERING----------------------------------------------------------------------------------------
     if (!(hpf == 0) && (hpf < lpf)) {
-        console.log('\t>>applying high pass filter<<')
+        console.log('\t2> applying highpass filter')
         fc = Math.floor(hpf * N / fs)
         _yf.fill(1e-10, 0, fc)  // value, start, end
     }
 
     // APPLY LOW PASS FILTERING-----------------------------------------------------------------------------------------
     if (lpf != 0) {
+        console.log('\t2> applying lowpass filter')
         fc = Math.floor(lpf * N / fs) + 1
         _yf.fill(1e-10, fc)  // value, start, end
     }
 
     // REJECT FUNDAMENTAL FOR NOISE RMS---------------------------------------------------------------------------------
+    console.log('\t3> rejecting fundamental for noise measurement')
     // https://stackoverflow.com/questions/ 23341935/find-rms-value-in-frequency-domain
     const rms_total = rms_flat(_yf)  // Parseval'sTheorem
 
@@ -373,24 +394,28 @@ export function THDN_R(xf, yf, fs, N, hpf = 0, lpf = 100e3) {
     _yf.fill(1e-10, left_of_lobe, right_of_lobe)  // value, start, end
 
     // COMPUTE RMS NOISE------------------------------------------------------------------------------------------------
-    rms_noise = rms_flat(_yf)  // Parseval's Theorem
+    console.log('\t4> computing rms noise')
+    const rms_noise = rms_flat(_yf)  // Parseval's Theorem
 
     // THDN CALCULATION-------------------------------------------------------------------------------------------------
+    console.log('\t5> computing THDN (R)')
     // https://www.thierry-lequeu.fr/data/PESL-00101-2003-R2.pdf
-    THDN = rms_noise / rms_total
 
-    return THDN, fundamental, round(1e6 * rms_total, 2)
+    const THDN = rms_noise / rms_total
+
+    return { thdn: THDN, f0: fundamental, rms: np.round(1e6 * rms_total, 2) }
 };
 
 export function THD(xf, yf, Fs, N, main_lobe_width) {
-    console.log('\tClient: computing THD value')
-    _yf = [...yf] // protects yf from mutation
-    _yf_data_peak = max(np.abs(yf))
+    console.log('Computing THD value:')
+    const _yf = [...yf] // protects yf from mutation
+    const _yf_data_peak = np.max(np.abs(yf))
 
     // FIND FUNDAMENTAL(peak of frequency spectrum)
+    console.log('\t1> searching for fundamental')
     try {
-        f0_idx = np.argmax(np.abs(_yf))
-        f0 = xf[f0_idx]
+        var f0_idx = np.argmax(np.abs(_yf))
+        var f0 = xf[f0_idx]
     }
     catch (error) {
         console.error('Client Error: Failed to find fundamental for computing the THD.\nMost likely related to a zero-size array.')
@@ -398,32 +423,37 @@ export function THD(xf, yf, Fs, N, main_lobe_width) {
     }
 
     // COMPUTE RMS FUNDAMENTAL------------------------------------------------------------------------------------------
+    console.log('\t2> computing rms fundamental from local minimas')
     // https://stackoverflow.com/questions/23341935/find-rms-value-in-frequency-domain
     // Find the local minimas of the main lobe fundamental frequency
 
-    if (f0_idx != 0) {
-        n_harmonics = Math.floor(Math.floor((Fs / 2) / f0) - 1)  // find maximum number of harmonics
-        amplitude = Math.zeros(n_harmonics)
+    let thd = 1;
 
-        for (h in range(n_harmonics)) {
-            local_idx = f0_idx * Math.floor(h + 1)
+    if (f0_idx != 0) {
+        const n_harmonics = Math.floor(Math.floor((Fs / 2) / f0) - 1); // find maximum number of harmonics
+        var amplitude = np.zeros([n_harmonics]);
+
+        for (const h of Array(n_harmonics).keys()) {
+            let local_idx = f0_idx * Math.floor(h + 1);
 
             try {
-                local_idx = local_idx + (4 - np.argmax(np.abs(yf.slice(local_idx - 4, local_idx + 4))))
-                freq = xf[local_idx]
+                local_idx = local_idx + (4 - np.argmax(np.abs(yf.slice(local_idx - 4, local_idx + 4))));
+                const freq = xf[local_idx];
 
-                left_of_lobe = Math.floor((freq - main_lobe_width / 2) * (N / Fs))
-                right_of_lobe = Math.floor((freq + main_lobe_width / 2) * (N / Fs))
+                const left_of_lobe = Math.floor((freq - main_lobe_width / 2) * (N / Fs));
+                const right_of_lobe = Math.floor((freq + main_lobe_width / 2) * (N / Fs));
 
-                amplitude[h] = Math.sqrt(math.fsum(np.sqr(np.abs(Math.sqrt(2) * yf.slice(left_of_lobe, right_of_lobe)))))
+                amplitude[h] = np.sqrt(np.sum(np.sqr(np.abs(np.multiply(np.sqrt(2), yf.slice(left_of_lobe, right_of_lobe))))));
 
             } catch (error) {
                 console.error('Client Error: Failed to capture all peaks for calculating THD.\nMost likely zero-size array.')
                 console.error(error)
+                break;
             }
         }
 
-        thd = Math.sqrt(math.fsum(np.sqr(Math.np.abs(amplitude.slice(1))))) / np.abs(amplitude[0])
+        console.log('\t3> computing THD')
+        thd = np.sqrt(np.sum(np.sqr(np.abs(amplitude.slice(1))))) / np.abs(amplitude[0])
 
     } else {
         console.log('Check the damn connection, you husk of an oat!')
