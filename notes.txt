@@ -704,3 +704,45 @@ Also, blackman and other windowing filters are not being handled appropriately.
 KissFFT doing some sort of filtering? I read a lot about 'overlap add' method for computing FFT...
 
 
+
+Interpreting kissFFT output
+====================================================================
+
+Previous issue now fixed!
+
+https://stackoverflow.com/a/6741403
+
+Line 327 of:
+https://github.com/j-funk/js-dsp-test/blob/master/fft/test.js
+
+	> for (var j = 0; j < size; ++j) {
+	>    total += Math.sqrt(out[j*2] * out[j*2] + out[j*2+1] * out[j*2+1]);
+	> }
+	
+I believe my error was in not accounting for the imaginary component of the FFTR output.
+
+I would have expected these components to not exist, though... However, this did account for double the length though.
+
+The array is composed of alternating real and imaginary components:
+	> Re [0] + Img [1], Re [2] + Img [3], ...
+	> if FFTR has a length of (N/2 + 1), but the the array is composed of [Re, Im, Re, Im, ..., ...,]
+	> then FFTR was providing a length of 2 x (N/2 + 1), which was what I saw!
+	
+This required a new method for computing the consecutive pair magnitude:
+
+	export function magnitude(arr) {
+		// returns a new array with every next element pair magnitude computed
+		
+		const res = [];
+		for (let idx = 0; idx < arr.length; idx += 2) {
+			res.push(sqrt(arr[idx] ** 2 + (arr[idx + 1] || 0) ** 2));
+		};
+
+		return res;
+	};
+	
+After that, everything fell into place.
+
+
+
+

@@ -141,9 +141,9 @@ export function windowed_fft(yt, xt, windfunc = 'rectangular') {
 
     const N = yt.length;
     const M = fftr_next_fast_size(N)
-    console.log(N, M)
+    console.log(`\t**> The sample length of ${N} could be optimized by zero-padding the data to a size of: ${M}`)
+
     const Fs = np.round(1 / (xt[1] - xt[0]), 2) // sampling frequency
-    const Fn = Fs / 2;  // nyquist frequency
 
     let w = undefined;
     let main_lobe_width = 1.0;
@@ -213,26 +213,24 @@ export function windowed_fft(yt, xt, windfunc = 'rectangular') {
 
         The FFTR optimization code only works for even length ffts. 
         */
-
         var rfft = new kissFFT.FFTR(buffered.length)
         var out = rfft.forward(buffered)
-        fft_length = out.length
+        const mag = np.magnitude(out)
 
-        var yf_rfft = out.map((yf) => (yf / fft_length) * amplitude_correction_factor);
+        var yf_rfft = mag.map((yf) => (yf / fft_length) * amplitude_correction_factor);
         const yfdBm = yf_rfft.map((yf) => (20 * np.log10(np.abs(yf))));
 
-        const xf_rfft = np.rfftfreq(2 * (out.length-1), 1. / Fs);
+        const xf_rfft = np.rfftfreq(N, 1. / Fs);
         const xf_kHz = xf_rfft.map((xf) => (np.round(xf, 6) / 1000));  // one - sided
-        console.log(xf_kHz.length, yfdBm.length)
+
         rfft.dispose();
 
-        const thdn = THDN_F(xf_rfft, yf_rfft, Fs, 2*fft_length, main_lobe_width, 0, 100e3);
-        const thd = THD(xf_rfft, yf_rfft, Fs, 2*fft_length, main_lobe_width);
+        const thdn = THDN_F(xf_rfft, yf_rfft, Fs, N, main_lobe_width, 0, 100e3);
+        const thd = THD(xf_rfft, yf_rfft, Fs, N, main_lobe_width);
 
         return { xf: xf_kHz, yf: yfdBm, mlw: main_lobe_width, rms: yrms, fs: Fs, samples: N, thd: thd, thdn: thdn };
 
     } catch (error) {
-        // console.error('Client Error: caught while performing fft of presumably length mismatched arrays.')
         console.error(error)
         return undefined
     }
@@ -258,7 +256,6 @@ export function THDN_F(xf, _yf, fs, N, main_lobe_width = None, hpf = 0, lpf = 10
     console.log('Computing THDN_F figure:')
 
     const yf = [..._yf]; // protects yf from mutation
-    // freqs = Math.fft.rfftfreq(len(_yf))
 
     // FIND FUNDAMENTAL(peak of frequency spectrum)--------------------------------------------------------------------
     console.log('\t1> searching for fundamental')
@@ -303,8 +300,6 @@ export function THDN_F(xf, _yf, fs, N, main_lobe_width = None, hpf = 0, lpf = 10
         right_of_lobe = lobeValue.right;
     }
 
-    console.log('57 63 ==> ', left_of_lobe, right_of_lobe)
-    //  np.sqrt(math.sum(np.abs(yf[left_of_lobe:right_of_lobe]) ** 2))
     const rms_fundamental = np.sqrt(np.ksum((yf.slice(left_of_lobe, right_of_lobe)).map((yf) => (np.sqr(np.abs(yf))))));
 
 
@@ -315,16 +310,15 @@ export function THDN_F(xf, _yf, fs, N, main_lobe_width = None, hpf = 0, lpf = 10
 
     // COMPUTE RMS NOISE------------------------------------------------------------------------------------------------
     console.log('\t5> computing rms noise')
-    // np.sqrt(math.sum(np.abs(yf) ** 2))
     const rms_noise = np.sqrt(np.sum(yf.map((y) => (np.sqr(np.abs(y))))))
 
     // THDN CALCULATION-------------------------------------------------------------------------------------------------
     console.log('\t6> computing THD+N (F)')
     // https://www.thierry-lequeu.fr/data/PESL-00101-2003-R2.pdf
-    console.log('0.001330213337603094 1.3138961354195464 ==> ', rms_noise, rms_fundamental)
+
     const THDN = rms_noise / rms_fundamental
 
-    return { thdn: THDN, f0: fundamental, rms: np.round(1e6 * rms_noise, 2) }
+    return { thdn: THDN, f0: np.round(fundamental, 2), rms: np.round(1e6 * rms_noise, 2) }
 };
 
 export function THDN_R(xf, yf, fs, N, hpf = 0, lpf = 100e3) {

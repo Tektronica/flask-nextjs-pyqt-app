@@ -20,6 +20,16 @@ export function sum(arr) {
     return arr.reduce((a, b) => a + b)
 };
 
+export function magnitude(arr) {
+    // returns a new array with every next element pair magnitude computed
+    const res = [];
+    for (let idx = 0; idx < arr.length; idx += 2) {
+        res.push(sqrt(arr[idx] ** 2 + (arr[idx + 1] || 0) ** 2));
+    };
+
+    return res;
+};
+
 export function ksum(arr) {
     // returns the kahan sum for all list items
     // https://stackoverflow.com/a/4940219
@@ -34,7 +44,7 @@ export function ksum(arr) {
         c = (t - sum) - y       // (t - sum) recovers the high-order part of y; subtracting y recovers -(low part of y)
         sum = t                 // Algebraically, c should always be zero. Beware eagerly optimising compilers!
     }                           // Next time around, the lost low part will be added to y in a fresh attempt.
-    
+
     return sum
 };
 

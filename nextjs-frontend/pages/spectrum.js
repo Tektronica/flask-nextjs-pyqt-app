@@ -237,7 +237,7 @@ export default function Spectrum() {
                         {/* distortion results */}
                         <div className="text-sm grid grid-cols-3">
                             <div>Fs:</div>
-                            <div>{haveData ? (distortion.fs) : ('--')}</div>
+                            <div>{haveData ? (`${distortion.fs} Hz`) : ('--')}</div>
                             <div> {/* blank */} </div>
 
                             <div>Samples:</div>
@@ -245,22 +245,22 @@ export default function Spectrum() {
                             <div> {/* blank */} </div>
 
                             <div>Aperture:</div>
-                            <div>{haveData ? (distortion.thdn.f0) : ('--')}</div>
+                            <div>{haveData ? (`${distortion.thdn.f0} Hz`) : ('--')}</div>
                             <div> {/* blank */} </div>
                         </div>
 
                         {/* distortion results */}
                         <div className="text-sm grid grid-cols-3">
                             <div>RMS:</div>
-                            <div>{haveData ? (distortion.rms) : ('--')}</div>
+                            <div>{haveData ? ((distortion.rms).toFixed(6)) : ('--')}</div>
                             <div> {/* blank */} </div>
 
                             <div>THD</div>
-                            <div>{haveData ? (distortion.thd) : ('--')}</div>
+                            <div>{haveData ? (`${((distortion.thd) * 100).toFixed(4)} %`) : ('--')}</div>
                             <div> {/* blank */} </div>
 
                             <div>THD+N:</div>
-                            <div>{haveData ? (distortion.thdn.thdn) : ('--')}</div>
+                            <div>{haveData ? (`${((distortion.thdn.thdn) * 100).toFixed(4)} %`) : ('--')}</div>
                             <div> {/* blank */} </div>
                         </div>
                     </div>
@@ -355,10 +355,8 @@ async function openFile(filename, setHaveData, setTimeData, setSpectralData, set
 
     const yt = toDictOfLists(csvRows).y
     const xt = toDictOfLists(csvRows).x
-    const out = dsp.windowed_fft(yt, xt, 'rectangular')
+    const out = dsp.windowed_fft(yt, xt, 'blackman')
     const spectralData = toListOfDicts(out.yf, out.xf)
-
-    console.log(out);
 
     const distortionData = { thdn: out.thdn, thd: out.thd, rms: out.rms, samples: out.samples, fs: out.fs, f0: out.f0 }
 
