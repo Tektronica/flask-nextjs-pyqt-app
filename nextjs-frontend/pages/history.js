@@ -1,15 +1,36 @@
 import Layout from '../components/layout';
 import ShadowBox from '../components/containers/ShadowBox';
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Link
- from 'next/link';
+    from 'next/link';
 export default function History() {
     const [tableData, setTableData] = useState(0);
+    const router = useRouter()
+
 
     // return contents of backend history folder
     useEffect(() => {
         getHistory(setTableData);
     }, []);
+
+
+    const handleClick = (e, filename) => {
+        e.preventDefault()
+
+        // [ "Sweep", "DCI", "2022-05-05" ]
+        var type = filename.split('_')[0];
+
+        if (type === "sweep") {
+            console.log(`Processing sweep data for ${filename}`)
+            router.push(`/dataview/sweep/${filename}`)
+        }
+        if (type === "timeseries") {
+            console.log(`Processing sweep data for ${filename}`)
+            router.push(`/dataview/spectral/${filename}`)
+        }
+    };
+
 
     return (
         <>
@@ -42,9 +63,9 @@ export default function History() {
                                     return (
                                         <tr key={idx} className='bg-white border-b hover:bg-gray-200' >
                                             <td className='px-6 py-4 font-bold text-gray-900 whitespace-nowrap'>
-                                                <Link href={`/dataview/${name}`}>
-                                                    <a>{name}</a>
-                                                </Link>
+                                                <button onClick={(e) => handleClick(e, name)}>
+                                                    {name}
+                                                </button>
                                             </td>
                                             <td className='px-6 py-4 text-gray-500'>
                                                 {dateSplit[0]}
@@ -78,7 +99,7 @@ export default function History() {
             </ShadowBox>
         </>
     )
-}
+};
 
 async function getHistory(setTableData) {
     let url = 'api/history';
@@ -93,7 +114,7 @@ async function getHistory(setTableData) {
     const body = await resJSON.json();
     console.log(body)
     setTableData(body.data);
-}
+};
 
 async function downloadFile(filename) {
     console.log('client: downloading ', filename)
@@ -128,7 +149,7 @@ async function downloadFile(filename) {
 
     // Clean up and remove the link
     link.parentNode.removeChild(link);
-}
+};
 
 async function deleteFile(filename, setTableData) {
     console.log('client: deleting ', filename)
@@ -147,7 +168,7 @@ async function deleteFile(filename, setTableData) {
     const body = await res.json();
     console.log(body)
     setTableData(body.data);
-}
+};
 
 const getIcon = (name) => {
     let dashIcon;
@@ -183,7 +204,7 @@ const getIcon = (name) => {
             {dashIcon}
         </>
     )
-}
+};
 
 History.getLayout = function getLayout(page) {
     return (
@@ -191,4 +212,4 @@ History.getLayout = function getLayout(page) {
             {page}
         </Layout>
     )
-}
+};

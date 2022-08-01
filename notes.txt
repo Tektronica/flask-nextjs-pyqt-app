@@ -265,7 +265,7 @@ direct manipulation of dom node is not recommended in react...
 CharJS
 ====================================================================
 https://itnext.io/chartjs-tutorial-with-react-nextjs-with-examples-2f514fdc130
-	
+
 	
 	
 Papaparse
@@ -744,5 +744,27 @@ This required a new method for computing the consecutive pair magnitude:
 After that, everything fell into place.
 
 
+useRouter and dynamic routing
+====================================================================
+Two issues needed to be resolved. 
+	> First, I needed dynamic routing based on the specific filename selected from the history list
+		> https://stackoverflow.com/a/65638865
+		> nextjs persistent layout mechanic ( <Link /> ) is handled by useRouter
+		> instead of using Link and <a>, I just stylized a button with a handleClick method.
+		> https://stackoverflow.com/a/66162437
+	
+	> Second, when redirected to the dynamic slug page [csv].js or [distortion].js, I needed to retrieve the filename
+		> router.query helped here. However, the object was undefined since router wasn't ready... Well, this wasn't verified because...
+		> the other issue was that I was improperly handling the object in the first place!
+			> Turns out based on the slug file name is the key with the name as the value
+			
+		> example:
+		
+		file: [csv].js
+		const router = useRouter()
+		const slug = router.query
+		// Object {csv: <slug name>}
+		
+		const slugname = slug.csv
 
 

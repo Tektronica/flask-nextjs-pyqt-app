@@ -2,38 +2,40 @@
 // <!-- requires papaparse -->
 // <!-- requires react-window -->
 
-import Layout from '../../components/layout'
-import ShadowBox from '../../components/containers/ShadowBox';
+import Layout from '../../../components/layout'
+import ShadowBox from '../../../components/containers/ShadowBox';
 import { useRouter } from 'next/router'
 import React, { useState, useEffect } from 'react';
-import TimePlot from '../../components/charts/TimePlot';
-// import TimePlot from '../../components/charts/_TimePlot' ;
+import TimePlot from '../../../components/charts/TimePlot';
 import Papa from 'papaparse';
-import TableDisclosure from '../../components/disclosure/tableDisclosure';
-import DoughnutStat from '../../components/charts/DoughnutStat';
-
-// https://stackoverflow.com/questions/68302182/reactjs-fetch-full-csv
+import TableDisclosure from '../../../components/disclosure/tableDisclosure';
+import DoughnutStat from '../../../components/charts/DoughnutStat';
 
 export default function DataView() {
-    // https://itnext.io/chartjs-tutorial-with-react-nextjs-with-examples-2f514fdc130
+    const [filename, setFilename] = useState('Loading Data...');
+
     const [tableData, setTableData] = useState([{ id: -1, x: 0, y: 0 }, { id: -2, x: 0, y: 1 }]);
     const [statData, setStatData] = useState({ passfail: [0, 0], passdetail: [0, 0, 0], faildetail: [0, 0, 0] })
-    const [haveData, setHaveData] = useState(false);
+
+    const [haveData, setHaveData] = useState(false);  // not used, but useful
 
     const router = useRouter()
-    const { filename } = router.query
-    // console.log(filename)
-    const f = 'Sweep_DCI_2022-07-18'
-    // get csv data determined by the dynamic route of this slug
 
     useEffect(() => {
-        openFile(f, setHaveData, setTableData, setStatData);
-    }, []);
+        // wait until router is ready to request slug name
+        if (!router.isReady) return;
+
+        // get csv data determined by the dynamic route of this slug
+        const slug = router.query  // example: Object { csv: "sweep_DCI_2022-05-05" }
+        const filename = slug.csv  // not in scope of the stately constant
+
+        setFilename(filename)
+        openFile(filename, setHaveData, setTableData, setStatData);
+
+    }, [router.isReady]);
 
     // const plotData = generateSin(1000, 4, 100);
     const plotData = generateLissajous(5, 4, 1000);
-
-    // testing papa parse
 
     return (
         <>
@@ -46,14 +48,7 @@ export default function DataView() {
 
             <ShadowBox>
                 <h1 className="text-xl font-bold pb-4">
-                    Lissajous Plot
-                </h1>
-                <TimePlot pointData={plotData} title='Lissajous' />
-            </ShadowBox>
-
-            <ShadowBox>
-                <h1 className="text-xl font-bold pb-4">
-                    {f}
+                    {filename}
                 </h1>
 
                 <div className="">
@@ -63,14 +58,6 @@ export default function DataView() {
                     >
                         <thead>
                             <tr>
-                                {/* {
-                                    // https://www.codegrepper.com/code-examples/javascript/list+of+dictionaries+javascript
-                                    csvHeaders.map((key) => {
-                                        return (
-                                            <th className='px-6 py-3'>{key}</th>
-                                        )
-                                    })
-                                } */}
                                 <th className='px-6 py-3'>Index</th>
                                 <th className='px-6 py-3'>Mode</th>
                                 <th className='px-6 py-3'>Amplitude</th>
@@ -79,14 +66,11 @@ export default function DataView() {
                             </tr>
                         </thead>
                         <tbody>
-                            {/* https://headlessui.com/react/disclosure */}
                             {
-
                                 tableData.map((item, idx) => {
-
                                     return (
                                         <TableDisclosure panelContent={item} key={item.id}>
-                                           <React.Fragment key={`${item.id}_fragment`}>
+                                            <React.Fragment key={`${item.id}_fragment`}>
                                                 <td className='px-6 text-gray-500'>
                                                     {item.id}
                                                 </td>
@@ -99,10 +83,10 @@ export default function DataView() {
                                                 <td className='px-6 text-gray-500'>
                                                     {item.dmm}
                                                 </td>
-                                                <td  className='px-6 text-gray-500'>
+                                                <td className='px-6 text-gray-500'>
                                                     {item.passed}
                                                 </td>
-                                                </React.Fragment>
+                                            </React.Fragment>
                                         </TableDisclosure>
                                     )
                                 })
@@ -111,6 +95,13 @@ export default function DataView() {
                     </table>
                 </div>
 
+            </ShadowBox>
+
+            <ShadowBox>
+                <h1 className="text-xl font-bold pb-4">
+                    Lissajous Plot
+                </h1>
+                <TimePlot pointData={plotData} title='Lissajous' />
             </ShadowBox>
         </>
     )
@@ -222,7 +213,7 @@ function getPassFail(data) {
 async function openFile(filename, setHaveData, setTableData, setStatData) {
     console.log('client: opening ', filename)
     const fileRequest = { cmd: 'download', name: filename }
-    let url = '../api/history';
+    let url = '../../../api/history';
     console.log('fetching')
 
     const res = await fetch(url, {
@@ -240,24 +231,6 @@ async function openFile(filename, setHaveData, setTableData, setStatData) {
         header: true,
     })
 
-    // const reader = res.body.getReader()
-    // const decoder = new TextDecoder('utf-8')
-
-    // FileReaader.readasText argument 1 does not implement interface blob
-
-    // returning only a chunk of data... There's also papa preview option
-    // https://stackoverflow.com/a/43087596
-
-    // custom request headers are not currently supported
-    // https://github.com/mholt/PapaParse/issues/374#issuecomment-288356596
-
-    // const p = Papa.parse(url, {
-    //     header:true,
-    //     worker:true, 
-    //     download: true,
-    //     // rest of config ...
-    // })
-
     const csvHeaders = p.meta.fields
     const csvRows = p.data
     csvRows.pop()
@@ -267,18 +240,6 @@ async function openFile(filename, setHaveData, setTableData, setStatData) {
     setTableData(csvRows)
     setHaveData(true)
 }
-
-// const fetchData = async () => {
-//     try {
-//         const res = await fetch('/api');
-//         const data = await res.json();
-//         setPlotData(data);
-//         setHaveData(true); // here, and importantly after the above setChartData call
-//     } catch (error) {
-//         setHaveData(false);
-//         setError(error);
-//     }
-// }
 
 
 DataView.getLayout = function getLayout(page) {

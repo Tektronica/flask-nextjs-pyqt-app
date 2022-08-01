@@ -13,7 +13,7 @@ function TableDisclosure({ children, panelContent }) {
                     {children}
                 </Disclosure.Button>
                 <Disclosure.Panel as='tr'>
-                    <td colspan="5">
+                    <td colSpan="5">
                         <div className='px-2 grid grid-cols-3 bg-gray-100 shadow-inner'>
                             <div className='grid grid-cols-2'>
                                 <div className='font-bold'>Ambient:</div>
