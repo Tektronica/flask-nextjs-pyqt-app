@@ -2,7 +2,7 @@ import Layout from '../components/layout'
 import ShadowBox from '../components/containers/ShadowBox';
 import Image from 'next/image';
 
-export default function Queue() {
+export default function About() {
 
     return (
         <>
@@ -22,13 +22,12 @@ export default function Queue() {
 
         </>
     )
-}
+};
 
-
-Queue.getLayout = function getLayout(page) {
+About.getLayout = function getLayout(page) {
     return (
-      <Layout>
-        {page}
-      </Layout>
+        <Layout>
+            {page}
+        </Layout>
     )
-  }
+};
