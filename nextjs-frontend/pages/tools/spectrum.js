@@ -1,14 +1,14 @@
-import Layout from '../components/layout'
-import ShadowBox from '../components/containers/ShadowBox';
+import Layout from '../../components/layout'
+import ShadowBox from '../../components/containers/ShadowBox';
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 // import SpectrumPlot from '../components/charts/SpectrumPlot';
 import dynamic from 'next/dynamic';
 
-import * as dsp from '../modules/dsp/dsp';
+import * as dsp from '../../modules/dsp/dsp';
 
 const SpectrumPlot = dynamic(
-    () => import('../components/charts/SpectrumPlot'),
+    () => import('../../components/charts/SpectrumPlot'),
     { ssr: false }
 )
 
@@ -17,7 +17,7 @@ export default function Spectrum() {
     const [spectralData, setSpectralData] = useState([{ x: 0, y: 0 }, { x: 1, y: 1 }]);
     const [haveData, setHaveData] = useState(false);
     const [isRelative, setIsRelative] = useState(false);
-    const [instrumentList, setInstrumentList] = useState({ matching: ['k'], allOther: ['k'] });
+    const [instrumentList, setInstrumentList] = useState({ matching: ['<none>'], allOther: ['<none>'] });
     const [isRunning, setIsRunning] = useState(false);
     const [distortion, setDistortion] = useState({});
 
@@ -301,7 +301,7 @@ export default function Spectrum() {
 
 async function getInstrumentsMatching(matchingInstr, setState) {
 
-    let url = 'api/instruments';
+    let url = '../api/instruments';
 
     const resJSON = await fetch(url, {
         method: 'GET',
