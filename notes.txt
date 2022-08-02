@@ -768,3 +768,14 @@ Two issues needed to be resolved.
 		const slugname = slug.csv
 
 
+
+Formatting number strings
+====================================================================
+The goal was to format numbers as strings in engineering notation (exponent of ten must be divisible by three)
+
+Came across toLocaleString:
+https://stackoverflow.com/a/50978675
+
+	const myNumb = 1000000000000000000000;
+	console.log( myNumb ); // 1e+21
+
