@@ -779,3 +779,18 @@ https://stackoverflow.com/a/50978675
 	const myNumb = 1000000000000000000000;
 	console.log( myNumb ); // 1e+21
 
+
+
+Found further resource on GPIB on raspberry pi
+====================================================================
+https://github.com/PhilippCo/meas_rpi/tree/34e79d18a82ee682320eb41275da76377ee3983d
+
+Had some independent instrument libraries with similar implementation as us
+https://github.com/PhilippCo/testgear
+
+Fluke 8588A
+https://github.com/PhilippCo/testgear/blob/d4e782d1771347f459cfa49dceeaa28adcd4cbf4/testgear/Fluke/F8588A.py
+
+Fluke 5730A
+https://github.com/PhilippCo/testgear/blob/d4e782d1771347f459cfa49dceeaa28adcd4cbf4/testgear/Fluke/F5730A.py
+

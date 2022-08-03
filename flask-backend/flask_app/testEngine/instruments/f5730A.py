@@ -13,6 +13,13 @@ class f5730A:
     def newConfig(self, new_config):
         self.config = new_config
 
+    def __wait_for_settling(self):
+        settled = False
+        while not settled:
+            isr = int(self.query("ISR?"))
+            settled = bool(isr & 2**12)  # check for SETTLED Bit
+            time.sleep(0.1)  # prevent overloading the cmd buffer
+
     def write(self, arg):
         if self.active:
             print('received: ', arg)

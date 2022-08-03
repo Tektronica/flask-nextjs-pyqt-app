@@ -106,6 +106,54 @@ def get_aperture(Fs, N):
     return aperture, runtime
 
 
+class _f8588A:
+    def __init__(self, config) -> None:
+        self.config = config  # each instrument knows its own config
+        self.active = False  # each instrument knows its own state
+        self.VISA = None
+
+    def write(self, cmd):
+        if self.active:
+            print(f"\t> {cmd}")
+
+    def read(self):
+        if self.active:
+            print('reading')
+
+    def query(self, cmd):
+        if self.active:
+            print(f"\t> {cmd}")
+
+    def connect(self, timeout=2000):
+        if not self.active:
+            status = True
+            if status:
+                # connection is good
+                self.active = True
+                msg = f"{self.config['name']} has connected"
+                print(msg)
+                return {'status': True, 'data': msg}
+        else:
+            # already connected
+            msg = f"{self.config['name']} has already connected"
+            print(msg)
+            return {'status': True, 'data': msg}
+
+    def disconnect(self):
+        if self.active:
+            time.sleep(1)
+
+            self.VISA = None
+            self.active = False
+            print(f"{self.config['name']} has disconnected")
+
+            return {'status': True, 'data': 'done'}
+        else:
+            msg = f"{self.config['name']} was not connected"
+            print(msg)
+            return {'status': True, 'data': msg}
+
+
 class f8588A:
     def __init__(self, config) -> None:
         self.config = config  # each instrument knows its own config
@@ -115,10 +163,10 @@ class f8588A:
     def newConfig(self, new_config):
         self.config = new_config
 
-    def write(self, arg):
+    def write(self, cmd):
         if self.active:
-            print('received: ', arg)
-            return self.VISA.write(arg)
+            print(f"\t> {cmd}")
+            return self.VISA.write(cmd)
         else:
             return {'status': False, 'data': '<not connected>'}
 
@@ -129,10 +177,10 @@ class f8588A:
         else:
             return {'status': False, 'data': '<not connected>'}
 
-    def query(self, arg):
+    def query(self, cmd):
         if self.active:
-            print('received: ', arg)
-            return self.VISA.query(arg)
+            print(f"\t> {cmd}")
+            return self.VISA.query(cmd)
         else:
             return {'status': False, 'data': '<not connected>'}
 
@@ -193,7 +241,62 @@ class f8588A:
 
         return {'status': True, 'data': msg}
 
-    # SETUP METER ######################################################################################################
+    ####################################################################################################################
+    #                                                   SETUP METER                                                    #
+    ####################################################################################################################
+    def select_terminal(self, terminal="FRONT"):
+        """select terminal for measurement FRONT or REAR"""
+        self.write(f":ROUTe:Terminals {terminal}")
+
+    def __select_channel(self, channel):
+        if channel is None:
+            return 0
+
+        if channel == 2:
+            self.select_terminal("REAR")
+        else:
+            self.select_terminal("FRONT")
+        return 1
+
+    def __set_nplc(self, prefix: str, nplc):
+        self.write(f":SENSe:{prefix}:NPLC {nplc}")
+
+    def __conf_range(self, prefix: str, mrange, nplc):
+        self.write(f':SENSe:FUNC "{prefix}"')
+        self.write(f":SENSe:{prefix}:RES MIN")
+
+        if mrange is None:
+            self.write(f":SENSe:{prefix}:RANGE:AUTO ON")
+        else:
+            self.write(f":SENSe:{prefix}:RANGE {mrange}")
+
+        self.__set_nplc(prefix, nplc)
+
+    def conf_function_DCV(self, mrange=None, nplc=100, AutoZero=True, HiZ=True, channel=None):
+        """configures the meter to measure DCV. if range=None the meter is set to Autorange"""
+        self.__select_channel(channel)
+        self.__conf_range("VOLT:DC", mrange, nplc)
+
+        if HiZ:
+            self.write(":SENSe:VOLT:DC:IMPedance AUTO")
+        else:
+            self.write(":SENSe:VOLT:DC:IMPedance 10M")
+
+    def conf_function_DCI(self, mrange=None, nplc=100, AutoZero=True, HiZ=True, channel=None):
+        """configures the meter to measure DCI. if range=None the meter is set to Autorange"""
+        self.__select_channel(channel)
+        self.__conf_range("CURR:DC", mrange, nplc)
+
+    def conf_function_ACV(self, mrange=None, nplc=100, AutoZero=True, HiZ=True, channel=None):
+        """configures the meter to measure DCV. if range=None the meter is set to Autorange"""
+        self.__select_channel(channel)
+        self.__conf_range("VOLT:AC", mrange, nplc)
+
+    def conf_function_ACI(self, mrange=None, nplc=100, AutoZero=True, HiZ=True, channel=None):
+        """configures the meter to measure DCV. if range=None the meter is set to Autorange"""
+        self.__select_channel(channel)
+        self.__conf_range("CURR:AC", mrange, nplc)
+
     def setup_f8588A_meter(self, autorange=True, **kwds):
         """
         method accepts several keyword pairs as arguments. Specify at least two of the following:
