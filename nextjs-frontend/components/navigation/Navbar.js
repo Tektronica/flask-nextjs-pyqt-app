@@ -135,7 +135,11 @@ const Navbar = () => {
                             ◦ Thermal Imager
                         </div>
                         <div className="pb-2 text-gray-400 hover:text-white">
-                            ◦ Webcam
+                            <Link href='/tools/webcam'>
+                                <a>
+                                    ◦ Webcam
+                                </a>
+                            </Link>
                         </div>
                     </div>
                 </div>

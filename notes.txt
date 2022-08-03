@@ -845,5 +845,8 @@ This might be a good example for implemetning user Authentication
 	> uses cv2 to detect motion on security camera and then begins recording for some length of time
 
 
-	
+
+Webcam as React component:
+====================================================================
+https://medium.com/@jadomene99/integrating-your-opencv-project-into-a-react-component-using-flask-6bcf909c07f4
 

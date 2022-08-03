@@ -5,6 +5,8 @@ from subprocess import call
 from datetime import datetime
 from flask_app.pystats import getStats
 import flask_app.testEngine.FileManager as FileManager
+from flask_app.webcam.camera import Camera
+
 try:
     import RPi.GPIO as gpio
 
@@ -22,13 +24,19 @@ def index():
     return render_template('index.html', message='Hello World')
 
 
-composer = Composer()
-
-
+########################################################################################################################
+#                                              SERVER STATUS INFORMATION                                               #
+########################################################################################################################
 @app.route('/stats', methods=['GET'])
 def stats():
     stats = getStats()
     return {'data': stats}
+
+
+########################################################################################################################
+#                                        RETRIEVES AND UPDATES INSTRUMENT ROSTER                                       #
+########################################################################################################################
+composer = Composer()
 
 
 @app.route('/instruments', methods=['GET', 'POST', 'DELETE'])
@@ -83,6 +91,9 @@ def delete_instrument():
     return {'data': isDone}
 
 
+########################################################################################################################
+#                                               INSTRUMENT COMMUNICATION                                               #
+########################################################################################################################
 @app.route('/connect', methods=['POST'])
 def connect():
     if request.method == 'POST':
@@ -137,6 +148,9 @@ def command():
     # else POST Error 405 Method Not Allowed
 
 
+########################################################################################################################
+#                                              RETURNS HISTORY TO CLIENT                                               #
+########################################################################################################################
 @app.route('/history', methods=['GET', 'POST'])
 def history():
     if request.method == 'GET':
@@ -157,7 +171,7 @@ def history():
                 csv,
                 mimetype="text/csv",
                 headers={"Content-disposition":
-                         f"attachment; filename={filename}"
+                             f"attachment; filename={filename}"
                          }
             )
 
@@ -176,12 +190,6 @@ def spectrum():
         names = data['name']  # contains names
         cmd = data['cmd']
         arg = data['arg']
-
-        print('requested command to instrument from client')
-
-        if cmd == 'write':
-            print('write cmd: ', arg, ' to ', name)
-            return composer.getSeat(name).write(arg)
 
 
 @app.route('/time')
@@ -206,3 +214,23 @@ def rpi():
             # call("sudo shutdown -r now", shell=True)
 
     return {'time': timestamp}
+
+
+########################################################################################################################
+#                                                      FLASK WEBCAM                                                    #
+########################################################################################################################
+video_stream = Camera()
+
+
+def gen(camera):
+    while True:
+        frame = camera.get_frame()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+
+
+@app.route('/video_feed')
+def video_feed():
+    print('getting video feed')
+    return Response(gen(video_stream),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
