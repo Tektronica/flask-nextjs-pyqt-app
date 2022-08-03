@@ -794,3 +794,56 @@ https://github.com/PhilippCo/testgear/blob/d4e782d1771347f459cfa49dceeaa28adcd4c
 Fluke 5730A
 https://github.com/PhilippCo/testgear/blob/d4e782d1771347f459cfa49dceeaa28adcd4cbf4/testgear/Fluke/F5730A.py
 
+
+
+Webcam + Flask
+====================================================================
+
+miguel's video streaming tutorial (flask developer)
+	> https://blog.miguelgrinberg.com/post/video-streaming-with-flask
+	> instructions for implementing a jpg frame stream (1.jpg, 2.jpg, 3.jpg)
+	> has alternative options to use the rpi camera. This is different than a usb webcam.
+	
+This example uses cv2 to provide the camera capture capability
+	> https://stackoverflow.com/a/54787912
+	> a generator method yields new frame and appropriate http headers
+
+cv2
+	> https://stackoverflow.com/a/10425504
+	> cv2 has everything returned as NumPy objects
+
+pip install cv2
+	> https://pypi.org/project/opencv-python/#description
+	
+	> There are four different packages (see options 1, 2, 3 and 4 below) and you should SELECT ONLY ONE OF THEM.
+	> Do not install multiple different packages in the same environment.
+	> There is no plugin architecture: all the packages use the same namespace (cv2).
+	
+	> Option 1 - for desktop: (NOT WHAT WE WANT FOR RASPBERRY PI)
+	> pip install opencv-python
+		>
+		> might be a good demo using the library's gui:
+		> https://www.geeksforgeeks.org/python-opencv-capture-video-from-camera/
+	
+	> Option 3 - lightweight (no gui) best for headless servers (great for raspberry pi)
+	> pip install opencv-python-headless
+
+The demo being developed first will probably use the desktop version.
+However, Raspberry Pi should install the headless option and the stream the frames to the frontend
+
+Good tutorials on implementing exactly this:
+	> https://towardsdatascience.com/how-to-display-video-streaming-from-a-webcam-using-flask-7a15e26fbab8
+	> https://towardsdatascience.com/video-streaming-in-web-browsers-with-opencv-flask-93a38846fe00
+	> https://medium.datadriveninvestor.com/video-streaming-using-flask-and-opencv-c464bf8473d6
+	> https://towardsdatascience.com/face-detection-in-2-minutes-using-opencv-python-90f89d7c0f81
+	
+Default face detection haarcascades
+	> https://github.com/opencv/opencv/blob/3.4/data/haarcascades/haarcascade_frontalface_alt.xml
+
+This might be a good example for implemetning user Authentication
+	> https://github.com/scottbarnesg/smart-sec-cam
+	> uses cv2 to detect motion on security camera and then begins recording for some length of time
+
+
+	
+
