@@ -1,42 +1,50 @@
 # requires 'opencv-python-headless' without gui support
 import cv2
+from flask_app.webcam.base_camera import BaseCamera
 
 
 ########################################################################################################################
 #                                              WEBCAM OBJECT USED BY FLASK                                             #
 ########################################################################################################################
-class Camera(object):
+class Camera(BaseCamera):
+    video_source = 0
+    face_cascade = None
+
     def __init__(self):
-        # define a video capture object
-        self.video = cv2.VideoCapture(0)
-        self.face_cascade = cv2.CascadeClassifier('flask_app/webcam/haarcascade_frontalface_alt.xml')
+        Camera.face_cascade = cv2.CascadeClassifier('flask_app/webcam/haarcascade_frontalface_alt.xml')
+        super(Camera, self).__init__()
 
-    def __del__(self):
-        self.video.release()
+    @staticmethod
+    def set_video_source(source):
+        Camera.video_source = source
 
-    def get_frame(self):
-        # Read in each frame
-        ret, frame = self.video.read()
+    @staticmethod
+    def frames():
+        camera = cv2.VideoCapture(Camera.video_source)
 
-        # face detect
-        faces = self.findFaces(frame)
+        if not camera.isOpened():
+            raise RuntimeError('Could not start camera.')
 
-        # auto brighten
-        self.autoBrighten(frame)
+        while True:
+            # Read in each frame
+            ret, frame = camera.read()
 
-        for (x, y, w, h) in faces:
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            # face detect
+            faces = Camera.findFaces(frame)
 
-        ret, jpeg = cv2.imencode('.jpg', frame)
+            for (x, y, w, h) in faces:
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (44, 199, 255), 2)
 
-        return jpeg.tobytes()
+            yield cv2.imencode('.jpg', frame)[1].tobytes()
 
-    def findFaces(self, frame):
+    @staticmethod
+    def findFaces(frame):
         # face detection only works on grayscale frames
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         frame_gray = cv2.equalizeHist(frame_gray)
-        return self.face_cascade.detectMultiScale(frame_gray)
+        return Camera.face_cascade.detectMultiScale(frame_gray)
 
-    def autoBrighten(self, frame):
+    @staticmethod
+    def autoBrighten(frame):
         # shift the alpha and beta values the same amount
         cv2.normalize(frame, frame, 0, 255, cv2.NORM_MINMAX)

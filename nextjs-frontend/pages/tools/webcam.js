@@ -1,6 +1,7 @@
 import Layout from '../../components/layout'
 import ShadowBox from '../../components/containers/ShadowBox';
 import { useState } from 'react';
+import Image from 'next/image';
 
 export default function Webcam() {
 
@@ -14,17 +15,6 @@ export default function Webcam() {
                         <div className='grid grid-cols-1 gap-4'>
                             <h1>Video Stream</h1>
                             <Cam />
-                            
-                            {/* {
-                                haveVideoFeed ? (
-                                    <img
-                                        src="../api/video_feed"
-                                        alt="Stream"
-                                    />
-                                ) : (
-                                    'loading stream...'
-                                )
-                            } */}
                         </div>
                     </ShadowBox>
 
@@ -38,8 +28,10 @@ const Cam = () => {
     return (
         <div>
             <img
-                src="../api/video_feed"
+                src="/api/video_feed"
                 alt="Stream"
+                width='386'
+                height='290'
             />
         </div>
     );

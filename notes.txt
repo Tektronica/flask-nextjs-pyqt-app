@@ -850,3 +850,43 @@ Webcam as React component:
 ====================================================================
 https://medium.com/@jadomene99/integrating-your-opencv-project-into-a-react-component-using-flask-6bcf909c07f4
 
+
+
+shutdown webcam stream due to inactivity
+====================================================================
+when the server runs for five seconds without any clients, it will shut its camera off and stop all background activity.
+As soon as a client connects again the thread is restarted.
+	> https://blog.miguelgrinberg.com/post/flask-video-streaming-revisited
+
+	# if there hasn't been any clients asking for frames in
+	# the last 5 seconds then stop the thread
+	if time.time() - BaseCamera.last_access > 5:
+		frames_iterator.close()
+		print('Stopping camera thread due to inactivity.')
+		break
+
+Works when client closes the tab/window
+Still troublesome with react applications. persistent layouts don't inherently close resources to the page.
+
+
+
+Create a threaded event class for the webcam to reduce CPU load per client request
+====================================================================
+	> Currently seeing >90% CPU utilization. Not good!
+	> https://blog.miguelgrinberg.com/post/flask-video-streaming-revisited
+	
+	> CameraEvent class enables multiple clients to be able to wait individually for a new frame.
+
+after following miguels solution, cpu utilization dropped -10% (-50% when not using face detect)
+
+
+
+websockets as webcam stream alternative
+====================================================================
+The techniques above can be used to keep a connection between the client and the server alive for a long time.
+This allows the server to push new information the moment it becomes available. 
+Web Socket protocol is a more efficient way to achieve this, but isn't as compatible
+
+
+	
+
