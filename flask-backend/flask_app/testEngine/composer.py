@@ -4,8 +4,7 @@ from flask_app.testEngine.instruments.f5730A import f5730A
 from flask_app.testEngine.instruments.f8588A import f8588A
 
 ########################################################################################################################
-FILE = 'config\\instrument_config.yaml'
-PARENT_DIRECTORY = pathlib.Path(__file__).parent.resolve()
+FILE = 'config/instrument_config.yaml'
 
 
 ########################################################################################################################

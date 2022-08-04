@@ -5,7 +5,7 @@ import platform
 import pandas as pd
 
 ########################################################################################################################
-FILE = 'config\\instrument_config.yaml'
+FILE = 'config/instrument_config.yaml'
 PARENT_DIRECTORY = pathlib.Path(__file__).parent.resolve()
 
 
