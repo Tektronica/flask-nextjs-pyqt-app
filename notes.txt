@@ -887,6 +887,33 @@ The techniques above can be used to keep a connection between the client and the
 This allows the server to push new information the moment it becomes available. 
 Web Socket protocol is a more efficient way to achieve this, but isn't as compatible
 
+>> more on this later, I think... Taking a break on this front for now.
 
+
+
+thermal imager image processing
+====================================================================
+
+To start, I needed to find valid .is2 files...
+This repository had a few.
+They also claim to be able to read FLUKE Thermography Files (.is2)
+	> https://github.com/potynobg/Thermal
+
+Support for FLIR images written in R...
+	> https://github.com/gtatters/Thermimage
+
+This converts an is2 to png
+	> https://github.com/matthiasbock/fluke-ti-tool/blob/master/fluke2png.c
 	
+A .is2 is not unique to Fluke
+	> http://www.grayess.com/software/irt-cronista/
 
+FLIR image extractor
+	> https://github.com/ITVRoC/FlirImageExtractor
+
+https://www.mathworks.com/matlabcentral/answers/374507-when-i-give-a-fluke-ti400-is2-image-as-input-i-am-getting-maximum-variable-size-exceeded-error-in-ma
+
+https://github.com/detecttechnologies/Thermal-Image-Analysis
+	
+	
+	
