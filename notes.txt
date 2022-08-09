@@ -922,6 +922,14 @@ https://exiftool.org/forum/index.php?topic=10216.0
 
 IR_00017.is2 ==> IR_00017.zip works
 DAN00959.is2 ==> DAN00959.zip works
+
+
+Read Fluke IS2 images with Python
+Fluke at some point changed its file form to be more zip-file like.
+I believe Fluke Ti32 is one such example. I know that Fluke did change it's file format, it's now a zip-file. 
+
+	> https://www.mathworks.com/matlabcentral/answers/374507-when-i-give-a-fluke-ti400-is2-image-as-input-i-am-getting-maximum-variable-size-exceeded-error-in-ma
+	> https://gitlab.com/roelofy/read_is2_new
 	
 	
 	

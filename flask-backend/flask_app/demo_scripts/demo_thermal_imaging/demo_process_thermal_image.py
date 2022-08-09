@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 # Air_Infiltration.is2
 # Air_Gap.is2
 # Panel.is2
-FILE = 'samples/Air_Infiltration.is2'
+FILE = 'samples/Motor.is2'
 PARENT_DIRECTORY = os.path.dirname(__file__)
 FILEPATH = os.path.join(PARENT_DIRECTORY, FILE)
 print('FILEPATH: ', FILEPATH)
@@ -60,12 +60,12 @@ def to_uint32(c1, c2, c3, c4):
 
 
 def parseHeader(header):
-    # for item in header[:25]:
-    #     print(item)
+    for item in header[:550]:
+        print(item)
     # header was read in as uint8, but some values must be cast to 16 or 32 bit values.
 
     # indicates the index of beginning of data -------------------------------------------------------------------------
-    reading = 8
+    reading = 8  # 8
     a = header[reading]  # CameraManufacturer
     b = header[reading + 1]  # CameraModel
     c = header[reading + 2]  # CameraSerial
@@ -76,12 +76,12 @@ def parseHeader(header):
     #
 
     # dimensions visible image -----------------------------------------------------------------------------------------
-    reading = 514
+    reading = 286  # 514
     a = header[reading]
     b = header[reading + 1]
     visWidth = (a << 8) + b  # uinst16
 
-    reading = 516
+    reading = 284  # 516
     a = header[reading]
     b = header[reading + 1]
     visHeight = (a << 8) + b  # uinst16
@@ -119,7 +119,7 @@ def read_is2(filepath):
     with open(filepath, mode='rb') as fIN:
         # read header --------------------------------------------------------------------------------------------------
         print(f'\t> reading header from line {linecount}')
-        buffer = 1023  # 509, 1023 odd numbers 2000 7989
+        buffer = 511  # 1023
         header = np.zeros(buffer, dtype=int)
         for idx in range(buffer):
             # uint16 datatype consumes 2 reads per conversion
@@ -161,7 +161,7 @@ def read_is2(filepath):
 
         # metadata here ------------------------------------------------------------------------------------------------
         print(f'\t> reading metadata from line {linecount}')
-        buffer = 145
+        buffer = 55  # 145
         metadata = np.zeros(buffer, dtype=int)
         for idx in range(buffer):
             # uint8 datatype consumes 1 read per conversion
@@ -169,9 +169,9 @@ def read_is2(filepath):
 
         linecount += buffer
 
-        # Ir-data 160x120 16-bit picture (Is it signed or unsigned?) ---------------------------------------------------
+        # ir-data 160x120 16-bit picture -------------------------------------------------------------------------------
         print(f'\t> reading IR data from line {linecount}')
-        ir_dim = (120, 160)  # height, width (320 x 240)
+        ir_dim = (120, 160)  # height, width
         buffer = np.prod(ir_dim)
 
         ir = np.zeros(buffer, dtype=int)
