@@ -914,6 +914,14 @@ FLIR image extractor
 https://www.mathworks.com/matlabcentral/answers/374507-when-i-give-a-fluke-ti400-is2-image-as-input-i-am-getting-maximum-variable-size-exceeded-error-in-ma
 
 https://github.com/detecttechnologies/Thermal-Image-Analysis
+
+https://github.com/RioEsgueva/IrS2reader
+
+Many .is2 files can be renamed with the .zip extension and then opened to review the files packed inside the original .is2
+https://exiftool.org/forum/index.php?topic=10216.0
+
+IR_00017.is2 ==> IR_00017.zip works
+DAN00959.is2 ==> DAN00959.zip works
 	
 	
 	

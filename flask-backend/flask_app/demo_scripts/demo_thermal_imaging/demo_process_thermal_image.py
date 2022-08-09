@@ -10,8 +10,10 @@ import struct
 import matplotlib.pyplot as plt
 
 # from PIL import Image
-
-FILE = 'samples/Air_Gap.is2'
+# Air_Infiltration.is2
+# Air_Gap.is2
+# Panel.is2
+FILE = 'samples/Air_Infiltration.is2'
 PARENT_DIRECTORY = os.path.dirname(__file__)
 FILEPATH = os.path.join(PARENT_DIRECTORY, FILE)
 print('FILEPATH: ', FILEPATH)
@@ -40,7 +42,7 @@ def read_uint16(f, little_endian=True):
     return out
 
 
-def to_uint32(f):
+def read_uint32(f):
     # b'\xAA\xAA\xAA\xAA' --> 2863311530 --> 1010 1010 1010 1010 1010 1010 1010 1010
     c1 = struct.unpack('1B', f.read(1))[0] & 255
     c2 = struct.unpack('1B', f.read(1))[0] & 255
@@ -50,19 +52,49 @@ def to_uint32(f):
     return (c4 << 24) | (c3 << 16) | (c2 << 8) | c1
 
 
+def to_uint32(c1, c2, c3, c4):
+    # c1, c2, c3, c4 must be uint8 values
+    # b'\xAA\xAA\xAA\xAA' --> 2863311530 --> 1010 1010 1010 1010 1010 1010 1010 1010
+
+    return (c4 << 24) | (c3 << 16) | (c2 << 8) | c1
+
+
 def parseHeader(header):
-    print(header[88:105])
-    a = "".join([chr(item) for item in header[88:105]])  # CameraManufacturer
-    b = "".join([chr(item) for item in header[120:130]])  # CameraModel
-    c = "".join([chr(item) for item in header[152:170]])  # CameraSerial
-    d = "".join([chr(item) for item in header[184:198]])  # EngineSerial
+    # for item in header[:25]:
+    #     print(item)
+    # header was read in as uint8, but some values must be cast to 16 or 32 bit values.
+
+    # indicates the index of beginning of data -------------------------------------------------------------------------
+    reading = 8
+    a = header[reading]  # CameraManufacturer
+    b = header[reading + 1]  # CameraModel
+    c = header[reading + 2]  # CameraSerial
+    d = header[reading + 3]  # EngineSerial
+    dataStart = to_uint32(d, c, b, a)  # big-endian
+    print(dataStart)
+
+    #
+
+    # dimensions visible image -----------------------------------------------------------------------------------------
+    reading = 514
+    a = header[reading]
+    b = header[reading + 1]
+    visWidth = (a << 8) + b  # uinst16
+
+    reading = 516
+    a = header[reading]
+    b = header[reading + 1]
+    visHeight = (a << 8) + b  # uinst16
+
+    print('visible image dimensions: ', visWidth, 'x', visHeight)
+
     # header{5} = fliplr(typecast(header[64:65],'uint8')) # FirmwareVersion
-    daymonth = np.uint8(header[2936])  # day and month
-    print(daymonth)
+    # daymonth = np.uint8(header[2936])  # day and month
+    # print(daymonth)
     # get IR parameters
-    emissivity = np.uint8(header[2940:2941])
-    transmission = header[2942:2943]
-    backgroundtemp = header[2944:2945]
+    # emissivity = np.uint8(header[2940:2941])
+    # transmission = header[2942:2943]
+    # backgroundtemp = header[2944:2945]
 
     # # IR image size
     # irh = to_uint32(header[7984:7985])  # 320
@@ -73,7 +105,7 @@ def parseHeader(header):
     # vh = to_uint32(header[2932:2933])  # 480
 
     print(a, b, c, d)
-    print(emissivity, transmission, backgroundtemp)
+    # print(emissivity, transmission, backgroundtemp)
     # print(vw, vh, irw, irh)
 
 
@@ -82,22 +114,23 @@ def read_is2(filepath):
     # https://www.mathworks.com/matlabcentral/fileexchange/27915-fluke-is2-file-reader
     print('reading is2 file:')
 
+    linecount = 0  # keeps track of where in the file we are. For diagnostics only.
+
     with open(filepath, mode='rb') as fIN:
-        # fIN.read(1023)  # null 1023
-
         # read header --------------------------------------------------------------------------------------------------
-        print('\t> reading header')
+        print(f'\t> reading header from line {linecount}')
         buffer = 1023  # 509, 1023 odd numbers 2000 7989
-
         header = np.zeros(buffer, dtype=int)
         for idx in range(buffer):
             # uint16 datatype consumes 2 reads per conversion
             header[idx] = read_uint8(fIN)
 
-        # parseHeader(header)
+        linecount += buffer
+
+        parseHeader(header)
 
         # visual spectrum image ----------------------------------------------------------------------------------------
-        print('\t> reading visual spectrum (640x450)')
+        print(f'\t> reading visual spectrum from line {linecount}')
         vis_dim = (450, 640)  # height, width
         buffer = np.prod(vis_dim)
         print('\t> vis buffer: ', buffer)
@@ -109,11 +142,12 @@ def read_is2(filepath):
 
         vis = vis.reshape(vis_dim)
 
+        linecount += 2 * buffer
+
         # remaining pixels (to make it 640x480) seems to be zero-padding -----------------------------------------------
-        print('\t> reading zero-padding')
+        print(f'\t> reading zero-padding from line {linecount}')
         vis_pad_dim = (30, 640)  # height, width
         buffer = np.prod(vis_pad_dim)
-        print('\t> vis_pad buffer: ', buffer)
 
         vis_pad = np.zeros(buffer, dtype=int)
 
@@ -123,19 +157,22 @@ def read_is2(filepath):
 
         vis_pad = vis_pad.reshape(vis_pad_dim)
 
-        # 88 bytes of metadata here ------------------------------------------------------------------------------------
-        print('\t> reading metadata')
-        buffer = 88
+        linecount += 2 * buffer
+
+        # metadata here ------------------------------------------------------------------------------------------------
+        print(f'\t> reading metadata from line {linecount}')
+        buffer = 145
         metadata = np.zeros(buffer, dtype=int)
         for idx in range(buffer):
-            # uint16 datatype consumes 2 reads per conversion
+            # uint8 datatype consumes 1 read per conversion
             metadata[idx] = read_uint8(fIN)
 
+        linecount += buffer
+
         # Ir-data 160x120 16-bit picture (Is it signed or unsigned?) ---------------------------------------------------
-        print('\t> reading IR data (160x120)')
+        print(f'\t> reading IR data from line {linecount}')
         ir_dim = (120, 160)  # height, width (320 x 240)
         buffer = np.prod(ir_dim)
-        print('\t> ir buffer: ', buffer)
 
         ir = np.zeros(buffer, dtype=int)
         for idx in range(buffer):
