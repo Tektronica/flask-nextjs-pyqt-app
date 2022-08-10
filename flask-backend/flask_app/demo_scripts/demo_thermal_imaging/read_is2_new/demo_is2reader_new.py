@@ -257,8 +257,8 @@ if __name__ == "__main__":
     data = read_is2_new(FILEPATH)
 
     show_thumbnail(data, title='is2_read thumbnail')
-    plot_ir(data, title='is2_read')
-    show_photo(data, title='is2 read', rotate=int(0))
+    plot_ir(data, title='is2_read thermal')
+    show_photo(data, title='is2_read visible', rotate=int(0))
     plt.show()
 
 # if __name__ == "__main__":

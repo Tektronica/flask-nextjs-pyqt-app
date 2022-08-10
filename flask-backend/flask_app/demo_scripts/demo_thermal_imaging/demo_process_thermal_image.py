@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 # Air_Infiltration.is2
 # Air_Gap.is2
 # Panel.is2
-FILE = 'samples/Motor.is2'
+FILE = 'samples/Air_Infiltration.is2'
 PARENT_DIRECTORY = os.path.dirname(__file__)
 FILEPATH = os.path.join(PARENT_DIRECTORY, FILE)
 print('FILEPATH: ', FILEPATH)
@@ -60,9 +60,10 @@ def to_uint32(c1, c2, c3, c4):
 
 
 def parseHeader(header):
-    for item in header[:550]:
-        print(item)
     # header was read in as uint8, but some values must be cast to 16 or 32 bit values.
+
+    # for item in header[:550]:
+    #     print(item)
 
     # indicates the index of beginning of data -------------------------------------------------------------------------
     reading = 8  # 8
@@ -76,12 +77,12 @@ def parseHeader(header):
     #
 
     # dimensions visible image -----------------------------------------------------------------------------------------
-    reading = 286  # 514
+    reading = 514  # 514
     a = header[reading]
     b = header[reading + 1]
     visWidth = (a << 8) + b  # uinst16
 
-    reading = 284  # 516
+    reading = 516  # 516
     a = header[reading]
     b = header[reading + 1]
     visHeight = (a << 8) + b  # uinst16
@@ -119,7 +120,7 @@ def read_is2(filepath):
     with open(filepath, mode='rb') as fIN:
         # read header --------------------------------------------------------------------------------------------------
         print(f'\t> reading header from line {linecount}')
-        buffer = 511  # 1023
+        buffer = 1023  # 1023
         header = np.zeros(buffer, dtype=int)
         for idx in range(buffer):
             # uint16 datatype consumes 2 reads per conversion
@@ -129,11 +130,10 @@ def read_is2(filepath):
 
         parseHeader(header)
 
-        # visual spectrum image ----------------------------------------------------------------------------------------
+        # reads visible image (16-bit RGB coded 5:6:5) ---------------------------------------------------------
         print(f'\t> reading visual spectrum from line {linecount}')
         vis_dim = (450, 640)  # height, width
         buffer = np.prod(vis_dim)
-        print('\t> vis buffer: ', buffer)
 
         vis = np.zeros(buffer, dtype=int)
         for idx in range(buffer):
@@ -161,7 +161,7 @@ def read_is2(filepath):
 
         # metadata here ------------------------------------------------------------------------------------------------
         print(f'\t> reading metadata from line {linecount}')
-        buffer = 55  # 145
+        buffer = 145  # 145
         metadata = np.zeros(buffer, dtype=int)
         for idx in range(buffer):
             # uint8 datatype consumes 1 read per conversion
