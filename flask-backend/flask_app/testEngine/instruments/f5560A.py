@@ -1,4 +1,5 @@
-import VisaClient
+from flask_app.testEngine.instruments import VisaClient
+
 import time
 
 instruments = {'f5560A': {'address': '129.196.136.130', 'port': '3490', 'gpib': '6', 'mode': 'SOCKET'}}
@@ -86,4 +87,3 @@ if __name__ == "__main__":
     instr.run_f5560A_source(mode, rms, Ft)
     time.sleep(5)
     instr.close_f5560A()
-    
