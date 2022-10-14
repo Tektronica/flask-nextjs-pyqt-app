@@ -8,11 +8,15 @@ class VisaClient:
         self.healthy = False
         self.session = None
         self.timeout = 2000
+        self.logging = False
+
+        self.config = config
+        self.mode = config['mode']
+        self.resourceName = ''  # VISA resource name maintains the session and class
 
         try:
-            self.rm = pyvisa.ResourceManager('@py')
-            self.config = config
-            self.mode = config['mode']
+            # self.rm = pyvisa.ResourceManager('@py')  # only when pyvisa-py backend is available
+            self.rm = pyvisa.ResourceManager()
         except ValueError:
             from textwrap import dedent
             msg = ("\n[ValueError] - Could not locate a VISA implementation. Install either the NI binary or pyvisa-py."
@@ -20,9 +24,43 @@ class VisaClient:
                    "    PyVISA-py is another such library and can be used for Serial/USB/GPIB/Ethernet\n"
                    "    See NI-VISA Installation:\n"
                    "        > https://pyvisa.readthedocs.io/en/1.8/getting_nivisa.html#getting-nivisa\n")
-            print(msg)
             self.healthy = False
+            raise Exception(msg)
 
+    def log_to_screen(self, logging=True):
+        self.logging = logging
+
+    def __log(self, msg, error=False):
+        header = '[VISA]'
+        if self.logging:
+            if error:
+                header = '[ERROR]'
+        print(f'{header} {msg}')
+
+    def flush(self, session='', mask=16):
+        """
+        Flush the buffer.
+        mask:   designates the buffer to flush. Default value: 16 (0x10)
+
+        https://github.com/pyvisa/pyvisa/issues/535#issuecomment-674452930
+        """
+        session = (session or self.resourceName)
+        self.session.flush(mask=mask)
+        self.__log('buffer was flushed.')
+
+    def clear(self):
+        """
+        Clear the buffer.
+        Clear generates a BREAK, which is about 250 mSec long
+        The following actions are performed:
+            > "flush" (discard) the I/O output buffer
+            > send a break
+            > flush the I/O input buffer
+
+        https://github.com/pyvisa/pyvisa/issues/535#issuecomment-674452930
+        """
+
+        raise NotImplementedError
 
     def connect(self, timeout=2000):
         """
@@ -34,56 +72,83 @@ class VisaClient:
 
         for attempt in range(attempts):
             try:
-                # if mode is LAN:
-                if self.mode == 'LAN':
-                    # SOCKET is a non-protocol raw TCP connection
-                    address = self.config['address']
-                    port = self.config['port']
-                    self.session = self.rm.open_resource(f'TCPIP0::{address}::{port}::SOCKET', read_termination='\n')
+                """
+                >> Ethernet: Use the TCPIP keyword
+                    Raw TCP/IP access to port 999 at 1.2.3.4 IP address.
+                        >> TCPIP[board]::host address::port::SOCKET
+                        >> TCPIP0::1.2.3.4::999::SOCKET
+
+                >> RS232: Use the ASRL keyword to establish communication with an asynchronous serial
+                    A serial device attached to interface ASRL1.
+                        >> ASRL1::INSTR
+
+                    A serial device attached to port 2 of the ENET Serial controller at address 1.2.3.4.
+                        >> ASRL[0]::host address::serial port::INSTR
+                        >> ASRL::1.2.3.4::2::INSTR
+
+                >> GPIB: Use the GPIB keyword
+                    A GPIB device at primary address 1 and secondary address 0 in GPIB interface 0.
+                        >> GPIB[board]::primary address[::secondary address][::INSTR]
+                        >> GPIB::1::0::INSTR
+
+                https://www.ni.com/docs/en-US/bundle/ni-visa/page/ni-visa/visaresourcesyntaxandexamples.html
+                https://pyvisa.readthedocs.io/en/1.8/tutorial.html#example-for-serial-rs232-device
+                """
+
+                address = self.config['address']
+                port = self.config['port']
+
+                switch = {
+                    'LAN': f'TCPIP0::{address}::{port}::SOCKET',
+                    'GPIB': f'GPIB0::{address}::0::INSTR',
+                    'RS232': f'ASRL{address}::INSTR',
+                }
+
+                # cast as string. If None, be empty string ''
+                case = str(self.mode or '')
+
+                # open resource as new session
+                try:
+                    self.resourceName = switch[case]
+                    self.session = self.rm.open_resource(self.resourceName, read_termination='\r\n')
                     self.session.timeout = self.timeout
+                    self.healthy = True
 
-                # if mode is GPIB:
-                elif self.mode == 'GPIB':
-                    address = self.config['gpib']
-                    self.session = self.rm.open_resource(f'GPIB0::{address}::0::INSTR')
+                except KeyError as e:
+                    self.__log(f'{e} is not a valid mode!', error=True)
 
-                else:
-                    print('No such mode.')
-
-                self.healthy = True
+                # if the condition is met and passes, test connection
+                time.sleep(1)
+                # return self.query('*IDN?')  # {'status': self.healthy, 'data': msg}
+                return {'status': self.healthy, 'data': 'done'}
 
             except pyvisa.VisaIOError as e:
-                print(e)
                 # https://github.com/pyvisa/pyvisa-py/issues/146#issuecomment-453695057
                 if self.mode == 'GPIB':
-                    print(f"[attempt {attempt + 1}/5] - retrying connection to {self.config['gpib']}")
+                    self.__log(f"[attempt {attempt + 1}/{attempts}] - retrying connection to {self.config['gpib']}")
                 else:
-                    print(f"[attempt {attempt + 1}/5] - retrying connection to {self.config['address']}")
-
+                    self.__log(f"[attempt {attempt + 1}/{attempts}] - retrying connection to {self.config['address']}")
                 self.healthy = False
 
             except Exception as e:
-                print(e)
-                print(f"Could not connect to {self.config['name']} for reasons unknown.")
+                self.__log(e, error=True)
+                self.__log(f"Could not connect to {self.config['name']} for reasons unknown.", error=True)
                 self.healthy = False
-            else:
-                break
 
-        time.sleep(1)
-        # test the open connection
-        return self.query('*IDN?')  # {'status': self.healthy, 'data': msg}
-    
+        return {'status': self.healthy, 'data': 'connection timed out'}
+
     def disconnect(self):
         try:
             self.session.close()
             self.healthy = True
             msg = f"connection closed for {self.config['name']}"
             self.session = None
+            self.__log(msg)
 
         except pyvisa.VisaIOError as e:
             msg = str(e)
-            print(f"attempted to disconnect from {self.config['name']} with failures\n")
-            print(msg)
+            self.__log(f"attempted to disconnect from {self.config['name']} with failures\n", error=True)
+            self.__log(msg)
             self.healthy = False
 
         return {'status': self.healthy, 'data': msg}
@@ -94,68 +159,58 @@ class VisaClient:
         time.sleep(1)
         while True:
             try:
-                print(self.session.read_bytes(1))
+                self.__log(self.session.read_bytes(1))
             except pyvisa.VisaIOError as e:
-                print(e)
-                print('completed first test with failures\n')
+                self.__log(e)
+                self.__log('completed first test with failures\n', error=True)
                 break
 
-            print('completed first test passing\n')
-
-    def InstrumentConnectionFailed(self, info):
-        """Raised when attempted connection to instrument has timedout or is unreachable"""
-        if info['mode'] in ('LAN', 'SERIAL'):
-            print(f"\nCannot reach address {info['address']} over {info['mode']}. Connection timed out.")
-        else:
-            print(f"\nCannot reach address {info['gpib']} over {info['mode']}. Connection timed out.")
+            self.__log('completed first test passing\n')
 
     def info(self):
         return self.config
+
+    def handleResponse(self, response):
+        if self.mode == 'NIGHTHAWK':
+            return re.sub(r'[\r\n|\r\n|\n]+', '', response.split("\n")[0].lstrip())
+        else:
+            return re.sub(r'[\r\n|\r\n|\n]+', '', response)
 
     def write(self, cmd):
         try:
             self.session.write(f'{cmd}')
             response = f'{cmd} was written.'
-            print(response)
+            self.__log(response)
             self.healthy = True
 
         except pyvisa.VisaIOError as e:
-            print('Could not write to device.')
+            self.__log('Could not write to device.', error=True)
             response = str(e)
             self.healthy = False
-        
-        print('visaclient: ', {'status': self.healthy, 'data': response})
+
         return {'status': self.healthy, 'data': response}
 
     def read(self):
         try:
-            response = None
-            if self.mode == 'NIGHTHAWK':
-                response = re.sub(r'[\r\n|\r\n|\n]+', '', self.session.read().split("\n")[0].lstrip())
-            else:
-                response = re.sub(r'[\r\n|\r\n|\n]+', '', self.session.read())
-            print(response)
+            response = self.handleResponse(self.session.read())
+            self.__log(f'Reading from buffer. Response: {response}')
             self.healthy = True
-
         except pyvisa.VisaIOError as e:
             response = str(e)
             self.healthy = False
-        
+
         return {'status': self.healthy, 'data': response}
 
     def query(self, cmd):
         try:
-            if self.mode == 'NIGHTHAWK':
-                response = re.sub(r'[\r\n|\r\n|\n]+', '', self.session.query(f'{cmd}').split("\n")[0].lstrip(' '))
-            else:
-                response = re.sub(r'[\r\n|\r\n|\n]+', '', self.session.query(f'{cmd}').lstrip(' '))
-            print(response)
+            response = self.handleResponse(self.session.query(f'{cmd}'))
+            self.__log(f'{cmd} was queried. Response: {response}')
             self.healthy = True
-            
+
         except pyvisa.VisaIOError as e:
             response = str(e)
             self.healthy = False
-        
+
         return {'status': self.healthy, 'data': response}
 
     def close(self):
@@ -164,47 +219,28 @@ class VisaClient:
         except AttributeError:
             # If caught, 'VisaClient' object will have no attribute 'INSTR'. Occurs when instrument not initialized.
             if self.config['mode'] in ('LAN', 'SERIAL'):
-                print(f"instrument at address {self.config['address']} could not be disconnected.")
-                print(f"instrument may not have been found.\n")
+                self.__log(f"instrument at address {self.config['address']} could not be disconnected.")
+                self.__log(f"instrument may not have been found.\n")
             else:
-                print(f"instrument at address {self.config['gpib']} could not be disconnected.")
+                self.__log(f"instrument at address {self.config['gpib']} could not be disconnected.", error=True)
 
 
 def main():
     """ THIS IS A TEST METHOD FOR THE VISACLIENT CLASS"""
-
-    f5560A_id = {'ip_address': '129.196.136.130', 'port': '3490', 'gpib_address': '', 'mode': 'NIGHTHAWK'}
-    f5790A_id = {'ip_address': '', 'port': '', 'gpib_address': '6', 'mode': 'GPIB'}
-    k34461A_id = {'ip_address': '10.205.92.63', 'port': '3490', 'gpib_address': '', 'mode': 'INSTR'}
-    f8846A_id = {'ip_address': '10.205.92.116', 'port': '3490', 'gpib_address': '', 'mode': 'LAN'}
-
-    f5560A = VisaClient(f5560A_id)
-    f5790A = VisaClient(f5790A_id)
-    k34461A = VisaClient(k34461A_id)
-    f8846A = VisaClient(f8846A_id)
-
     # COMMUNICATE ------------------------------------------------------------------------------------------------------
-    f5560A.write('*RST; EXTGUARD ON')
+    pyvisa.log_to_screen()
 
-    f5790A.write(f'*RST; INPUT INPUT2; EXTRIG OFF; HIRES ON; EXTGUARD ON')
+    try:
+        print('\n[backend] testing pyvisa-py')
+        rm = pyvisa.ResourceManager('@py')
+    except ValueError as e:
+        print('\n[backend] pyvisa-py not install')
+        print('[backend] testing visa64')
+        print(e)
+        rm = pyvisa.ResourceManager('C:\\Windows\\System32\\visa64.dll')
 
-    k34461A.write('*RST;CONF:VOLT:DC')
-    f8846A.write('*RST;CONF:VOLT:AC')
-
-    f5560A.write('MONITOR OFF')
-    print(f"monitor? {f5560A.query('MONITOR?')}")
-    f5560A.write('MONITOR ON')
-    print(f"monitor? {f5560A.query('MONITOR?')}")
-
-    print(f"Read P7P7: {f5560A.query('read P7P7')}")
-    f5560A.write('write P7P7, #hDC')
-    print(f"Read P7P7: {f5560A.query('read P7P7')}")
-
-    time.sleep(1)
-    f5560A.close()
-    f5790A.close()
-    k34461A.close()
-    f8846A.close()
+    print(rm)
+    print(rm.list_resources())
 
 
 if __name__ == "__main__":
