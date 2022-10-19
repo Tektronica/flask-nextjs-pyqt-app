@@ -1,12 +1,10 @@
 """
-
 Each GPIO has a bank of pins where each pin is a Relay
 https://stackoverflow.com/a/56517057/3382269
 https://elinux.org/RPi_BCM2711_GPIOs
 https://elinux.org/RPi_GPIO_Code_Samples#RPi.GPIO
 https://www.raspberrypi-spy.co.uk/2012/06/simple-guide-to-the-rpi-gpio-header-and-pins/
 https://stackoverflow.com/a/67943795/3382269
-
 """
 
 try:
@@ -50,17 +48,56 @@ class Pin:
 
     def setHigh(self):
         if self.type == 'OUT':
-            self.gpio.writePin(self.pin, "HIGH")
-            self.level = 1
+            if self.level == 0:
+                self.gpio.writePin(self.pin, "HIGH")
+                self.level = 1
+            else:
+                print("pin already set HIGH")
+            return self.level
 
     def setLow(self):
         if self.type == 'OUT':
-            self.gpio.writePin(self.pin, "LOW")
-            self.level = 0
+            if self.level == 1:
+                self.gpio.writePin(self.pin, "LOW")
+                self.level = 0
+            else:
+                print("pin already set LOW")
+            return self.level
 
     def read(self):
         if self.type == 'IN':
             raise NotImplementedError
+
+
+class Port:
+    def __init__(self, parent, width=2, pins=None):
+        # pins is optional
+        self.gpio = parent
+        self.pins = [None] * width
+
+        if pins:
+            self.addPins(pins)
+
+    def addPin(self, bit=0, pin=0, initial=0, type=""):
+        if self.gpio.pins[pin]:
+            self.pins[bit] = pin
+            return
+        else:
+            newPin = self.gpio.addPin(pin, initial, type)
+            self.pins[bit] = pin
+            return newPin
+
+    def addPins(self, pins):
+        # pins must match the length of the Port width
+        if len(pins) == len(self.pins):
+            self.pins = pins
+            return True
+        else:
+            return False
+
+    def write(self, mask):
+        # https://sourceforge.net/p/raspberry-gpio-python/wiki/Outputs/
+        self.gpio.writeMask(self.pins, mask)  # mask is applied to pins
 
 
 # MCU layer interfacing to the Raspberry Pi
@@ -73,31 +110,37 @@ class GPIO:
         RPiGPIO.setmode(RPiGPIO.BOARD)
 
     def addPin(self, pin=0, initial=0, type=""):
-
         newPin = Pin(self, pin, type)
         self.pins[pin] = newPin
 
         RPiGPIO.setup(pin, self.io[type])
         return newPin
 
+    def addPort(self, width=2, pins=None):
+        return Port(self, width, pins)
+
     def writePin(self, pin, level):
-        RPiGPIO.output(pin, self.level[level])
+        if self.pins[pin]:
+            RPiGPIO.output(pin, self.level[level])
+            self.pins[pin].level = 1 if level == "HIGH" else 0
 
     def writeMask(self, pins, mask):
         # output to several channels at the same time:
         # https://sourceforge.net/p/raspberry-gpio-python/wiki/Outputs/
         RPiGPIO.output(pins, mask)  # mask is applied to pins
 
+        for idx, pin in enumerate(pins):
+            self.pins[pin].level = mask[idx]
+
     def getPins(self):
         return [pin.pin for pin in self.pins if pin]
 
-    def getPinByType(self, type):
-        # need to understand requirements further
-        return [pin.pin for pin in self.pins if pin and (pin.type == type)]
+    def getPinLevels(self):
+        return [{"pin": idx, "level": pin.level} for idx, pin in enumerate(self.pins) if pin]
 
 
 def demo():
-    # setup gpio interface on Raspbery Pi
+    # setup gpio interface on Raspberry Pi
     gpio = GPIO(40)  # Raspberry Pi 4 board has a GPIO header with 40 pins.
 
     # assign pins
