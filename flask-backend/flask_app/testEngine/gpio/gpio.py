@@ -42,7 +42,7 @@ class Pin:
     def __init__(self, parent, pin=0, type=None):
         # should the pin know itself or only its type?
         self.gpio = parent  # parent (MCU gpio Layer)
-        self.pin = pin  # pin number on board
+        self.pin = pin  # pin position on board
         self.type = type  # string indicates OUTPUT or INPUT
         self.level = 0
 
@@ -109,11 +109,13 @@ class GPIO:
         self.pins = [None] * width
         RPiGPIO.setmode(RPiGPIO.BOARD)
 
-    def addPin(self, pin=0, initial=0, type=""):
+    def addPin(self, pin=0, initial="LOW", type=""):
         newPin = Pin(self, pin, type)
         self.pins[pin] = newPin
 
         RPiGPIO.setup(pin, self.io[type])
+        self.writePin(pin, initial)
+
         return newPin
 
     def addPort(self, width=2, pins=None):
