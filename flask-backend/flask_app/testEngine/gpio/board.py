@@ -30,7 +30,7 @@ class Mux:
         self.EN.setLow()
 
         # provide headroom for relay state to settle before disabling MUX bank
-        time.sleep(50e-3)  # 50 milliseconds
+        time.sleep(1)  # 1 seconds
         print('set EN HIGH to disable the MUX bank')
         self.EN.setHigh()
 
@@ -80,19 +80,19 @@ def demo():
     # setup gpio interface on Raspberry Pi
     GPIO = gpio.GPIO(40)  # Raspberry Pi 4 board has a GPIO header with 40 pins.
 
-    # assign col pins to gpio (pin objects are unused, but can be set individually)
-    pin15 = GPIO.addPin(pin=15, initial=0, type='OUT')  # row0
-    pin29 = GPIO.addPin(pin=29, initial=0, type='OUT')  # row1
-    pin31 = GPIO.addPin(pin=31, initial=0, type='OUT')  # row2
+    # assign col pins to gpio
+    pin15 = GPIO.addPin(pin=15, initial="LOW", type='OUT')  # row0
+    pin29 = GPIO.addPin(pin=29, initial="LOW", type='OUT')  # row1
+    pin31 = GPIO.addPin(pin=31, initial="LOW", type='OUT')  # row2
 
-    # assign row pins to gpio  (pin objects are unused, but can be set individually)
-    pin05 = GPIO.addPin(pin=5, initial=0, type='OUT')  # col0
-    pin07 = GPIO.addPin(pin=7, initial=0, type='OUT')  # col1
-    pin11 = GPIO.addPin(pin=11, initial=0, type='OUT')  # col2
+    # assign row pins to gpio
+    pin05 = GPIO.addPin(pin=5, initial="LOW", type='OUT')  # col0
+    pin07 = GPIO.addPin(pin=7, initial="LOW", type='OUT')  # col1
+    pin11 = GPIO.addPin(pin=11, initial="LOW", type='OUT')  # col2
 
     # control lines for demux assigned to gpio
-    RST = GPIO.addPin(pin=13, initial=0, type='OUT')  # SET/RESET
-    EN = GPIO.addPin(pin=3, initial=1, type='OUT')  # EN (demux enable)
+    RST = GPIO.addPin(pin=13, initial="LOW", type='OUT')  # SET/RESET
+    EN = GPIO.addPin(pin=3, initial="HIGH", type='OUT')  # EN (demux enable)
 
     # assign an arbitrary Port for each gpio pin group
     portCol = GPIO.addPort(width=3, pins=[15, 29, 31])
