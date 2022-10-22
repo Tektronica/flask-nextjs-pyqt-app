@@ -140,6 +140,9 @@ class GPIO:
     def getPinLevels(self):
         return [{"pin": idx, "level": pin.level} for idx, pin in enumerate(self.pins) if pin]
 
+    def close(self):
+        RPiGPIO.cleanup()
+
 
 def demo():
     # setup gpio interface on Raspberry Pi
