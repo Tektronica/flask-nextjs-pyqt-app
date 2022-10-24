@@ -73,7 +73,10 @@ class Port:
     def __init__(self, parent, width=2, pins=None):
         # pins is optional
         self.gpio = parent
-        self.pins = [None] * width
+        if pins and len(pins) == width:
+            self.pins = pins
+        else:
+            self.pins = [None] * width
 
         if pins:
             self.addPins(pins)
@@ -109,7 +112,7 @@ class GPIO:
         self.pins = [None] * width
         RPiGPIO.setmode(RPiGPIO.BOARD)
 
-    def addPin(self, pin=0, initial="LOW", type=""):
+    def addPin(self, pin=0, initial="LOW", type="OUT"):
         newPin = Pin(self, pin, type)
         self.pins[pin] = newPin
 
@@ -119,6 +122,12 @@ class GPIO:
         return newPin
 
     def addPort(self, width=2, pins=None):
+        # if the pin index is provided, but doesn't exist, initialize it
+        if pins:
+            for pin in pins:
+                if not self.pins[pin]:
+                    self.addPin(pin=pin, initial="LOW")
+
         return Port(self, width, pins)
 
     def writePin(self, pin, level):
@@ -133,6 +142,12 @@ class GPIO:
 
         for idx, pin in enumerate(pins):
             self.pins[pin].level = mask[idx]
+
+    def readPin(self, pin: int):
+        return self.pins[pin].level
+
+    def readMask(self, mask: list):
+        return [self.pins[pin].level for pin in mask if type(pin) is int]
 
     def getPins(self):
         return [pin.pin for pin in self.pins if pin]

@@ -1,6 +1,6 @@
 from flask_app.testEngine.gpio import gpio, board
 
-Mux = board.Mux
+Mux = board.Mux2D
 
 
 def demo():
